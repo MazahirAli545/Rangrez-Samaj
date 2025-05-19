@@ -6,16 +6,28 @@ buildscript {
         targetSdkVersion = 34
         ndkVersion = "26.1.10909125"
         kotlinVersion = "1.9.24"
+        //  kotlinVersion = "2.1.0"
+         gradlePluginVersion = "8.0.0"
+         googlePlayServicesVersion = "22.0.0"
+        //  firebaseVersion = "32.7.0
+    
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle")
-        classpath("com.facebook.react:react-native-gradle-plugin")
+        // classpath("com.android.tools.build:gradle")
+        // classpath("com.facebook.react:react-native-gradle-plugin:2.1.0")
+        // classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+  classpath("com.android.tools.build:gradle:8.2.2")
+  
+        classpath("com.facebook.react:react-native-gradle-plugin:2.1.0")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        // classpath("com.google.gms:google-services:4.4.1")
+        classpath("com.google.gms:google-services:4.4.2")
     }
 }
 
 apply plugin: "com.facebook.react.rootproject"
+apply plugin: "com.google.gms.google-services"

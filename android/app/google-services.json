@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "203586624670",
+    "project_id": "rangrezsamaj-b7ca6",
+    "storage_bucket": "rangrezsamaj-b7ca6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203586624670:android:20f290b32d2e75b7772f8f",
+        "android_client_info": {
+          "package_name": "com.rangrezsamaj"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwbRIkY8zNd1eBQBAuk69wE3dO_w_UKcg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
