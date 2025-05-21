@@ -733,6 +733,12 @@ const Signup = props => {
 
     // Only update if we found a valid target page and we're not already there
     if (targetPage !== -1 && currentPage !== targetPage) {
+      //////////////////////
+      if (!validateFields()) {
+        return;
+      }
+
+      //////////////////
       setCurrentPage(targetPage);
       scrollViewRef?.current?.scrollTo({
         x: targetPage * wp(100),
@@ -877,29 +883,117 @@ const Signup = props => {
     [],
   );
 
+  // const onMomentumScrollEnd = event => {
+  //   const offsetX = event.nativeEvent.contentOffset.x;
+  //   const pageIndex = Math.round(offsetX / wp(100));
+
+  //   if (!validateFields()) {
+  //     console.log('Validation failed, staying on current page');
+
+  //     setTimeout(() => {
+  //       if (scrollViewRef.current) {
+  //         scrollViewRef.current.scrollTo({
+  //           x: wp(100) * currentPage,
+  //           animated: false,
+  //         });
+  //       }
+  //     }, 200);
+
+  //     return;
+  //   }
+
+  //   setCurrentPage(pageIndex);
+  //   // if (pageIndex > 1) {
+  //   //   UpdateUser();
+  //   // }
+  // };
+
+  // const validateFields = () => {
+  //   let errors = {};
+
+  //   if (currentPage === 0) {
+  //     if (
+  //       props.pageName === 'profile' &&
+  //       isPersonalDetailsChanged &&
+  //       !isMobileVerified
+  //     ) {
+  //       errors.mobileVerification = 'Please verify your details';
+  //     } else if (props.pageName !== 'profile' && !isMobileVerified) {
+  //       errors.mobileVerification = 'Please verify your mobile number';
+  //     }
+
+  //     if (!fullname) errors.fullname = 'Full name is required';
+  //     if (!mobile) {
+  //       errors.mobile = 'Mobile number is required';
+  //     } else if (mobile.length !== 10) {
+  //       errors.mobile = 'Please enter 10 digits mobile number';
+  //     }
+  //     if (!date) errors.date = 'Date of birth is required';
+
+  //     if (props.pageName !== 'profile' && !isMobileVerified) {
+  //       errors.mobileVerification = 'Please verify your mobile number';
+  //     }
+  //   } else if (currentPage === 2) {
+  //     if (!pincode) errors.pincode = 'Pincode is required';
+  //     if (!city) errors.city = 'City is required';
+  //     if (!address) errors.address = 'Address is required';
+  //     // } else if (currentPage === 7 && age < 21) {
+  //   } else if (
+  //     pages[currentPage]?.type?.name === 'ParentsDetails' &&
+  //     age < 21
+  //   ) {
+  //     if (!fathername) errors.fathername = 'Father name is required';
+  //     if (!mothername) errors.mothername = 'Mother name is required';
+  //   }
+
+  //   if (
+  //     pages[currentPage]?.type?.name === 'SpouseChildDetails' &&
+  //     userMarried === 'Y'
+  //   ) {
+  //     children.forEach((child, index) => {
+  //       // Only validate if at least one field is filled
+  //       if (child.name?.trim() || child.dob) {
+  //         if (!child.name?.trim()) {
+  //           errors[`name_${child.id}`] = 'Child Name is required';
+  //         }
+  //         if (!child.dob) {
+  //           errors[`dob_${child.id}`] = 'Child DOB is required';
+  //         }
+  //       }
+  //     });
+  //   }
+
+  //   // || (!hasName && hasDOB)
+  //   if (JSON.stringify(errors) !== JSON.stringify(errorMessageRegister)) {
+  //     setErrorMessageRegister(errors);
+  //   }
+
+  //   return Object.keys(errors).length === 0;
+  // };
+
   const onMomentumScrollEnd = event => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const pageIndex = Math.round(offsetX / wp(100));
 
-    if (!validateFields()) {
-      console.log('Validation failed, staying on current page');
+    // Validate fields when arriving at a new page
+    if (pageIndex !== currentPage) {
+      if (!validateFields()) {
+        console.log('Validation failed, staying on current page');
 
-      setTimeout(() => {
-        if (scrollViewRef.current) {
-          scrollViewRef.current.scrollTo({
-            x: wp(100) * currentPage,
-            animated: false,
-          });
-        }
-      }, 200);
+        setTimeout(() => {
+          if (scrollViewRef.current) {
+            scrollViewRef.current.scrollTo({
+              x: wp(100) * currentPage,
+              animated: false,
+            });
+          }
+        }, 200);
 
-      return;
+        return;
+      }
     }
 
     setCurrentPage(pageIndex);
-    // if (pageIndex > 1) {
-    //   UpdateUser();
-    // }
   };
 
   const validateFields = () => {
@@ -923,15 +1017,15 @@ const Signup = props => {
         errors.mobile = 'Please enter 10 digits mobile number';
       }
       if (!date) errors.date = 'Date of birth is required';
-
-      if (props.pageName !== 'profile' && !isMobileVerified) {
-        errors.mobileVerification = 'Please verify your mobile number';
-      }
-    } else if (currentPage === 2) {
+    }
+    // Add this condition to validate AddressDetails when it's the current page
+    else if (
+      currentPage === 2 ||
+      pages[currentPage]?.type?.name === 'AddressDetails'
+    ) {
       if (!pincode) errors.pincode = 'Pincode is required';
       if (!city) errors.city = 'City is required';
       if (!address) errors.address = 'Address is required';
-      // } else if (currentPage === 7 && age < 21) {
     } else if (
       pages[currentPage]?.type?.name === 'ParentsDetails' &&
       age < 21
@@ -945,7 +1039,6 @@ const Signup = props => {
       userMarried === 'Y'
     ) {
       children.forEach((child, index) => {
-        // Only validate if at least one field is filled
         if (child.name?.trim() || child.dob) {
           if (!child.name?.trim()) {
             errors[`name_${child.id}`] = 'Child Name is required';
@@ -957,51 +1050,10 @@ const Signup = props => {
       });
     }
 
-    // || (!hasName && hasDOB)
-    if (JSON.stringify(errors) !== JSON.stringify(errorMessageRegister)) {
-      setErrorMessageRegister(errors);
-    }
-
+    setErrorMessageRegister(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // const validateFields = () => {
-  //   let errors = {};
-
-  //   if (currentPage === 0) {
-  //     if (!fullname) errors.fullname = 'Full name is required';
-  //     if (!mobile) errors.mobile = 'Mobile number is required';
-  //     if (!date) errors.date = 'Date of birth is required';
-
-  //     if (props.pageName !== 'profile' && !isMobileVerified) {
-  //       errors.mobileVerification = 'Please verify your mobile number';
-  //     }
-  //   } else if (currentPage === 2) {
-  //     if (!pincode) errors.pincode = 'Pincode is required';
-  //     if (!city) errors.city = 'City is required';
-  //     if (!address) errors.address = 'Address is required';
-  //   } else if (currentPage === 6 && props.pageName === 'profile' && age < 21) {
-  //     // Special handling for profile page on ParentsDetails
-  //     if (!fathername) errors.fathername = 'Father name is required';
-  //     if (!mothername) errors.mothername = 'Mother name is required';
-
-  //     // Only auto-navigate if we're coming from validation
-  //     if (isAttempted && Object.keys(errors).length === 0) {
-  //       // If validation passes, move to next page (7)
-  //       setCurrentPage(7);
-  //       scrollViewRef?.current?.scrollTo({
-  //         x: wp(100) * 7,
-  //         animated: true,
-  //       });
-  //     }
-  //   }
-
-  //   if (JSON.stringify(errors) !== JSON.stringify(errorMessageRegister)) {
-  //     setErrorMessageRegister(errors);
-  //   }
-
-  //   return Object.keys(errors).length === 0;
-  // };
   useEffect(() => {
     if (isAttempted) {
       validateFields();

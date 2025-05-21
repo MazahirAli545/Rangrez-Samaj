@@ -949,7 +949,9 @@ const UserDetails = ({pageName = 'signup'}) => {
             )}
           </View>
 
-          {pageName === 'signup' || (pageName === 'profile' && isChanged) ? (
+          {pageName === 'signup' ||
+          pageName === 'AddFamilyMembers' ||
+          (pageName === 'profile' && isChanged) ? (
             <TouchableOpacity
               onPress={toggleModal}
               // onPress={verifyOtp}

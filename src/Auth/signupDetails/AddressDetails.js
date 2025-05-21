@@ -64,10 +64,15 @@ const AddressDetails = ({pageName = 'signup'}) => {
   } = useContext(ProfileDataContext) || {};
 
   useEffect(() => {
-    if (isNavigating) {
-      console.log('Navigating to UserDetails screen...');
+    //   if (isNavigating) {
+    //     console.log('Navigating to UserDetails screen...');
+    //   }
+    // }, [isNavigating]);
+
+    if (isAttempted && (!pincode || !city || !address)) {
+      validateFields();
     }
-  }, [isNavigating]);
+  }, [isAttempted]);
 
   const validateFields = () => {
     let errors = {};
@@ -77,6 +82,7 @@ const AddressDetails = ({pageName = 'signup'}) => {
     if (!address) errors.address = 'Address is required';
 
     setErrorMessageRegister(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const [pincodeList, setPincodeList] = useState([]);

@@ -754,10 +754,10 @@ const Signin = props => {
                       onPress={() => handleUserSelection(item.PR_ID)}
                       style={styles.userItem}>
                       <Text style={styles.userName}>{item.PR_FULL_NAME}</Text>
-                      <Text style={styles.userId}>{item.PR_UNIQUE_ID}</Text>
-                      {/* {!item.PR_UNIQUE_ID.startsWith('0000-00') && (
+                      {/* <Text style={styles.userId}>{item.PR_UNIQUE_ID}</Text> */}
+                      {!item.PR_UNIQUE_ID.startsWith('0000-00') && (
                         <Text style={styles.userId}>{item.PR_UNIQUE_ID}</Text>
-                      )} */}
+                      )}
                     </TouchableOpacity>
                   )}
                 />
