@@ -79,6 +79,8 @@ const Signin = props => {
         PR_MOBILE_NO: mobile,
       });
 
+      console.log('RESPONSE', response.data);
+
       if (response.data.success) {
         ToastAndroid.showWithGravity(
           'OTP sent to your mobile',
@@ -784,7 +786,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: wp(0.3),
     borderColor: '#ccc',
     textAlign: 'center',
-    fontSize: hp(2.6),
+    fontSize: hp(2),
     fontFamily: 'Poppins-SemiBold',
     color: '#FFFFFF',
   },
@@ -823,15 +825,9 @@ const styles = StyleSheet.create({
   underlineStyleBase: {
     width: wp(11),
     height: hp(6),
-    // borderWidth: 0,
-    // borderWidth: 1,
-    // alignItems: 'center',
-    // alignSelf: 'center',
+
     borderBottomColor: '#FFF',
-    // color: '#FFF',
-    // paddingTop: hp(2),
     fontSize: wp(4),
-    // fontFamily: 'Poppins-Medium',
   },
   underlineStyleHighLighted: {
     borderBottomColor: '#DEB737',

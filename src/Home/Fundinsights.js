@@ -237,7 +237,7 @@ const Fundinsights = props => {
                       fontFamily: 'Poppins-Medium',
                       marginTop: hp(2),
                     }}>
-                    Sex Ratio
+                    Gender Ratio
                   </Text>
                 </View>
 

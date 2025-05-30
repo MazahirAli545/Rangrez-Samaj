@@ -118,7 +118,7 @@ const AddressDetails = ({pageName = 'signup'}) => {
         ];
 
         setPincodeList(uniquePincodes.map(pin => ({value: pin})));
-        console.log('Unique Pincode List:', uniquePincodes);
+        // console.log('Unique Pincode List:', uniquePincodes);
       } catch (error) {
         console.error('Error fetching pincodes:', error);
       } finally {
@@ -151,7 +151,7 @@ const AddressDetails = ({pageName = 'signup'}) => {
           throw new Error('Invalid JSON response from API');
         }
 
-        console.log('All Cities:', result.cities);
+        // console.log('All Cities:', result.cities);
 
         if (!Array.isArray(result.cities)) {
           console.warn('Invalid response format');
@@ -170,7 +170,7 @@ const AddressDetails = ({pageName = 'signup'}) => {
     fetchAllCities();
   }, []);
 
-  console.log('WWWWW', allCities);
+  // console.log('WWWWW', allCities);
 
   useEffect(() => {
     const pincodeToFilter = pincode || PINCODE;
@@ -198,7 +198,7 @@ const AddressDetails = ({pageName = 'signup'}) => {
       }));
 
     setFilteredCities(filtered);
-    console.log('Filtered Cities:', filtered);
+    // console.log('Filtered Cities:', filtered);
 
     if (filtered.length > 0) {
       let selectedCity = filtered.find(c => c.value === city);

@@ -337,6 +337,12 @@ const Announcement = props => {
   //   ],
   // };
 
+  const isEventActive = eventToDate => {
+    const today = new Date();
+    const eventDate = new Date(eventToDate);
+    return eventDate >= today;
+  };
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -546,9 +552,19 @@ const Announcement = props => {
                 />
               ) : (
                 <>
-                  {events.filter(event => event.eventCategoryID === 2) ? (
+                  {events.some(
+                    event =>
+                      event.eventCategoryID === 2 &&
+                      isEventActive(event.EventsToDate),
+                  ) ? (
                     <FlatList
-                      data={events.filter(event => event.eventCategoryID === 2)}
+                      data={[...events]
+                        .filter(
+                          event =>
+                            event.eventCategoryID === 2 &&
+                            isEventActive(event.EventsToDate),
+                        )
+                        .reverse()}
                       horizontal={false}
                       pagingEnabled={true}
                       showsHorizontalScrollIndicator={false}
@@ -591,6 +607,7 @@ const Announcement = props => {
                               alignItems: 'center',
                               alignContent: 'center',
                               alignSelf: 'left',
+                              marginTop: hp(0.4),
                             }}>
                             <Image
                               source={announcementlogo}
@@ -714,18 +731,18 @@ const Announcement = props => {
 const styles = StyleSheet.create({
   categoryStyle: {
     color: '#FFFFFF',
-    fontSize: hp(1.5),
+    fontSize: hp(1.4),
     fontFamily: 'Poppins-Medium',
     fontWeight: '600',
+    paddingTop: hp(0.2),
   },
   categoryContainer: {
-    backgroundColor: '#7C8C42',
-    paddingHorizontal: wp(2),
-    left: wp(3),
-    borderRadius: wp(2),
-    height: hp(2.2),
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#7C8C42',
+    paddingHorizontal: wp(4),
+    left: wp(3),
+    borderRadius: wp(2),
     alignSelf: 'flex-start',
   },
   MainContainer: {

@@ -182,7 +182,7 @@ const Onboarding = props => {
           // alignItems: "flex-start",
 
           // alignSelf: "flex-start",
-          marginBottom: hp(16),
+          marginBottom: hp(13),
         }}
         dot={
           <View
@@ -308,7 +308,7 @@ const Onboarding = props => {
       <View style={{position: 'absolute', bottom: 0, left: 0, right: 0}}>
         <View
           style={{
-            marginBottom: hp(10),
+            marginBottom: hp(7),
             // position: 'absolute',
             // bottom: 0,
             // marginTop: hp(44),

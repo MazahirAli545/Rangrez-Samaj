@@ -26,6 +26,8 @@ import father from '../../provider/png/father.png';
 import mother from '../../provider/png/mother.png';
 import {SignupDataContext} from '../SignupDataContext';
 import {ProfileDataContext} from '../ProfileDataContext';
+import id from '../../provider/png/id.png';
+import {BASE_URL} from '../../api/ApiInfo';
 
 const ParentsDetails = () => {
   const {
@@ -41,7 +43,12 @@ const ParentsDetails = () => {
     setIsAttempted,
     isNavigating,
     setIsNavigating,
+    fatherId,
+    setfatherId,
+    motherId,
+    setMotherId,
   } = useContext(SignupDataContext) || {};
+  const [errors, setErrors] = useState({});
 
   const {FATHERNAME, setFATHERNAME, MOTHERNAME, setMOTHERNAME} =
     useContext(ProfileDataContext) || {};
@@ -66,6 +73,99 @@ const ParentsDetails = () => {
       validateFields(); // Call validation when user attempts to proceed
     }
   }, [isAttempted]);
+
+  // const validateParentId = async (id, type) => {
+  //   if (!id) {
+  //     // Clear error if empty (optional field)
+  //     setErrors(prev => ({...prev, [`${type}Id`]: undefined}));
+  //     setErrorMessageRegister?.(prev => ({...prev, [`${type}Id`]: undefined}));
+  //     return true;
+  //   }
+
+  //   try {
+  //     const response = await fetch(
+  //       `https://node2-plum.vercel.app/api/user/checkPersonById/${id}?type=${type}`,
+  //     );
+  //     const result = await response.json();
+
+  //     if (!result.success) {
+  //       setErrors(prev => ({...prev, [`${type}Id`]: result.message}));
+  //       setErrorMessageRegister?.(prev => ({
+  //         ...prev,
+  //         [`${type}Id`]: result.message,
+  //       }));
+  //       return false;
+  //     } else {
+  //       setErrors(prev => ({...prev, [`${type}Id`]: undefined}));
+  //       setErrorMessageRegister?.(prev => ({
+  //         ...prev,
+  //         [`${type}Id`]: undefined,
+  //       }));
+  //       if (type === 'father') setfatherId?.(id);
+  //       if (type === 'mother') setMotherId?.(id);
+  //       return true;
+  //     }
+  //   } catch (error) {
+  //     console.error(`Error validating ${type} ID:`, error);
+  //     setErrors(prev => ({...prev, [`${type}Id`]: 'Something went wrong'}));
+  //     return false;
+  //   }
+  // };
+
+  const validateParentId = async (id, type) => {
+    if (!id) {
+      setErrors(prev => ({...prev, [`${type}Id`]: undefined}));
+      setErrorMessageRegister?.(prev => ({...prev, [`${type}Id`]: undefined}));
+      return true;
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/user/check/${id}`);
+      const result = await response.json();
+
+      if (!result.success) {
+        const errorMessage = result.message.includes('PR_UNIQUE_ID not found')
+          ? `${
+              type === 'father' ? 'Father' : 'Mother'
+            } ID not found in registry`
+          : result.message;
+
+        setErrors(prev => ({...prev, [`${type}Id`]: errorMessage}));
+        setErrorMessageRegister?.(prev => ({
+          ...prev,
+          [`${type}Id`]: errorMessage,
+        }));
+        return false;
+      } else {
+        setErrors(prev => ({...prev, [`${type}Id`]: undefined}));
+        setErrorMessageRegister?.(prev => ({
+          ...prev,
+          [`${type}Id`]: undefined,
+        }));
+
+        // ✅ Auto-fill father or mother name if found
+        if (result.data?.PR_FULL_NAME) {
+          if (type === 'father') {
+            setFatherName?.(result.data.PR_FULL_NAME);
+            setFATHERNAME?.(result.data.PR_FULL_NAME);
+          }
+          if (type === 'mother') {
+            setMotherName?.(result.data.PR_FULL_NAME);
+            setMOTHERNAME?.(result.data.PR_FULL_NAME);
+          }
+        }
+
+        return true;
+      }
+    } catch (error) {
+      console.error(`Error validating ${type} ID:`, error);
+      setErrors(prev => ({
+        ...prev,
+        [`${type}Id`]: `Unable to validate ${type} ID. Please check your connection.`,
+      }));
+      return false;
+    }
+  };
 
   return (
     <ScrollView
@@ -161,6 +261,108 @@ const ParentsDetails = () => {
             alignItems: 'center',
             backgroundColor: '#FFFFFF',
             marginTop: hp(2),
+            // borderColor: errorMessageRegister?.fathername ? 'red' : '#CCCCCC', // Default border color
+            // borderWidth: errorMessageRegister?.fathername ? wp(0.3) : wp(0),
+            borderColor: errors.fatherId ? 'red' : '#CCCCCC',
+            borderWidth: errors.fatherId ? wp(0.3) : wp(0),
+          }}>
+          <Image
+            source={id}
+            style={{
+              height: hp(2.8),
+              width: wp(5.8),
+              position: 'absolute',
+              zIndex: 11,
+              marginLeft: wp(2.5),
+            }}
+            tintColor={'#BFBDBE'}
+            resizeMode="contain"
+          />
+          <TextInput
+            // editable={isEditable}
+
+            numberOfLines={1}
+            style={{
+              paddingLeft: wp(10),
+              width: wp(80),
+
+              color: 'black',
+              fontSize: hp(1.8),
+              fontFamily: 'Poppins-Medium',
+              alignSelf: 'center',
+              justifyContent: 'center',
+              alignContent: 'center',
+            }}
+            keyboardType="default"
+            placeholder="Father ID [Optional]"
+            placeholderTextColor={'#BFBDBE'}
+            // value={fathername || FATHERNAME} // Ensure fathername is correctly set
+            // onChangeText={text => {
+            //   if (setFatherName) setFatherName(text);
+            //   if (setFATHERNAME) setFATHERNAME(text);
+
+            //   if (setErrorMessageRegister)
+            //     setErrorMessageRegister(prevErrors => ({
+            //       ...prevErrors,
+            //       fathername: text ? '' : 'Father Name is required',
+            //     }));
+            // }}
+            value={fatherId ? String(fatherId) : ''}
+            // onChangeText={text => {
+            //   const id = text ? parseInt(text) : null;
+            //   setfatherId?.(id);
+            //   // Clear errors as user types
+            //   setErrors(prev => ({...prev, fatherId: undefined}));
+            //   setErrorMessageRegister?.(prev => ({
+            //     ...prev,
+            //     fatherId: undefined,
+            //   }));
+            // }}
+            onChangeText={text => {
+              // const numValue = text ? parseInt(text, 10) : null;
+              // setSpouseId?.(numValue);
+              setfatherId?.(text);
+              setErrors(prev => {
+                const updated = {...prev};
+                delete updated.spouseId;
+                return updated;
+              });
+            }}
+            onBlur={async () => {
+              if (fatherId) {
+                // Only validate if there's a value
+                const isValid = await validateParentId(fatherId, 'father');
+                if (!isValid) {
+                  // Force the parent component to stay on this page
+                  setCurrentPage(
+                    pages.findIndex(
+                      page => page.type?.name === 'ParentsDetails',
+                    ),
+                  );
+                  // Prevent scroll navigation
+                  scrollViewRef.current?.scrollTo({
+                    x: wp(100) * currentPage,
+                    animated: false,
+                  });
+                }
+              }
+            }}
+          />
+        </View>
+        {errors.fatherId && (
+          <Text style={styles.errorText}>{errors.fatherId}</Text>
+        )}
+
+        <View
+          style={{
+            width: wp(83),
+            // borderWidth: wp(.2),
+            borderRadius: wp(2),
+            alignSelf: 'center',
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#FFFFFF',
+            marginTop: hp(2),
             borderColor: errorMessageRegister?.mothername ? 'red' : '#CCCCCC', // Default border color
             borderWidth: errorMessageRegister?.mothername ? wp(0.3) : wp(0),
           }}>
@@ -211,6 +413,99 @@ const ParentsDetails = () => {
           <Text style={styles.errorText}>
             {errorMessageRegister.mothername}
           </Text>
+        )}
+
+        <View
+          style={{
+            width: wp(83),
+            // borderWidth: wp(.2),
+            borderRadius: wp(2),
+            alignSelf: 'center',
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#FFFFFF',
+            marginTop: hp(2),
+            // borderColor: errorMessageRegister?.mothername ? 'red' : '#CCCCCC', // Default border color
+            // borderWidth: errorMessageRegister?.mothername ? wp(0.3) : wp(0),
+            borderColor: errors.motherId ? 'red' : '#CCCCCC',
+            borderWidth: errors.motherId ? wp(0.3) : wp(0),
+          }}>
+          <Image
+            source={id}
+            style={{
+              height: hp(2.8),
+              width: wp(5.8),
+              position: 'absolute',
+              zIndex: 11,
+              marginLeft: wp(2.5),
+            }}
+            tintColor={'#BFBDBE'}
+            resizeMode="contain"
+          />
+          <TextInput
+            // editable={isEditable}
+            numberOfLines={1}
+            style={{
+              paddingLeft: wp(10),
+              width: wp(80),
+
+              color: 'black',
+              fontSize: hp(1.8),
+              fontFamily: 'Poppins-Medium',
+              alignSelf: 'center',
+              justifyContent: 'center',
+              alignContent: 'center',
+            }}
+            placeholder="Mother ID [Optonal]"
+            keyboardType="default"
+            placeholderTextColor={'#BFBDBE'}
+            value={motherId ? String(motherId) : ''}
+            // onChangeText={text => {
+            //   const id = text ? parseInt(text) : null;
+            //   setMotherId?.(id);
+            //   // Clear errors as user types
+            //   setErrors(prev => ({...prev, motherId: undefined}));
+            //   setErrorMessageRegister?.(prev => ({
+            //     ...prev,
+            //     motherId: undefined,
+            //   }));
+            // }}
+            onChangeText={text => {
+              setMotherId?.(text);
+              setErrors(prev => {
+                const updated = {...prev};
+                delete updated.motherId;
+                return updated;
+              });
+              setErrorMessageRegister?.(prev => ({
+                ...prev,
+                motherId: undefined,
+              }));
+            }}
+            onBlur={async () => {
+              if (motherId) {
+                // Only validate if there's a value
+                const isValid = await validateParentId(motherId, 'mother');
+                if (!isValid) {
+                  // Force the parent component to stay on this page
+                  setCurrentPage(
+                    pages.findIndex(
+                      page => page.type?.name === 'ParentsDetails',
+                    ),
+                  );
+                  // Prevent scroll navigation
+                  scrollViewRef.current?.scrollTo({
+                    x: wp(100) * currentPage,
+                    animated: false,
+                  });
+                }
+              }
+            }}
+          />
+        </View>
+
+        {errors.motherId && (
+          <Text style={styles.errorText}>{errors.motherId}</Text>
         )}
       </View>
     </ScrollView>

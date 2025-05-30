@@ -102,7 +102,13 @@ const HomeScren = props => {
   const [refresh, setRefresh] = useState(false);
   const [stats, setStats] = useState('');
 
-  console.log('Header Image:', events);
+  const isEventActive = eventToDate => {
+    const today = new Date();
+    const eventDate = new Date(eventToDate);
+    return eventDate >= today;
+  };
+
+  // console.log('Header Image:', events);
 
   const [token, setToken] = useState('');
   const [completionPercentage, setCompletionPercentage] = useState(0);
@@ -666,7 +672,7 @@ const HomeScren = props => {
                 marginHorizontal: wp(5),
                 marginTop: hp(2),
               }}>
-              <TouchableOpacity
+              <View
                 style={{
                   height: hp(11.5),
                   width: wp(40),
@@ -689,6 +695,7 @@ const HomeScren = props => {
                   <Image
                     source={population}
                     style={{height: hp(4), width: wp(8.2)}}
+                    resizeMode="contain"
                   />
                   <Text
                     numberOfLines={1}
@@ -715,9 +722,9 @@ const HomeScren = props => {
                   }}>
                   Total Population
                 </Text>
-              </TouchableOpacity>
+              </View>
 
-              <TouchableOpacity
+              <View
                 style={{
                   height: hp(11.5),
                   width: wp(40),
@@ -739,6 +746,7 @@ const HomeScren = props => {
                   <Image
                     source={family}
                     style={{height: hp(4), width: wp(8.2)}}
+                    resizeMode="contain"
                   />
                   <Text
                     numberOfLines={1}
@@ -765,7 +773,7 @@ const HomeScren = props => {
                   }}>
                   Family
                 </Text>
-              </TouchableOpacity>
+              </View>
             </View>
 
             <View
@@ -844,9 +852,19 @@ const HomeScren = props => {
                 />
               ) : (
                 <>
-                  {events.some(event => event.eventCategoryID === 1) ? (
+                  {events.some(
+                    event =>
+                      event.eventCategoryID === 1 &&
+                      isEventActive(event.EventsToDate),
+                  ) ? (
                     <FlatList
-                      data={events.filter(event => event.eventCategoryID === 1)}
+                      data={[...events]
+                        .filter(
+                          event =>
+                            event.eventCategoryID === 1 &&
+                            isEventActive(event.EventsToDate),
+                        )
+                        .reverse()}
                       horizontal={true}
                       pagingEnabled={true}
                       showsHorizontalScrollIndicator={false}
@@ -1232,9 +1250,19 @@ const HomeScren = props => {
                 />
               ) : (
                 <>
-                  {events.filter(event => event.eventCategoryID === 2) ? (
+                  {events.some(
+                    event =>
+                      event.eventCategoryID === 2 &&
+                      isEventActive(event.EventsToDate),
+                  ) ? (
                     <FlatList
-                      data={events.filter(event => event.eventCategoryID === 2)}
+                      data={[...events]
+                        .filter(
+                          event =>
+                            event.eventCategoryID === 2 &&
+                            isEventActive(event.EventsToDate),
+                        )
+                        .reverse()}
                       horizontal={true}
                       pagingEnabled={true}
                       showsHorizontalScrollIndicator={false}
@@ -1274,6 +1302,7 @@ const HomeScren = props => {
                               alignItems: 'center',
                               alignContent: 'center',
                               alignSelf: 'left',
+                              marginTop: hp(0.4),
                             }}>
                             <Image
                               source={announcementlogo}
@@ -1450,18 +1479,18 @@ const HomeScren = props => {
 const styles = StyleSheet.create({
   categoryStyle: {
     color: '#FFFFFF',
-    fontSize: hp(1.5),
+    fontSize: hp(1.4),
     fontFamily: 'Poppins-Medium',
     fontWeight: '600',
+    paddingTop: hp(0.2),
   },
   categoryContainer: {
-    backgroundColor: '#7C8C42',
-    paddingHorizontal: wp(2),
-    left: wp(3),
-    borderRadius: wp(2),
-    height: hp(2.2),
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#7C8C42',
+    paddingHorizontal: wp(4),
+    left: wp(3),
+    borderRadius: wp(2),
     alignSelf: 'flex-start',
   },
   AlertImage: {
@@ -1521,6 +1550,7 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(1),
     width: wp(90),
     paddingVertical: hp(2),
+    height: hp(23),
     borderRadius: wp(3),
     marginBottom: hp(2),
   },
@@ -1547,11 +1577,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: hp(1.6),
     width: wp(50),
-    alignSelf: 'flex-end',
-    marginRight: wp(3.5),
-    marginTop: hp(2.7),
+    // alignSelf: 'flex-end',
+    // marginRight: wp(3.5),
+    // marginTop: hp(2.7),
     fontFamily: 'Poppins-Medium',
     textAlign: 'right',
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    margin: wp(3.5),
   },
 
   //Donation styles

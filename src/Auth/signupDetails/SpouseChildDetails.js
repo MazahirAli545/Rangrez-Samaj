@@ -29,7 +29,8 @@ import Highericon from '../../provider/png/Highericon.png';
 import noeducation from '../../provider/png/noeducation.png';
 import {SignupDataContext} from '../SignupDataContext';
 import {ProfileDataContext} from '../ProfileDataContext';
-
+import {BASE_URL} from '../../api/ApiInfo';
+import id from '../../provider/png/id.png';
 const SpouseChildDetails = ({pageName = 'signup'}) => {
   const {
     spousename,
@@ -41,10 +42,16 @@ const SpouseChildDetails = ({pageName = 'signup'}) => {
     errorMessageRegister,
     setErrorMessageRegister,
     isAttempted,
+    pages,
+    currentPage,
+    spouseId,
+    setSpouseId,
   } = useContext(SignupDataContext) || {};
 
   const {SPOUSENAME, setSPOUSENAME, CHILDREN, setCHILDREN} =
     useContext(ProfileDataContext) || {};
+  // const isCurrentPage =
+  //   pages?.[currentPage]?.type?.name === 'SpouseChildDetails';
 
   useEffect(() => {
     if (isNavigating) {
@@ -62,7 +69,8 @@ const SpouseChildDetails = ({pageName = 'signup'}) => {
   const [localChildren, setLocalChildren] = useState([
     {id: 1, name: '', dob: ''},
   ]);
-
+  const isCurrentPage =
+    pages?.[currentPage]?.type?.name === 'SpouseChildDetails';
   const getOrdinal = n => {
     const ordinals = [
       'First',
@@ -151,10 +159,10 @@ const SpouseChildDetails = ({pageName = 'signup'}) => {
     setCHILDREN?.(updatedFields);
   };
   useEffect(() => {
-    if (isAttempted) {
+    if (isAttempted && isCurrentPage) {
       validateFields();
     }
-  }, [isAttempted]);
+  }, [isAttempted, isCurrentPage]);
 
   const formatDate = date => {
     if (!date) return '';
@@ -228,6 +236,124 @@ const SpouseChildDetails = ({pageName = 'signup'}) => {
     setLocalChildren(updatedChildren);
   };
 
+  // const validateSpouseId = async id => {
+  //   if (!id) {
+  //     // Clear any existing error if ID is empty (optional field)
+  //     setErrorMessageRegister?.(prev => ({...prev, spouseId: undefined}));
+  //     return true;
+  //   }
+
+  //   try {
+  //     const response = await fetch(
+  //       `https://node2-plum.vercel.app/api/user/checkPersonById/${id}?type=spouse`,
+  //     );
+  //     const result = await response.json();
+
+  //     if (!result.success) {
+  //       setErrors(prev => ({...prev, spouseId: result.message}));
+  //       setErrorMessageRegister?.(prev => ({
+  //         ...prev,
+  //         spouseId: result.message,
+  //       }));
+  //       return false;
+  //     } else {
+  //       setErrors(prev => ({...prev, spouseId: undefined}));
+  //       setErrorMessageRegister?.(prev => ({...prev, spouseId: undefined}));
+  //       return true;
+  //     }
+  //   } catch (error) {
+  //     console.error('Error validating spouse ID:', error);
+  //     return true;
+  //   }
+  // };
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // const validateSpouseId = async id => {
+  //   if (!id) {
+  //     // Clear any existing error if ID is empty (optional field)
+  //     setErrorMessageRegister?.(prev => ({...prev, spouseId: undefined}));
+  //     return true;
+  //   }
+
+  //   try {
+  //     const response = await fetch(
+  //       `https://node2-plum.vercel.app/api/user/checkPersonById/${id}?type=spouse`,
+  //     );
+  //     const result = await response.json();
+
+  //     if (!result.success) {
+  //       // Handle the updated error message from backend that now references PR_UNIQUE_ID
+  //       const errorMessage = result.message.includes('PR_UNIQUE_ID not present')
+  //         ? 'Spouse ID not found in registry'
+  //         : result.message;
+
+  //       setErrors(prev => ({...prev, spouseId: errorMessage}));
+  //       setErrorMessageRegister?.(prev => ({
+  //         ...prev,
+  //         spouseId: errorMessage,
+  //       }));
+  //       return false;
+  //     } else {
+  //       setErrors(prev => ({...prev, spouseId: undefined}));
+  //       setErrorMessageRegister?.(prev => ({...prev, spouseId: undefined}));
+  //       return true;
+  //     }
+  //   } catch (error) {
+  //     console.error('Error validating spouse ID:', error);
+  //     const networkErrorMessage =
+  //       'Unable to validate Spouse ID. Please check your connection.';
+  //     setErrors(prev => ({...prev, spouseId: networkErrorMessage}));
+  //     setErrorMessageRegister?.(prev => ({
+  //       ...prev,
+  //       spouseId: networkErrorMessage,
+  //     }));
+  //     return false;
+  //   }
+  // };
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  const validateSpouseId = async id => {
+    if (!id) {
+      setErrorMessageRegister?.(prev => ({...prev, spouseId: undefined}));
+      return true;
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/user/check/${id}`);
+      const result = await response.json();
+
+      if (!result.success) {
+        const errorMessage = result.message.includes('PR_UNIQUE_ID not present')
+          ? 'Spouse ID not found in registry'
+          : result.message;
+
+        setErrors(prev => ({...prev, spouseId: errorMessage}));
+        setErrorMessageRegister?.(prev => ({...prev, spouseId: errorMessage}));
+        return false;
+      } else {
+        setErrors(prev => ({...prev, spouseId: undefined}));
+        setErrorMessageRegister?.(prev => ({...prev, spouseId: undefined}));
+
+        // ✅ Auto-fill Spouse Name
+        if (result.data && result.data.PR_FULL_NAME) {
+          setSpouseName?.(result.data.PR_FULL_NAME);
+          setSPOUSENAME?.(result.data.PR_FULL_NAME);
+        }
+
+        return true;
+      }
+    } catch (error) {
+      console.error('Error validating spouse ID:', error);
+      const networkErrorMessage =
+        'Unable to validate Spouse ID. Please check your connection.';
+      setErrors(prev => ({...prev, spouseId: networkErrorMessage}));
+      setErrorMessageRegister?.(prev => ({
+        ...prev,
+        spouseId: networkErrorMessage,
+      }));
+      return false;
+    }
+  };
+
   return (
     <ScrollView
       horizontal={false}
@@ -297,6 +423,75 @@ const SpouseChildDetails = ({pageName = 'signup'}) => {
             }}
           />
         </View>
+        <View
+          style={{
+            width: wp(83),
+            // borderWidth: wp(0.2),
+            borderRadius: wp(2),
+            alignSelf: 'center',
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#FFFFFF',
+            marginTop: hp(2),
+
+            borderColor: errors.spouseId ? 'red' : '#FFFFFF',
+            borderWidth: errors.spouseId ? wp(0.3) : wp(0),
+          }}>
+          <Image
+            source={id}
+            style={{
+              height: hp(2.8),
+              width: wp(5.8),
+              position: 'absolute',
+              zIndex: 11,
+              marginLeft: wp(2.5),
+            }}
+            tintColor={'#BFBDBE'}
+            resizeMode="contain"
+          />
+          <TextInput
+            numberOfLines={1}
+            keyboardType="default"
+            style={{
+              paddingLeft: wp(10),
+              width: wp(80),
+
+              color: 'black',
+              fontSize: hp(1.8),
+              fontFamily: 'Poppins-Medium',
+              alignSelf: 'center',
+              justifyContent: 'center',
+              alignContent: 'center',
+              // borderColor: errors.spouseId ? 'red' : '#FFFFFF',
+            }}
+            placeholder="Spouse ID [Opional]"
+            placeholderTextColor={'#BFBDBE'}
+            value={spouseId ? String(spouseId) : ''}
+            onChangeText={text => {
+              // const numValue = text ? parseInt(text, 10) : null;
+              // setSpouseId?.(numValue);
+              setSpouseId?.(text);
+              setErrors(prev => {
+                const updated = {...prev};
+                delete updated.spouseId;
+                return updated;
+              });
+            }}
+            onBlur={async () => {
+              const isValid = await validateSpouseId(spouseId);
+              if (!isValid) {
+                // Force the scroll view to stay on this page
+                scrollViewRef.current?.scrollTo({
+                  x: wp(100) * currentPage,
+                  animated: false,
+                });
+              }
+            }}
+          />
+        </View>
+        {errors.spouseId ? (
+          <Text style={styles.errorText}>{errors.spouseId}</Text>
+        ) : null}
 
         {pageName && pageName == 'signup' && (
           <View>
@@ -310,7 +505,7 @@ const SpouseChildDetails = ({pageName = 'signup'}) => {
                       width: wp(83),
                       borderRadius: wp(2),
                       alignSelf: 'center',
-                      marginTop: hp(2.9),
+                      marginTop: hp(2),
                       flexDirection: 'row',
                       alignItems: 'center',
                       backgroundColor: '#FFFFFF',

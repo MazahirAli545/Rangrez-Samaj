@@ -19,6 +19,8 @@ import BussinessStream from './BussinessStream';
 import {SignupDataContext} from '../SignupDataContext';
 // import {useNavigation} from '@react-navigation/native';
 import {BASE_URL} from '../../api/ApiInfo';
+import Right from '../../provider/png/markRight.png';
+import Wrong from '../../provider/png/markNo.png';
 const UserBussiness = ({pageName = 'signup'}) => {
   // const navigate = useNavigation;
   // const [checked, setChecked] = useState(null);
@@ -81,54 +83,73 @@ const UserBussiness = ({pageName = 'signup'}) => {
             }}>
             Are you interested in Business?
           </Text>
-          <TouchableOpacity
-            style={{
-              borderColor: '#000000',
-              height: hp(5.5),
-              width: wp(75),
-              alignSelf: 'center',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: wp(2),
-              marginTop: hp(2),
-              backgroundColor: checked === true ? '#0468BF' : '#697368',
-            }}
-            onPress={() => {
-              handleSelection(true);
-            }}>
-            <Text
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <TouchableOpacity
               style={{
-                fontSize: hp(2.2),
-                fontFamily: 'Poppins-Medium',
-                color: checked === true ? '#FFFFFF' : '#000000',
+                borderColor: '#000000',
+                height: hp(7),
+                width: wp(38),
+                alignSelf: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: wp(2),
+                flexDirection: 'row',
+                alignContent: 'center',
+                marginTop: hp(2),
+                backgroundColor: checked === true ? '#0468BF' : '#697368',
+              }}
+              onPress={() => {
+                handleSelection(true);
               }}>
-              Yes
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              borderColor: '#000000',
-              height: hp(5.5),
-              width: wp(75),
-              alignSelf: 'center',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: wp(2),
-              marginTop: hp(2.5),
-              backgroundColor: checked === false ? '#0468BF' : '#697368',
-            }}
-            onPress={() => {
-              handleSelection(false);
-            }}>
-            <Text
+              <Image
+                source={Right}
+                style={{height: hp(6), width: wp(7), marginRight: wp(1)}}
+                resizeMode="contain"
+                tintColor={checked === true ? '#FFFFFF' : 'green'}
+              />
+              <Text
+                style={{
+                  fontSize: hp(2.4),
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '700',
+                  color: checked === true ? '#FFFFFF' : '#000000',
+                }}>
+                Yes
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={{
-                fontSize: hp(2.2),
-                fontFamily: 'Poppins-Medium',
-                color: checked === false ? '#FFFFFF' : '#000000',
+                borderColor: '#000000',
+                height: hp(7),
+                width: wp(38),
+                alignSelf: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
+                borderRadius: wp(2),
+                marginTop: hp(2.5),
+                backgroundColor: checked === false ? '#0468BF' : '#697368',
+              }}
+              onPress={() => {
+                handleSelection(false);
               }}>
-              No
-            </Text>
-          </TouchableOpacity>
+              <Image
+                source={Wrong}
+                style={{height: hp(2.2), width: wp(7), marginRight: wp(1)}}
+                resizeMode="contain"
+                tintColor={checked === false ? '#FFFFFF' : 'red'}
+              />
+              <Text
+                style={{
+                  fontSize: hp(2.4),
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '700',
+                  color: checked === false ? '#FFFFFF' : '#000000',
+                }}>
+                No
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </ScrollView>

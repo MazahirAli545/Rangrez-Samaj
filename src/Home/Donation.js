@@ -178,11 +178,13 @@ const Donation = props => {
                       isEventActive(event.EventsToDate),
                   ) ? (
                     <FlatList
-                      data={events.filter(
-                        event =>
-                          event.eventCategoryID === 1 &&
-                          isEventActive(event.EventsToDate),
-                      )}
+                      data={[...events]
+                        .filter(
+                          event =>
+                            event.eventCategoryID === 1 &&
+                            isEventActive(event.EventsToDate),
+                        )
+                        .reverse()}
                       horizontal={false}
                       pagingEnabled={true}
                       showsHorizontalScrollIndicator={false}
@@ -246,21 +248,21 @@ const Donation = props => {
 const styles = StyleSheet.create({
   categoryStyle: {
     color: '#FFFFFF',
-    fontSize: hp(1.5),
+    fontSize: hp(1.4),
     fontFamily: 'Poppins-Medium',
     fontWeight: '600',
+    paddingTop: hp(0.2),
   },
   categoryContainer: {
-    backgroundColor: '#7C8C42',
-    paddingHorizontal: wp(2),
-    left: wp(3),
-    borderRadius: wp(2),
-    height: hp(2.2),
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#7C8C42',
+    paddingHorizontal: wp(4),
+    left: wp(3),
+    borderRadius: wp(2),
     alignSelf: 'flex-start',
   },
-  //Donation styles
+
   donationContainer: {
     // paddingBottom: hp(5),
     // marginLeft: wp(4.1),

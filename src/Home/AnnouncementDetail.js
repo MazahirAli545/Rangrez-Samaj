@@ -28,23 +28,35 @@ const AnnouncementDetail = ({route, props, navigation}) => {
   const {event} = route.params || {};
 
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [scrollDirection, setScrollDirection] = useState('up');
+  const prevScrollY = useRef(0);
 
-  // Animated image properties
-  const imageHeight = scrollY.interpolate({
-    inputRange: [0, 150], // Scroll distance
-    outputRange: [hp(27), hp(15)], // Image height range
-    extrapolate: 'clamp', // Prevent values outside range
-  });
-
-  const imageOpacity = scrollY.interpolate({
-    inputRange: [0, 150],
-    outputRange: [1, 3], // Fade image as it shrinks
+  // Text animation values
+  const textOpacity = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [0, 1], // Show text when scrolling up
     extrapolate: 'clamp',
   });
 
+  const handleScroll = Animated.event(
+    [{nativeEvent: {contentOffset: {y: scrollY}}}],
+    {
+      useNativeDriver: false,
+      listener: event => {
+        const currentScrollY = event.nativeEvent.contentOffset.y;
+        if (currentScrollY > prevScrollY.current) {
+          setScrollDirection('down');
+        } else if (currentScrollY < prevScrollY.current) {
+          setScrollDirection('up');
+        }
+        prevScrollY.current = currentScrollY;
+      },
+    },
+  );
+
   return (
     <SafeAreaView style={styles.MainContainer}>
-      <Animated.View
+      {/* <Animated.View
         style={[
           styles.imageContainer,
           {height: imageHeight, opacity: imageOpacity},
@@ -67,6 +79,29 @@ const AnnouncementDetail = ({route, props, navigation}) => {
             </TouchableOpacity>
           </View>
         </ImageBackground>
+      </Animated.View> */}
+      <Animated.View
+        style={[
+          styles.floatingTextContainer,
+          {
+            opacity: scrollDirection === 'up' ? textOpacity : 0,
+          },
+        ]}>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.leftButton}>
+            <Image
+              source={leftback}
+              style={styles.leftButtonImage}
+              tintColor="#FFFFFF"
+            />
+          </TouchableOpacity>
+
+          <View style={styles.titleWrapper}>
+            <Text style={styles.titleText}>{event.name}</Text>
+          </View>
+        </View>
       </Animated.View>
 
       <Animated.ScrollView
@@ -88,12 +123,30 @@ const AnnouncementDetail = ({route, props, navigation}) => {
             end={{x: 0.2, y: 0}}
             colors={['#BDD9F2', '#F0F2F2']}
             style={{flex: 1, paddingBottom: hp(10)}}>
+            <ImageBackground
+              source={event.headerImage} // Replace with your image source
+              style={{height: hp(25), width: wp(100)}}>
+              {/* <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  onPress={() => navigation.goBack()}
+                  style={styles.leftButton}>
+                  <Image
+                source={leftback}
+                style={styles.leftButtonImage}
+                tintColor="#000000"
+              />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.rightButton}>
+                  <Image source={share} style={styles.rightButtonImage} />
+                </TouchableOpacity>
+              </View> */}
+            </ImageBackground>
             <View
               style={{
                 marginHorizontal: wp(4.5),
                 //  marginTop: hp(27)
                 // backgroundColor: '#000000',
-                marginTop: hp(21.5),
+                // marginTop: hp(21.5),
               }}>
               <Text
                 style={{
@@ -103,7 +156,7 @@ const AnnouncementDetail = ({route, props, navigation}) => {
                   width: wp(80),
                   // borderWidth: wp(0.1),
 
-                  marginTop: hp(6),
+                  // marginTop: hp(6),
                   fontFamily: 'Poppins-SemiBold',
                 }}>
                 {event.name}
@@ -382,6 +435,22 @@ const AnnouncementDetail = ({route, props, navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  floatingTextContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 200,
+    backgroundColor: 'rgba(0,0,0,1)',
+    padding: 20,
+  },
+  floatingText: {
+    fontSize: hp(2),
+    color: '#000',
+    fontFamily: 'Poppins-Medium',
+  },
+
   MainContainer: {
     flex: 1,
   },
@@ -405,23 +474,49 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: hp(2),
-    // marginTop: hp(6),
-    paddingHorizontal: hp(2.3),
-  },
-  leftButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#FFFFFF',
-    aspectRatio: 1 / 1,
-    borderRadius: wp(100),
-    height: hp(5.5),
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    position: 'relative',
+    paddingHorizontal: 10,
   },
+
+  leftButton: {
+    zIndex: 2, // Ensures it's above the title if overlapping
+  },
+
   leftButtonImage: {
-    height: hp(4.5),
-    width: wp(10),
+    width: 30,
+    height: 30,
+
+    resizeMode: 'contain',
+  },
+
+  titleWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+
+    alignItems: 'center',
+    justifyContent: 'center',
+    // width: wp(100),
+    // width: wp(60),
+    marginHorizontal: wp(10),
+    alignContent: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    // alignContent: 'center',
+  },
+
+  titleText: {
+    fontSize: hp(2.3),
+    color: '#FFFFFF',
+    justifyContent: 'center',
+    textAlign: 'center',
+    // width: wp(60),
+    fontWeight: '500',
+
+    // fontFamily: 'Poppins-SemiBold',
   },
   rightButton: {
     alignSelf: 'flex-end',

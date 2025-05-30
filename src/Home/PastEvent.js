@@ -139,7 +139,7 @@ const PastEvent = props => {
               style={{
                 marginTop: hp(1.5),
                 alignItems: 'center',
-                // paddingBottom: hp(5),
+                paddingBottom: hp(10),
               }}>
               {pastEvents.length > 0 ? (
                 <FlatList

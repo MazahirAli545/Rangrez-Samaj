@@ -102,6 +102,7 @@ const UserDetails = ({pageName = 'signup'}) => {
   const [isChanged, setIsChanged] = useState(false);
   const otpInputRefs = useRef([]);
   const timeoutRef = useRef({});
+  const [mobileTouched, setMobileTouched] = useState(false);
   // const [isPersonalDetailsChanged, setIsPersonalDetailsChanged] = useState(false);
 
   useEffect(() => {
@@ -434,74 +435,6 @@ const UserDetails = ({pageName = 'signup'}) => {
     }
   };
 
-  // Modify your verifyOtp function to handle both cases
-  // const verifyOtp = async () => {
-  //   seterrorMessageVerify('');
-  //   if (!otp || otp.length !== 4) {
-  //     seterrorMessageVerify('Please enter a valid 4-digit OTP');
-  //     return;
-  //   }
-
-  //   setApiLoader(true);
-  //   try {
-  //     if (pageName === 'profile') {
-  //       // Call update profile API for profile page
-  //       await updateProfile();
-  //       if (setIsMobileVerified) setIsMobileVerified(true);
-  //       setSuccessUpdateModalVisible(true);
-
-  //       setErrorMessageRegister(prev => ({
-  //         ...prev,
-  //         mobileVerification: '',
-  //       }));
-  //       if (setIsPersonalDetailsChanged) setIsPersonalDetailsChanged(false);
-  //       setIsChanged(false);
-  //     } else {
-  //       // Original verify OTP flow for signup
-  //       const response = await axios.post(`${BASE_URL}verify-otp`, {
-  //         PR_MOBILE_NO: mobile,
-  //         otp: otp,
-  //         PR_FULL_NAME: fullname,
-  //         PR_DOB: date,
-  //       });
-
-  //       if (response.data.success) {
-  //         await storeData('PR_ID', response.data.PR_ID);
-  //         if (setIsMobileVerified) setIsMobileVerified(true);
-  //         setErrorMessageRegister(prev => ({
-  //           ...prev,
-  //           mobileVerification: '',
-  //         }));
-  //         ToastAndroid.showWithGravity(
-  //           'OTP Verified Successfully!',
-  //           ToastAndroid.LONG,
-  //           ToastAndroid.TOP,
-  //         );
-
-  //         setModalVisible(false);
-  //         setIsCounting(false);
-  //         setIsMobileVerified(true);
-  //         setSuccessModalVisible(true);
-  //       } else {
-  //         ToastAndroid.showWithGravity(
-  //           response.data.message || 'OTP verification failed',
-  //           ToastAndroid.LONG,
-  //           ToastAndroid.TOP,
-  //         );
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Verification Error:', error);
-  //     ToastAndroid.showWithGravity(
-  //       error.response?.data?.message ||
-  //         'Something went wrong. Please try again.',
-  //       ToastAndroid.LONG,
-  //       ToastAndroid.TOP,
-  //     );
-  //   } finally {
-  //     setApiLoader(false);
-  //   }
-  // };
   const verifyOtp = async () => {
     seterrorMessageVerify('');
     if (!otp || otp.length !== 4) {
@@ -611,6 +544,7 @@ const UserDetails = ({pageName = 'signup'}) => {
   const handleMobileChange = text => {
     setMobile?.(text);
     setMOBILE?.(text);
+    setMobileTouched(true);
 
     const originalMobile = userData?.PR_MOBILE_NO || MOBILE;
 

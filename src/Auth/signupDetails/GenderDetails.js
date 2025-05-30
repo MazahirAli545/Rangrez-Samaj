@@ -127,10 +127,11 @@ const GenderDetails = ({pageName = 'signup'}) => {
             width: '100%',
             alignItems: 'center',
             justifyContent: 'center',
+            // flexDirection: 'column',
           }}>
           <View
             style={{
-              // flexDirection: 'row',
+              flexDirection: 'row',
               // flexWrap: 'wrap',
               justifyContent: 'center',
             }}>
@@ -142,8 +143,8 @@ const GenderDetails = ({pageName = 'signup'}) => {
                   onPress={() => handleGenderChange(item.id)}
                   style={{
                     backgroundColor: isSelected ? '#0468BF' : '#697368',
-                    height: hp(7),
-                    width: wp(80),
+                    height: hp(8),
+                    width: wp(38),
                     margin: wp(2),
                     alignItems: 'center',
                     justifyContent: 'center',

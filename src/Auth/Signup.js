@@ -65,6 +65,7 @@ import CameraComponent from '../components/CameraComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ProfileDataContext} from '../Auth/ProfileDataContext';
 import ImageResizer from 'react-native-image-resizer';
+import {use} from 'i18next';
 
 const Signup = props => {
   const [fullname, setFullName] = useState('');
@@ -111,6 +112,9 @@ const Signup = props => {
   const [isMobileVerified, setIsMobileVerified] = useState(false);
 
   const [prcompleted, setPrCompleted] = useState('');
+  const [fatherId, setfatherId] = useState(null);
+  const [motherId, setMotherId] = useState(null);
+  const [spouseId, setSpouseId] = useState(null);
 
   const [errorMessage, setErrorMessage] = useState('');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -132,6 +136,12 @@ const Signup = props => {
 
   const signupData = useMemo(
     () => ({
+      fatherId,
+      setfatherId,
+      motherId,
+      setMotherId,
+      spouseId,
+      setSpouseId,
       userData, // Add this line
       setUserData,
       fullname,
@@ -205,6 +215,9 @@ const Signup = props => {
     }),
     [
       isPersonalDetailsChanged,
+      fatherId,
+      motherId,
+      spouseId,
       userData,
       isMobileVerified,
       fullname,
@@ -310,6 +323,9 @@ const Signup = props => {
             setBUSSTYPE(data.data.PR_BUSS_TYPE || '');
             setPrCompleted(data.data.PR_IS_COMPLETED || 'N');
             setHOBBIES(data.data.PR_HOBBY?.split(',') || []);
+            setfatherId(data.data.PR_FATHER_ID || '');
+            setMotherId(data.data.PR_MOTHER_ID || '');
+            setSpouseId(data.data.PR_SPOUSE_ID || '');
 
             // IMPORTANT: Set marital status LAST and after all other data is set
             setUserMarried(data.data.PR_MARRIED_YN);
@@ -357,6 +373,20 @@ const Signup = props => {
     Array.isArray(HOBBIES) &&
     (HOBBIES.length !== existingHobbies.length ||
       HOBBIES.some(hobby => !existingHobbies.includes(hobby)));
+
+  const convertUniqueIdToPrId = async uniqueId => {
+    try {
+      const response = await axios.get(`${BASE_URL}person/convert/${uniqueId}`);
+      if (response.data.success && response.data.data) {
+        return response.data.data.PR_ID;
+      } else {
+        throw new Error(response.data.message || 'Conversion failed');
+      }
+    } catch (error) {
+      console.error('Error converting PR_UNIQUE_ID:', error);
+      return null;
+    }
+  };
 
   const UpdateUser = async () => {
     setErrorMessageRegister('');
@@ -426,10 +456,33 @@ const Signup = props => {
       formData.append('PR_EDUCATION_DESC', institution || '');
       formData.append('PR_PROFESSION_DETA', professionDesc || '');
       formData.append('PR_MARRIED_YN', userMarried || '');
+
+      // Convert PR_UNIQUE_IDs to PR_IDs before formData
+      const fatherPrId = fatherId
+        ? await convertUniqueIdToPrId(fatherId)
+        : null;
+      const motherPrId = motherId
+        ? await convertUniqueIdToPrId(motherId)
+        : null;
+      const spousePrId = spouseId
+        ? await convertUniqueIdToPrId(spouseId)
+        : null;
+
       formData.append('PR_FATHER_NAME', fathername || '');
+      // formData.append('PR_FATHER_ID', fatherId ? Number(fatherId) : '');
+      formData.append('PR_FATHER_ID', fatherPrId || '');
       formData.append('PR_MOTHER_NAME', mothername || '');
+      // formData.append('PR_MOTHER_ID', motherId ? Number(motherId) : '');
+      formData.append('PR_MOTHER_ID', motherPrId || '');
       formData.append('PR_SPOUSE_NAME', spousename || '');
+      // formData.append('PR_SPOUSE_ID', spouseId ? Number(spouseId) : '');
+      formData.append('PR_SPOUSE_ID', spousePrId || '');
       formData.append('PR_BUSS_INTER', BUSSINTRST || 'N');
+      // formData.append(
+      //   'PR_PR_ID',
+      //   fatherId ? Number(fatherId) : motherId ? Number(motherId) : null,
+      // );
+      formData.append('PR_PR_ID', fatherPrId || motherPrId || null);
       formData.append(
         'PR_BUSS_STREAM',
         BUSSINTRST === 'N' ? '' : BUSSSTREAM || '',
@@ -512,6 +565,8 @@ const Signup = props => {
       console.log('FormData content:', {
         PR_ID: prIdToUse,
       });
+
+      console.log('FormData', formData);
 
       const response = await axios.post(`${BASE_URL}edit-profile`, formData, {
         headers: {
@@ -636,9 +691,12 @@ const Signup = props => {
             profession,
             professionDesc,
             spousename,
+            spouseId,
             children,
             fathername,
+            fatherId,
             mothername,
+            motherId,
             isNavigating,
             userMarried,
             BUSSINTRST,
@@ -687,9 +745,12 @@ const Signup = props => {
             profession,
             professionDesc,
             spousename,
+            spouseId,
             children,
             fathername,
+            fatherId,
             mothername,
+            motherId,
             isNavigating,
             userMarried,
             BUSSINTRST,
@@ -975,6 +1036,34 @@ const Signup = props => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const pageIndex = Math.round(offsetX / wp(100));
 
+    if (
+      pages[currentPage]?.type?.name === 'SpouseChildDetails' &&
+      errorMessageRegister?.spouseId
+    ) {
+      // Force scroll back if trying to navigate away with spouse ID error
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          x: wp(100) * currentPage,
+          animated: false,
+        });
+      }, 200);
+      return;
+    }
+
+    if (
+      pages[currentPage]?.type?.name === 'ParentsDetails' &&
+      (errorMessageRegister?.fatherId || errorMessageRegister?.motherId)
+    ) {
+      // Force scroll back if trying to navigate away with parent ID error
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          x: wp(100) * currentPage,
+          animated: false,
+        });
+      }, 200);
+      return;
+    }
+
     // Validate fields when arriving at a new page
     if (pageIndex !== currentPage) {
       if (!validateFields()) {
@@ -1032,12 +1121,23 @@ const Signup = props => {
     ) {
       if (!fathername) errors.fathername = 'Father name is required';
       if (!mothername) errors.mothername = 'Mother name is required';
+
+      if (errorMessageRegister?.fatherId) {
+        errors.fatherId = errorMessageRegister.fatherId;
+      }
+      if (errorMessageRegister?.motherId) {
+        errors.motherId = errorMessageRegister.motherId;
+      }
     }
 
     if (
       pages[currentPage]?.type?.name === 'SpouseChildDetails' &&
       userMarried === 'Y'
     ) {
+      if (errorMessageRegister?.spouseId) {
+        errors.spouseId = errorMessageRegister.spouseId;
+      }
+
       children.forEach((child, index) => {
         if (child.name?.trim() || child.dob) {
           if (!child.name?.trim()) {
@@ -1063,6 +1163,22 @@ const Signup = props => {
   const handleContinue = () => {
     if (isNavigating) return;
     // a;
+
+    if (
+      pages[currentPage]?.type?.name === 'SpouseChildDetails' &&
+      errorMessageRegister?.spouseId
+    ) {
+      // Don't proceed if there's a spouse ID error
+      return;
+    }
+
+    if (
+      pages[currentPage]?.type?.name === 'ParentsDetails' &&
+      (errorMessageRegister?.fatherId || errorMessageRegister?.motherId)
+    ) {
+      // Don't proceed if there's a parent ID error
+      return;
+    }
 
     const isValid = validateFields();
 
@@ -1243,6 +1359,9 @@ const Signup = props => {
         PR_PROFESSION_DETA: String(professionDesc),
         PR_SPOUSE_NAME: String(spousename),
         PR_FATHER_NAME: String(fathername),
+        // PR_FATHER_ID: String(fatherId),
+        // PR_MOTHER_ID: String(motherId),
+        PR_SPOUSE_ID: Number(spouseId),
         PR_MOTHER_NAME: String(mothername),
         Children: children,
         PR_MARRIED_YN: String(userMarried),
