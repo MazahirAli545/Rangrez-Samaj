@@ -135,6 +135,7 @@ const BussinessType = ({pageName = 'signup'}) => {
             renderShimmer()
           ) : (
             <FlatList
+              removeClippedSubviews={false}
               data={business}
               horizontal={false}
               keyExtractor={item => item.id}

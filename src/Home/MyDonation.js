@@ -116,6 +116,7 @@ const MyDonation = props => {
             <View style={styles.donationContainer}>
               {apiLoader ? (
                 <FlatList
+                  removeClippedSubviews={false}
                   data={Array(5).fill({})}
                   renderItem={() => (
                     <LinearGradient
@@ -143,6 +144,7 @@ const MyDonation = props => {
                 />
               ) : donationList.length > 0 ? (
                 <FlatList
+                  removeClippedSubviews={false}
                   data={donationList}
                   keyExtractor={(item, index) => index.toString()}
                   renderItem={({item}) => (

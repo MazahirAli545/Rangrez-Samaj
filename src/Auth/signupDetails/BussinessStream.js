@@ -134,6 +134,7 @@ const BussinessStream = ({pageName = 'signup'}) => {
             renderShimmer()
           ) : (
             <FlatList
+              removeClippedSubviews={false}
               data={business}
               horizontal={false}
               extraData={BUSSSTREAM}

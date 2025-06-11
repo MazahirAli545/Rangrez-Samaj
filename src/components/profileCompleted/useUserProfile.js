@@ -25,12 +25,13 @@ const useUserProfile = () => {
         const response = await fetch(`${BASE_URL}profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
         });
         const data = await response.json();
         if (data.success && data.data) {
-          setUserDataa(data.data);
-          calculateCompletionPercentage(data.data);
+          setUserDataa(JSON.stringify(data.data));
+          calculateCompletionPercentage(JSON.stringify(data.data));
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);

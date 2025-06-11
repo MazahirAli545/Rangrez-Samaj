@@ -143,6 +143,7 @@ const PastEvent = props => {
               }}>
               {pastEvents.length > 0 ? (
                 <FlatList
+                  removeClippedSubviews={false}
                   data={[...pastEvents]
                     .sort(
                       (a, b) =>

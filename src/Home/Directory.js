@@ -60,46 +60,91 @@ const Directory = props => {
   // const {userDataa, PRmodalVisible, setPRModalVisible, completionPercentagee} =
   //   useUserProfile();
 
+  // useEffect(() => {
+  //   const fetchDirectory = async () => {
+  //     try {
+  //       const response = await fetch(`${BASE_URL}directory`);
+  //       const result = await response.json();
+  //       // console.log('Directory Data:', result.Directory);
+
+  //       if (!Array.isArray(result.Directory)) {
+  //         console.warn('Invalid response format');
+  //       }
+
+  //       const processedData = result.Directory.filter(item => item !== null) // Remove null values
+  //         .map(item => ({
+  //           // PrId: item.PR
+  //           uniqueId: item.PR_UNIQUE_ID,
+  //           fullName: item.PR_FULL_NAME,
+  //           address: item.PR_ADDRESS, // ✅ Include PR_ADDRESS
+  //           areaName: item.PR_AREA_NAME,
+  //           cityCode: item.PR_CITY_CODE,
+  //           districtCode: item.PR_DISTRICT_CODE,
+  //           stateCode: item.PR_STATE_CODE,
+  //           mobileNo: item.PR_MOBILE_NO,
+  //           photo: item.PR_PHOTO_URL,
+  //         }));
+
+  //       console.log('Processed Directory Data:', processedData);
+  //       setDataa(processedData);
+  //       const uniqueAreas = Array.from(
+  //         new Map(processedData.map(item => [item.areaName, item])).values(),
+  //       );
+
+  //       setAreaOptions(uniqueAreas);
+  //       setLoading(false);
+  //     } catch (error) {
+  //       console.error('Error fetching directory:', error);
+  //     }
+  //   };
+
+  //   fetchDirectory();
+  // }, []);
   useEffect(() => {
     const fetchDirectory = async () => {
       try {
         const response = await fetch(`${BASE_URL}directory`);
         const result = await response.json();
-        // console.log('Directory Data:', result.Directory);
 
         if (!Array.isArray(result.Directory)) {
           console.warn('Invalid response format');
+          return;
         }
 
-        const processedData = result.Directory.filter(item => item !== null) // Remove null values
-          .map(item => ({
-            // PrId: item.PR
-            uniqueId: item.PR_UNIQUE_ID,
-            fullName: item.PR_FULL_NAME,
-            address: item.PR_ADDRESS, // ✅ Include PR_ADDRESS
-            areaName: item.PR_AREA_NAME,
-            cityCode: item.PR_CITY_CODE,
-            districtCode: item.PR_DISTRICT_CODE,
-            stateCode: item.PR_STATE_CODE,
-            mobileNo: item.PR_MOBILE_NO,
-            photo: item.PR_PHOTO_URL,
-          }));
+        // Process data
+        const processedData = result.Directory.filter(
+          item => item !== null,
+        ).map(item => ({
+          uniqueId: item.PR_UNIQUE_ID,
+          fullName: item.PR_FULL_NAME,
+          address: item.PR_ADDRESS,
+          areaName: item.PR_AREA_NAME,
+          cityCode: item.PR_CITY_CODE,
+          districtCode: item.PR_DISTRICT_CODE,
+          stateCode: item.PR_STATE_CODE,
+          mobileNo: item.PR_MOBILE_NO,
+          photo: item.PR_PHOTO_URL,
+        }));
 
-        console.log('Processed Directory Data:', processedData);
         setDataa(processedData);
-        const uniqueAreas = Array.from(
-          new Map(processedData.map(item => [item.areaName, item])).values(),
-        );
 
-        setAreaOptions(uniqueAreas);
+        // Get unique area names properly
+        const areaNames = [...new Set(processedData.map(item => item.areaName))]
+          .filter(area => area) // Remove empty/null areas
+          .map(area => ({areaName: area})); // Format for Dropdown
+
+        setAreaOptions(areaNames);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching directory:', error);
+        setLoading(false);
       }
     };
 
     fetchDirectory();
   }, []);
+
+  console.log('Directory Data:', dataa);
 
   // const data = {
   //   Directory: [
@@ -142,7 +187,7 @@ const Directory = props => {
       (searchText === '' ||
         item.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
         item.mobileNo.includes(searchText)) &&
-      (searchArea === '' || item.areaName === searchArea), // Ensure correct filtering by area
+      (searchArea === '' || item.mobileNo === searchArea.mobileNo), // Update this line
   );
 
   const copyToClipboard = number => {
@@ -227,10 +272,10 @@ const Directory = props => {
             searchPlaceholder="Search..."
             // value={searchText}
             // onChangeText={text => setSearchText(text)}
-            value={searchArea}
+            value={searchArea?.mobileNo || ''}
             onChange={item => {
               console.log('Selected Area:', item.areaName); // Debugging line
-              setSearchArea(item.areaName); // Ensure correct ID is set
+              setSearchArea(item); // Ensure correct ID is set
             }}
             renderLeftIcon={() => (
               <Image
@@ -367,6 +412,7 @@ const Directory = props => {
                 ))
               ) : (
                 <FlatList
+                  removeClippedSubviews={false}
                   data={filteredData}
                   keyExtractor={(item, index) => `${item.uniqueId}-${index}`}
                   horizontal={false}

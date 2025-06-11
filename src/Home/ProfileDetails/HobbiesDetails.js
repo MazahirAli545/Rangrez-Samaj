@@ -21,8 +21,6 @@ import football from '../../provider/png/football.png';
 import painting from '../../provider/png/painting.png';
 import singing from '../../provider/png/singing.png';
 
-
-
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -39,21 +37,14 @@ const HobbiesDetails = () => {
       {type: 'Football', id: '2', logo: football},
       {type: 'Painting', id: '3', logo: painting},
       {type: 'Singing', id: '4', logo: singing},
-     
-
-      
-
-
-      
-
-      
-
-      
     ],
   };
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} horizontal={false} style={styles.MainContainer}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      horizontal={false}
+      style={styles.MainContainer}>
       <Text
         style={{
           alignSelf: 'center',
@@ -77,46 +68,47 @@ const HobbiesDetails = () => {
       </Text>
 
       <FlatList
-              data={data.Hobbies}
-              horizontal={false}
-              showsVerticalScrollIndicator={false}
-              keyExtractor={(item) => item.id}
-              style={{ flex: 1  }}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#697368',
-                    height: hp(5.5),
-                    width: wp(75),
-                    alignSelf: 'center',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginVertical: hp(1),
-                    borderRadius: wp(2),
-                     marginHorizontal: wp(2),
-                    //  elevation: 5,
-                     flexDirection: "row"
-                  }}
-                  // onPress={() => {
-                  //   setValue(item.type); // Set selected Business Stream
-                  //   setDropdownVisible(false); // Hide dropdown
-                  // }}
-                  >
-                    <Image source={item.logo} style={{height: hp(3.2), width: wp(6.4), marginRight: wp(3)}}/>
-                  <Text
-                    style={{
-                      fontSize: hp(2),
-                      fontFamily: 'Poppins-Medium',
-                      color: '#FFFFFF',
-                    }}>
-                    {item.type}
-                  </Text>
-                </TouchableOpacity>
-              )}
+        removeClippedSubviews={false}
+        data={data.Hobbies}
+        horizontal={false}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={item => item.id}
+        style={{flex: 1}}
+        renderItem={({item}) => (
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#697368',
+              height: hp(5.5),
+              width: wp(75),
+              alignSelf: 'center',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginVertical: hp(1),
+              borderRadius: wp(2),
+              marginHorizontal: wp(2),
+              //  elevation: 5,
+              flexDirection: 'row',
+            }}
+            // onPress={() => {
+            //   setValue(item.type); // Set selected Business Stream
+            //   setDropdownVisible(false); // Hide dropdown
+            // }}
+          >
+            <Image
+              source={item.logo}
+              style={{height: hp(3.2), width: wp(6.4), marginRight: wp(3)}}
             />
-
-
-    
+            <Text
+              style={{
+                fontSize: hp(2),
+                fontFamily: 'Poppins-Medium',
+                color: '#FFFFFF',
+              }}>
+              {item.type}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
     </ScrollView>
   );
 };

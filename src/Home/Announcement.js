@@ -442,6 +442,7 @@ const Announcement = props => {
               }}>
               {apiLoader ? ( // Show shimmer if loading
                 <FlatList
+                  removeClippedSubviews={false}
                   data={Array(5).fill({})} // Temporary placeholder data
                   horizontal={false}
                   pagingEnabled={true}
@@ -558,6 +559,7 @@ const Announcement = props => {
                       isEventActive(event.EventsToDate),
                   ) ? (
                     <FlatList
+                      removeClippedSubviews={false}
                       data={[...events]
                         .filter(
                           event =>

@@ -16,6 +16,7 @@ import SplashScreen from './src/Auth/SplashScreen';
 import Onboarding from './src/Auth/Onboarding';
 import Signin from './src/Auth/Signin';
 import Signup from './src/Auth/Signup';
+// import {initializeApp} from '@react-native-firebase/app';
 
 import HomeScreen from './src/Home/HomeScreen';
 import Donation from './src/Home/Donation';
@@ -43,99 +44,73 @@ import PastEventsDetails from './src/Home/PastEventsDetails';
 import MyDonationDetail from './src/Home/MyDonationDetail';
 import BackgroundImage from './src/provider/png/BackgroundImage.png';
 import {heightPercentageToDP} from 'react-native-responsive-screen';
-import messaging from '@react-native-firebase/messaging';
+// import messaging from '@react-native-firebase/messaging';
 import i18n from './src/components/i18n';
 import {I18nextProvider} from 'react-i18next';
 const Stack = createNativeStackNavigator();
 
+// const firebaseConfig = {
+//   apiKey: 'AIzaSyAl9oJoyk1vacypoEVBChRjAeJrpCfhnlo',
+//   authDomain: 'test-d509c.firebaseapp.com',
+//   databaseURL: 'https://test-d509c.firebaseio.com',
+//   projectId: 'test-d509c',
+//   storageBucket: 'test-d509c.appspot.com',
+//   messagingSenderId: '725344189959',
+//   appId: '1:725344189959:android:b21c6b758d74006c33b4a2',
+// };
+
+// // Initialize Firebase
+// let firebaseApp;
+// try {
+//   firebaseApp = initializeApp(firebaseConfig);
+//   console.log('✅ Firebase initialized!', firebaseApp.name); // Should log "[DEFAULT]"
+// } catch (error) {
+//   console.error('❌ Firebase init error:', error);
+// }
+
 const App = () => {
-  // const [fcmToken, setFcmToken] = useState('');
+  // const [fcmToken, setFcmToken] = useState(null);
 
-  // useEffect(() => {
-  //   checkPermission();
-  //   console.log('this function is calling');
-  // }, []);
+  // async function requestUserPermission() {
+  //   const authStatus = await messaging().requestPermission();
+  //   const enabled =
+  //     authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+  //     authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-  // const checkPermission = async () => {
-  //   if (Platform.OS === 'android' && Platform.Version >= 33) {
-  //     const permission = await PermissionsAndroid.request(
-  //       PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-  //     );
-  //     if (permission === PermissionsAndroid.RESULTS.GRANTED) {
-  //       getFcmToken();
-  //     } else {
-  //       console.log('Notification permission not granted');
-  //     }
-  //   } else {
-  //     const authStatus = await messaging().requestPermission();
-  //     console.log('kya hua', authStatus); // Check this value.
-
-  //     const enabled =
-  //       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-  //       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-  //     if (enabled) {
-  //       getFcmToken();
-  //     } else {
-  //       console.log('Notification permission not granted');
-  //     }
+  //   if (enabled) {
+  //     console.log('Authorization status:', authStatus);
   //   }
-  // };
+  // }
 
-  // const getFcmToken = async () => {
-  //   try {
-  //     const token = await messaging().getToken();
-  //     console.log('FCM Token:', token);
-  //     setFcmToken(token);
-  //   } catch (error) {
-  //     console.error('Error getting FCM token:', error);
-  //   }
-  // };
-
-  // const requestStoragePermission = async () => {
-  //   if (Platform.OS !== 'android') return true;
-
-  //   try {
-  //     let isGranted = false;
-
-  //     // Android 13+ (API 33+)
-  //     if (Platform.Version >= 33) {
-  //       const grants = await PermissionsAndroid.requestMultiple([
-  //         PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-  //         PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
-  //       ]);
-
-  //       isGranted =
-  //         grants[PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES] ===
-  //           PermissionsAndroid.RESULTS.GRANTED &&
-  //         grants[PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO] ===
-  //           PermissionsAndroid.RESULTS.GRANTED;
-  //     }
-  //     // No else-block needed since you're only supporting Android 13+
-
-  //     if (!isGranted) {
-  //       Alert.alert(
-  //         'Permission Required',
-  //         'This app needs access to your media files to function properly',
-  //         [
-  //           {text: 'Cancel', style: 'cancel'},
-  //           {
-  //             text: 'Open Settings',
-  //             onPress: () => Linking.openSettings(),
-  //           },
-  //         ],
-  //       );
-  //     }
-
-  //     return isGranted;
-  //   } catch (err) {
-  //     console.error('Permission error:', err);
-  //     return false;
-  //   }
+  // const getToken = async () => {
+  //   const token = await messaging().getToken();
+  //   console.log('FCM Token:', token);
   // };
 
   // useEffect(() => {
-  //   requestStoragePermission();
+  //   const setupFirebaseMessaging = async () => {
+  //     try {
+  //       if (!firebaseApp) {
+  //         throw new Error('Firebase not initialized!');
+  //       }
+
+  //       // Request notification permissions (iOS/Android)
+  //       const authStatus = await messaging().requestPermission();
+  //       const enabled =
+  //         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+  //         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+  //       if (enabled) {
+  //         const token = await messaging().getToken();
+  //         console.log('📌 FCM Token:', token);
+  //         setFcmToken(token);
+  //       }
+  //     } catch (error) {
+  //       console.error('🔥 FCM Error:', error);
+  //     }
+  //   };
+
+  //   setupFirebaseMessaging();
   // }, []);
 
   return (

@@ -24,7 +24,7 @@ import LanguageConverter from '../provider/png/LanguageConverter.png';
 import {Dropdown} from 'react-native-element-dropdown';
 import Modal from 'react-native-modal';
 import Donation from '../Home/Donation';
-import Swiper from 'react-native-swiper';
+// import Swiper from 'react-native-swiper';
 // import Profile from '../provider/png/Profile.png';
 import user from '../provider/png/user.png';
 import logo from '../provider/png/logo.png';
@@ -89,6 +89,7 @@ import MyProfile from '../Home/Profile';
 import useUserProfile from '../components/profileCompleted/useUserProfile';
 import IncompleteProfileModal from '../components/profileCompleted/IncompleteProfileModal';
 import {useFocusEffect} from '@react-navigation/native';
+import {SwiperFlatList} from 'react-native-swiper-flatlist';
 
 // import { getData } from '../api/UserPreference';
 
@@ -158,7 +159,7 @@ const HomeScren = props => {
 
   const widthAndHeight = 140;
 
-  const sexRatio = [
+  const genderRatio = [
     {
       value: parseInt(stats.percentageDistribution?.male),
       color: '#fbd203',
@@ -175,7 +176,7 @@ const HomeScren = props => {
       text: 'Childrens',
     },
   ];
-  const totalRatio = sexRatio.reduce((total, item) => total + item.value, 0);
+  const totalRatio = genderRatio.reduce((total, item) => total + item.value, 0);
 
   const donations = [
     {
@@ -465,6 +466,101 @@ const HomeScren = props => {
     console.log(`Completion Percentage: ${completion}%`);
   };
 
+  const slides = [
+    // <View style={{flex: 1, width: wp(100), flexDirection: 'row'}}>
+    <LinearGradient
+      key="slide-1"
+      start={{x: 1, y: 1.7}}
+      end={{x: 0.2, y: 0}}
+      colors={['#658DA6', '#FFFFFF']}
+      style={{
+        alignItems: 'center',
+        alignSelf: 'center',
+        width: wp(90),
+        backgroundColor: '#F2F0CE',
+        borderRadius: wp(3),
+        paddingVertical: hp(1),
+      }}>
+      <PieChart widthAndHeight={widthAndHeight} series={genderRatio} />
+      <View style={{alignSelf: 'flex-start', marginLeft: wp(2)}}>
+        {genderRatio.map((item, index) => {
+          const percentage = ((item.value / totalRatio) * 100).toFixed(1);
+          return (
+            <View
+              key={`gender-${index}`}
+              style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View
+                style={{
+                  height: hp(1.5),
+                  width: wp(3),
+                  backgroundColor: item.color,
+                }}
+              />
+              <Text
+                style={{
+                  marginLeft: wp(2.2),
+                  fontSize: hp(1.2),
+                  fontFamily: 'Poppins-Regular',
+                  width: wp(72),
+                }}>
+                {item.text} - {percentage}%
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </LinearGradient>,
+    <LinearGradient
+      key="slide-2"
+      start={{x: 1, y: 1.7}}
+      end={{x: 0.2, y: 0}}
+      colors={['#6F618C', '#FFFFFF']}
+      style={{
+        alignItems: 'center',
+        alignSelf: 'center',
+        width: wp(90),
+        backgroundColor: '#F2F0CE',
+        borderRadius: wp(3),
+        paddingVertical: hp(1),
+      }}>
+      <PieChart
+        widthAndHeight={widthAndHeight}
+        series={donations}
+        cover={{radius: 0.6}}
+        padAngle={0.01}
+        style={{backgroundColor: '#FFFFFF', borderRadius: wp(30)}}
+      />
+      <View style={{alignSelf: 'flex-start', marginLeft: wp(2)}}>
+        {donations.map((item, index) => {
+          const percentage = ((item.value / totaldonation) * 100).toFixed(1);
+          return (
+            <View
+              key={`donation-${index}`}
+              style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View
+                style={{
+                  height: hp(1.5),
+                  width: wp(3),
+                  backgroundColor: item.color,
+                }}
+              />
+              <Text
+                style={{
+                  marginLeft: wp(2.2),
+                  fontSize: hp(1.2),
+                  fontFamily: 'Poppins-Regular',
+                  width: wp(72),
+                }}>
+                {item.text} - {percentage}%
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </LinearGradient>,
+    // </View>,
+  ];
+
   return (
     <SafeAreaView style={styles.MainContainer}>
       {/* <AppLoader loading={apiLoader} /> */}
@@ -549,119 +645,109 @@ const HomeScren = props => {
             </Text>
 
             <View style={{marginTop: hp(1)}}>
-              {events.length === 0 ? (
-                // Show shimmer placeholders for 5 items
-                <Swiper
-                  style={{height: hp(30)}}
-                  showsButtons={false}
-                  autoplay={false}
-                  loop={false}
-                  showsPagination={false}>
-                  {[...Array(5)].map((_, index) => (
-                    <View key={index} style={{alignItems: 'center'}}>
-                      <ShimmerPlaceholder
-                        LinearGradient={LinearGradient}
-                        style={{
-                          height: hp(25),
-                          width: wp(90),
-                          borderRadius: wp(3),
-                          marginTop: hp(1),
-                        }}
-                        shimmerStyle={{borderRadius: wp(3)}}
-                        shimmerColors={['#FFFFFF', '#D9D4D0', '#FFFFFF']}
-                        autoRun={true}
-                        visible={false}
-                      />
-                    </View>
-                  ))}
-                </Swiper>
-              ) : (
-                // Your original Swiper code
-                <Swiper
-                  key={events.length}
-                  style={{height: hp(30)}}
-                  showsButtons={false}
-                  autoplay={true}
-                  loop={events.length >= 5}
-                  showsPagination={true}
-                  paginationStyle={{
-                    bottom: 10,
-                    alignSelf: 'center',
-                  }}
-                  dot={
-                    <View
-                      style={{
-                        backgroundColor: 'rgba(217, 217, 217, 1)',
-                        width: 7,
-                        height: 7,
-                        borderRadius: 5,
-                        marginHorizontal: 3,
-                      }}
-                    />
-                  }
-                  activeDot={
-                    <View
-                      style={{
-                        backgroundColor: '#2F4032',
-                        width: 18,
-                        height: 7,
-                        borderRadius: 6,
-                        marginHorizontal: 3,
-                      }}
-                    />
-                  }>
-                  {(() => {
-                    const imageData = events
-                      .flatMap(event =>
-                        event.headerImage?.uri
-                          ? [{uri: event.headerImage.uri, event}]
-                          : [],
-                      )
-                      .slice(0, 5);
+              <SwiperFlatList
+                autoplay={events.length > 0}
+                autoplayDelay={3}
+                autoplayLoop={events.length >= 5}
+                showPagination
+                paginationStyle={{
+                  alignSelf: 'center',
+                  alignItems: 'center',
 
-                    if (imageData.length === 1) {
-                      imageData.push(imageData[0]);
-                    }
+                  height: hp(0.3),
+                  // width: wp(5),
+                  // marginHorizontal: wp(20),
+                }}
+                paginationStyleItem={{
+                  width: wp(3),
 
-                    return imageData.map(({uri, event}, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => {
-                          // your existing navigation logic
-                          const id = event.eventCategoryID;
-                          const screenMap = {
-                            1: 'DonationDetail',
-                            2: 'AnnouncementDetail',
-                            3: 'Aboutus',
-                            4: 'PrivacyPolicy',
-                            5: 'TermsAndConditions',
-                            6: 'Fundinsights',
-                            7: 'FeedBack',
-                            8: 'Contact',
-                            9: 'MyProfile',
-                            10: 'FamilyMemberDetails',
-                            11: 'AddFamilyMembers',
-                            12: 'MyDonation',
-                          };
-                          const screen = screenMap[id];
-                          if (screen)
-                            props.navigation.navigate(screen, {event});
-                        }}>
-                        <Image
-                          source={{uri}}
+                  aspectRatio: 1 / 1,
+                  borderRadius: wp(100),
+                  justifyContent: 'center',
+                }}
+                paginationStyleItemActive={{
+                  width: wp(3.5),
+                  justifyContent: 'center',
+                  aspectRatio: 1 / 1,
+                  borderRadius: wp(100),
+                }}
+                paginationActiveColor="#2F4032"
+                paginationDefaultColor="rgba(217, 217, 217, 1)"
+                data={
+                  events.length === 0
+                    ? Array(5).fill(null) // for shimmer
+                    : events.filter(event => event.headerImage?.uri).slice(0, 5)
+                }
+                renderItem={({item, index}) => {
+                  if (events.length === 0) {
+                    // Shimmer loading
+                    return (
+                      <View
+                        key={`shimmer-${index}`}
+                        style={{alignItems: 'center'}}>
+                        <ShimmerPlaceholder
+                          LinearGradient={LinearGradient}
                           style={{
                             height: hp(25),
                             width: wp(90),
-                            alignSelf: 'center',
                             borderRadius: wp(3),
                             marginTop: hp(1),
                           }}
+                          shimmerStyle={{borderRadius: wp(3)}}
+                          shimmerColors={['#FFFFFF', '#D9D4D0', '#FFFFFF']}
+                          autoRun={true}
+                          visible={false}
                         />
-                      </TouchableOpacity>
-                    ));
-                  })()}
-                </Swiper>
-              )}
+                      </View>
+                    );
+                  }
+
+                  // Display actual event image
+                  const uri = item.headerImage.uri;
+                  return (
+                    <TouchableOpacity
+                      key={`event-${index}`}
+                      style={{width: wp(100)}}
+                      onPress={() => {
+                        const id = item.eventCategoryID;
+                        const screenMap = {
+                          1: 'DonationDetail',
+                          2: 'AnnouncementDetail',
+                          3: 'Aboutus',
+                          4: 'PrivacyPolicy',
+                          5: 'TermsAndConditions',
+                          6: 'Fundinsights',
+                          7: 'FeedBack',
+                          8: 'Contact',
+                          9: 'MyProfile',
+                          10: 'FamilyMemberDetails',
+                          11: 'AddFamilyMembers',
+                          12: 'MyDonation',
+                        };
+                        const screen = screenMap[id];
+                        if (screen)
+                          props.navigation.navigate(screen, {event: item});
+                      }}>
+                      <Image
+                        source={{uri}}
+                        style={{
+                          height: hp(26),
+                          width: wp(90),
+                          alignSelf: 'center',
+                          borderRadius: wp(3),
+                          marginTop: hp(1),
+                        }}
+                      />
+                    </TouchableOpacity>
+                  );
+                }}
+                keyExtractor={(item, index) =>
+                  events.length === 0
+                    ? `shimmer-${index}`
+                    : `event-${item?.id ?? index}`
+                }
+                style={{height: hp(30)}}
+              />
             </View>
 
             <View
@@ -776,37 +862,39 @@ const HomeScren = props => {
               </View>
             </View>
 
-            <View
-              style={{
-                marginHorizontal: wp(5.5),
-                marginTop: hp(2),
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: hp(2.5),
-              }}>
-              <Text
+            {events.eventCategoryID === 1 && (
+              <View
                 style={{
-                  fontSize: hp(2.4),
-                  color: '#1F260F',
-                  fontFamily: 'Poppins-Medium',
+                  marginHorizontal: wp(5.5),
+                  marginTop: hp(2),
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: hp(2.5),
                 }}>
-                Donations
-              </Text>
-
-              <TouchableOpacity
-                onPress={() => props.navigation.navigate('Donation')}>
-                {' '}
                 <Text
                   style={{
-                    fontSize: hp(1.9),
+                    fontSize: hp(2.4),
                     color: '#1F260F',
                     fontFamily: 'Poppins-Medium',
                   }}>
-                  More
+                  Donations
                 </Text>
-              </TouchableOpacity>
-            </View>
+
+                <TouchableOpacity
+                  onPress={() => props.navigation.navigate('Donation')}>
+                  {' '}
+                  <Text
+                    style={{
+                      fontSize: hp(1.9),
+                      color: '#1F260F',
+                      fontFamily: 'Poppins-Medium',
+                    }}>
+                    More
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             {/* Donation */}
             <View style={styles.donationContainer}>
@@ -911,37 +999,55 @@ const HomeScren = props => {
 
             {/* KPI  */}
 
-            <View
-              style={{
-                marginHorizontal: wp(5.5),
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: hp(1),
-              }}>
-              <Text
+            {stats && (
+              <View
                 style={{
-                  fontSize: hp(2.4),
-                  color: '#1F260F',
-                  fontFamily: 'Poppins-Medium',
+                  marginHorizontal: wp(5.5),
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: hp(1),
                 }}>
-                Insights
-              </Text>
-              <TouchableOpacity
-                onPress={() => props.navigation.navigate('Fundinsights')}>
                 <Text
                   style={{
-                    fontSize: hp(1.9),
+                    fontSize: hp(2.4),
                     color: '#1F260F',
                     fontFamily: 'Poppins-Medium',
                   }}>
-                  More
+                  Insights
                 </Text>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  onPress={() => props.navigation.navigate('Fundinsights')}>
+                  <Text
+                    style={{
+                      fontSize: hp(1.9),
+                      color: '#1F260F',
+                      fontFamily: 'Poppins-Medium',
+                    }}>
+                    More
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
-            <View style={{marginTop: hp(1), alignItems: 'center'}}>
-              <Swiper
+            <View
+              style={{
+                marginTop: hp(1),
+                // width: wp(100),
+                alignItems: 'center',
+                // marginHorizontal: wp(),
+              }}>
+              <SwiperFlatList
+                data={slides}
+                renderItem={({item}) => item}
+                autoplay
+                autoplayLoop
+                autoplayDelay={3}
+                showPagination={false}
+                style={{height: hp(26), marginHorizontal: wp(5)}}
+              />
+
+              {/* <Swiper
                 style={{height: hp(26)}}
                 showsButtons={false}
                 horizontal={true}
@@ -959,10 +1065,10 @@ const HomeScren = props => {
                     borderRadius: wp(3),
                     paddingVertical: hp(1),
                   }}>
-                  <PieChart widthAndHeight={widthAndHeight} series={sexRatio} />
+                  <PieChart widthAndHeight={widthAndHeight} series={genderRatio} />
 
                   <View style={{alignSelf: 'flex-start', marginLeft: wp(2)}}>
-                    {sexRatio.map((item, index) => {
+                    {genderRatio.map((item, index) => {
                       const percentage = (
                         (item.value / totalRatio) *
                         100
@@ -1043,9 +1149,9 @@ const HomeScren = props => {
                       );
                     })}
                   </View>
-                </LinearGradient>
+                </LinearGradient> */}
 
-                {/* <LinearGradient
+              {/* <LinearGradient
                   start={{x: 1, y: 1.7}}
                   end={{x: 0.2, y: 0}}
                   colors={['#7C8C42', '#FFFFFF']}
@@ -1097,40 +1203,42 @@ const HomeScren = props => {
                     })}
                   </View>
                 </LinearGradient> */}
-              </Swiper>
+              {/* </Swiper> */}
             </View>
 
             {/* Announcement*/}
 
-            <View
-              style={{
-                marginHorizontal: wp(5.5),
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: hp(1),
-              }}>
-              <Text
+            {events.eventCategoryID === 2 && (
+              <View
                 style={{
-                  fontSize: hp(2.4),
-                  color: '#1F260F',
-                  fontFamily: 'Poppins-Medium',
+                  marginHorizontal: wp(5.5),
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: hp(1),
                 }}>
-                Announcements
-              </Text>
-
-              <TouchableOpacity
-                onPress={() => props.navigation.navigate('Announcement')}>
                 <Text
                   style={{
-                    fontSize: hp(1.9),
+                    fontSize: hp(2.4),
                     color: '#1F260F',
                     fontFamily: 'Poppins-Medium',
                   }}>
-                  More
+                  Announcements
                 </Text>
-              </TouchableOpacity>
-            </View>
+
+                <TouchableOpacity
+                  onPress={() => props.navigation.navigate('Announcement')}>
+                  <Text
+                    style={{
+                      fontSize: hp(1.9),
+                      color: '#1F260F',
+                      fontFamily: 'Poppins-Medium',
+                    }}>
+                    More
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             <View
               style={{

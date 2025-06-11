@@ -65,7 +65,7 @@ const DonationDetail = ({route, props, navigation}) => {
       try {
         const response = await fetch(`${BASE_URL}/events`);
         const result = await response.json();
-        console.log('Fetched Past Events:', result.events);
+        console.log('Fetched Past Eventswww:', result.events);
 
         if (Array.isArray(result.events) && result.events.length > 0) {
           const currentDate = new Date();
@@ -569,6 +569,7 @@ const DonationDetail = ({route, props, navigation}) => {
               }}>
               {pastEvents.length > 0 ? (
                 <FlatList
+                  removeClippedSubviews={false}
                   data={[...pastEvents]
                     .sort(
                       (a, b) =>

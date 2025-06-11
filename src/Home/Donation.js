@@ -133,6 +133,7 @@ const Donation = props => {
             <View style={styles.donationContainer}>
               {apiLoader ? (
                 <FlatList
+                  removeClippedSubviews={false}
                   data={Array(5).fill({})} // Placeholder data
                   horizontal={false}
                   pagingEnabled
@@ -178,6 +179,7 @@ const Donation = props => {
                       isEventActive(event.EventsToDate),
                   ) ? (
                     <FlatList
+                      removeClippedSubviews={false}
                       data={[...events]
                         .filter(
                           event =>

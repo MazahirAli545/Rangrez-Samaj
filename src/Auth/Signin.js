@@ -410,123 +410,6 @@ const Signin = props => {
             </View>
 
             {/* OTP Verification Modal */}
-            {/* <Modal
-              isVisible={isOtpModalVisible}
-              onModalShow={() => {
-                InteractionManager.runAfterInteractions(() => {
-                  otpInputRef.current?.focusField(0);
-                });
-              }}
-              avoidKeyboard={true}
-              style={{
-                margin: 0,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{width: wp(85)}}>
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                  <LinearGradient
-                    start={{x: 1, y: 1.7}}
-                    end={{x: 0.2, y: 0}}
-                    colors={['#697368', '#2F4032']}
-                    style={styles.otpModal}>
-                    <Text style={styles.otpTitle}>
-                      Enter OTP sent to your mobile number
-                    </Text>
-
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      onPress={() => otpInputRef.current?.focusField(0)}>
-                      <OTPInputView
-                        ref={otpInputRef}
-                        style={{
-                          // borderWidth: wp(0.2),
-                          // borderColor: 'red',
-                          width: '90%',
-                          alignSelf: 'center',
-                          marginTop: hp(5),
-                          height: hp(5),
-                          alignItems: 'center',
-                          alignContent: 'center',
-                        }}
-                        pinCount={4}
-                        code={otp}
-                        onCodeChanged={code => {
-                          setOtp(code);
-                          setOtpError('');
-                        }}
-                        autoFocusOnLoad={false}
-                        codeInputFieldStyle={styles.underlineStyleBase}
-                        codeInputHighlightStyle={
-                          styles.underlineStyleHighLighted
-                        }
-                        onCodeFilled={verifyOtp}
-                        keyboardType="number-pad"
-                      />
-                    </TouchableOpacity>
-                    {otpError && (
-                      <Text style={styles.otpError}>{otpError}</Text>
-                    )}
-
-                    <View style={styles.otpResendContainer}>
-                      <Text style={styles.otpResendText}>
-                        didn't receive the code?
-                      </Text>
-                      <TouchableOpacity
-                        onPress={resendOtp}
-                        disabled={isCounting || apiLoader}>
-                        <Text
-                          style={[
-                            styles.otpResendLink,
-                            isCounting && styles.disabledResend,
-                          ]}>
-                          Resend OTP
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    {isCounting && (
-                      <Text style={styles.countdownText}>
-                        {Math.floor(countdown / 60)}:
-                        {(countdown % 60).toString().padStart(2, '0')}
-                      </Text>
-                    )}
-
-                    <TouchableOpacity
-                      onPress={verifyOtp}
-                      disabled={apiLoader}
-                      style={{alignSelf: 'center', justifyContent: 'center'}}>
-                      <LinearGradient
-                        start={{x: 1, y: 1.7}}
-                        end={{x: 0.2, y: 0}}
-                        colors={['#D6D9C5', '#CAC9C7']}
-                        style={{
-                          height: hp(5),
-                          width: wp(65),
-                          borderRadius: wp(2),
-                          alignSelf: 'center',
-                          marginTop: hp(4),
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}>
-                        <Text
-                          style={{
-                            textAlign: 'center',
-                            fontFamily: 'Poppins-SemiBold',
-                            color: '#000000',
-                            fontSize: hp(2.4),
-                          }}>
-                          {apiLoader ? 'Verifying...' : 'Verify'}
-                        </Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </LinearGradient>
-                </TouchableWithoutFeedback>
-              </KeyboardAvoidingView>
-            </Modal> */}
-            {/* OTP Verification Modal */}
             <Modal
               isVisible={isOtpModalVisible}
               onModalShow={() => {
@@ -556,60 +439,6 @@ const Signin = props => {
                       Enter OTP sent to your mobile number
                     </Text>
 
-                    {/* <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        marginTop: hp(5),
-                      }}>
-                      {[0, 1, 2, 3].map(index => (
-                        <TextInput
-                          key={index}
-                          ref={ref => (otpInputRefs.current[index] = ref)}
-                          style={[
-                            styles.otpInputBox,
-                            otp.length === index && styles.otpHighlightBox,
-                          ]}
-                          value={otp[index] || ''}
-                          onChangeText={text => {
-                            // Only allow numbers
-                            if (/^\d*$/.test(text)) {
-                              const newOtp = [...otp];
-                              newOtp[index] = text;
-                              setOtp(newOtp);
-
-                              // Auto focus next input if there's a value
-                              if (text && index < 3) {
-                                otpInputRefs.current[index + 1]?.focus();
-                              }
-
-                              // Auto submit if all fields are filled
-                              if (
-                                newOtp.every(digit => digit !== '') &&
-                                newOtp.length === 4
-                              ) {
-                                verifyOtp();
-                              }
-
-                              setOtpError('');
-                            }
-                          }}
-                          onKeyPress={({nativeEvent}) => {
-                            // Handle backspace to move to previous input
-                            if (
-                              nativeEvent.key === 'Backspace' &&
-                              !otp[index] &&
-                              index > 0
-                            ) {
-                              otpInputRefs.current[index - 1]?.focus();
-                            }
-                          }}
-                          keyboardType="number-pad"
-                          maxLength={1}
-                          autoFocus={index === 0}
-                        />
-                      ))}
-                    </View> */}
                     <View
                       style={{
                         flexDirection: 'row',
@@ -748,6 +577,7 @@ const Signin = props => {
                 </Text>
 
                 <FlatList
+                  removeClippedSubviews={false}
                   data={usersList}
                   keyExtractor={item => item.PR_ID.toString()}
                   contentContainerStyle={styles.userList}

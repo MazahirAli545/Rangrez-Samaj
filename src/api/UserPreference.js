@@ -6,6 +6,7 @@ export const async_keys = {
   auth_token: 'auth_token',
   PR_ID: 'PR_ID',
   user_data: 'user_data',
+  fcm_token: 'fcmToken',
 };
 
 // User Preferences Methods

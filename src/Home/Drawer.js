@@ -54,6 +54,7 @@ import {useFocusEffect} from '@react-navigation/native';
 // import MyProfessionicon from '../provider/png/myprofessionicon.png';
 // import MyProfession from '../Home/MyProfession';
 import DownloadCertificate from '../Home/DownloadCertificate';
+import {clearDeviceAssociation} from '../api/fcm';
 
 const Drawer = props => {
   const [lang, setLang] = useState('ENGLISH');
@@ -769,22 +770,11 @@ const Drawer = props => {
               marginTop: hp(2),
             }}>
             <TouchableOpacity
-              // onPress={async () => {
-              //   try {
-              //     // Clear all AsyncStorage data first
-              //     await clearData();
-              //     // Then navigate to Signin screen
-              //     props.navigation.navigate('Signin');
-              //     // Close the modal
-              //     setModalLogoutVisible(false);
-              //   } catch (error) {
-              //     console.error('Error during sign out:', error);
-              //   }
-              // }}
               onPress={async () => {
                 try {
                   // Clear all AsyncStorage data first
                   await clearData();
+                  await clearDeviceAssociation();
 
                   // Verify data is cleared by checking a specific key (e.g., auth_token)
                   const tokenAfterClear = await getData(async_keys.auth_token);

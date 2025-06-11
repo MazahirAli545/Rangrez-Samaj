@@ -177,6 +177,7 @@ const BussinesDetails = () => {
 
               {/* {isDropdownVisible && ( */}
               <FlatList
+                removeClippedSubviews={false}
                 data={data.Stream}
                 horizontal={false}
                 showsVerticalScrollIndicator={false}
@@ -263,6 +264,7 @@ const BussinesDetails = () => {
 
               {/* {isDropdownVisible2 && ( */}
               <FlatList
+                removeClippedSubviews={false}
                 data={data.BusinessType}
                 horizontal={false}
                 showsVerticalScrollIndicator={false}
@@ -311,6 +313,7 @@ const BussinesDetails = () => {
                 // overflow: 'scroll',
               }}>
               <FlatList
+                removeClippedSubviews={false}
                 data={data.BusinessDetails}
                 horizontal={false}
                 showsVerticalScrollIndicator={false}
