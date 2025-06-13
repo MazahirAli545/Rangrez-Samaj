@@ -126,10 +126,13 @@ const HomeScren = props => {
     fetchEvents();
   }, []);
 
+  // console.log('User Data:', userData);
+  // console.log('User Data of pr is completed:', userData.PR_IS_COMPLETED);
+
   useFocusEffect(
     React.useCallback(() => {
       const checkProfileCompletion = async () => {
-        if (userDataa && userDataa.PR_IS_COMPLETED === 'N') {
+        if (userData && userData.PR_IS_COMPLETED === 'N') {
           setPRModalVisible(true);
         }
       };

@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// User Preferences Keys
+//  User Preferences Keys
 export const async_keys = {
   auth_token: 'auth_token',
   PR_ID: 'PR_ID',
@@ -37,3 +37,5 @@ export const clearData = async () => {
     console.log(error.message);
   }
 };
+
+/* eslint-disable prettier/prettier */

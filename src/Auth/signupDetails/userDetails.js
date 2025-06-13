@@ -37,6 +37,7 @@ import {storeData} from '../../api/UserPreference';
 // import UpdatedSucess from '../../provider/png/UpdatedSucess.png';
 import updatedsucess1 from '../../provider/png/updatedsucess1.png';
 // import {BASE_URL} from '../../api/ApiInfo';
+import {sendFCMTokenToBackend} from '../../utils/fcm';
 const UserDetails = ({pageName = 'signup'}) => {
   const navigation = useNavigation();
   // const route = useRoute();
@@ -471,6 +472,12 @@ const UserDetails = ({pageName = 'signup'}) => {
 
         if (response.data.success) {
           await storeData('PR_ID', response.data.PR_ID);
+
+          // await sendFCMTokenToBackend(response.data.PR_ID);
+          sendFCMTokenToBackend(response.data.PR_ID).catch(error =>
+            console.error('FCM token send failed:', error),
+          );
+
           if (setIsMobileVerified) setIsMobileVerified(true);
           setErrorMessageRegister(prev => ({
             ...prev,

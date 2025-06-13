@@ -44,74 +44,15 @@ import PastEventsDetails from './src/Home/PastEventsDetails';
 import MyDonationDetail from './src/Home/MyDonationDetail';
 import BackgroundImage from './src/provider/png/BackgroundImage.png';
 import {heightPercentageToDP} from 'react-native-responsive-screen';
-// import messaging from '@react-native-firebase/messaging';
 import i18n from './src/components/i18n';
 import {I18nextProvider} from 'react-i18next';
+import {setupForegroundNotificationHandler} from './src/Notification/Foreground';
 const Stack = createNativeStackNavigator();
 
-// const firebaseConfig = {
-//   apiKey: 'AIzaSyAl9oJoyk1vacypoEVBChRjAeJrpCfhnlo',
-//   authDomain: 'test-d509c.firebaseapp.com',
-//   databaseURL: 'https://test-d509c.firebaseio.com',
-//   projectId: 'test-d509c',
-//   storageBucket: 'test-d509c.appspot.com',
-//   messagingSenderId: '725344189959',
-//   appId: '1:725344189959:android:b21c6b758d74006c33b4a2',
-// };
-
-// // Initialize Firebase
-// let firebaseApp;
-// try {
-//   firebaseApp = initializeApp(firebaseConfig);
-//   console.log('✅ Firebase initialized!', firebaseApp.name); // Should log "[DEFAULT]"
-// } catch (error) {
-//   console.error('❌ Firebase init error:', error);
-// }
-
 const App = () => {
-  // const [fcmToken, setFcmToken] = useState(null);
-
-  // async function requestUserPermission() {
-  //   const authStatus = await messaging().requestPermission();
-  //   const enabled =
-  //     authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-  //     authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-  //   if (enabled) {
-  //     console.log('Authorization status:', authStatus);
-  //   }
-  // }
-
-  // const getToken = async () => {
-  //   const token = await messaging().getToken();
-  //   console.log('FCM Token:', token);
-  // };
-
-  // useEffect(() => {
-  //   const setupFirebaseMessaging = async () => {
-  //     try {
-  //       if (!firebaseApp) {
-  //         throw new Error('Firebase not initialized!');
-  //       }
-
-  //       // Request notification permissions (iOS/Android)
-  //       const authStatus = await messaging().requestPermission();
-  //       const enabled =
-  //         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-  //         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-  //       if (enabled) {
-  //         const token = await messaging().getToken();
-  //         console.log('📌 FCM Token:', token);
-  //         setFcmToken(token);
-  //       }
-  //     } catch (error) {
-  //       console.error('🔥 FCM Error:', error);
-  //     }
-  //   };
-
-  //   setupFirebaseMessaging();
-  // }, []);
+  useEffect(() => {
+    setupForegroundNotificationHandler();
+  }, []);
 
   return (
     <I18nextProvider i18n={i18n}>

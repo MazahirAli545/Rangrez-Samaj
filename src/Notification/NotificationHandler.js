@@ -2,10 +2,11 @@ import React, {useEffect, useState} from 'react';
 import {AppState, Platform, Alert} from 'react-native';
 import PushNotification from 'react-native-push-notification';
 import BackgroundService from 'react-native-background-actions';
-import {getData, async_keys} from '../api/UserPreference'; // Import from UserPreference
+import {getData, async_keys} from '../api/UserPreference';
 
-const NotificationHandler = () => {
+export const NotificationHandler = () => {
   const [deviceToken, setDeviceToken] = useState(null);
+  console.log('App in FOREGROUND. Token:', deviceToken);
 
   // Get the stored FCM token on component mount
   useEffect(() => {
@@ -26,62 +27,92 @@ const NotificationHandler = () => {
     fetchToken();
   }, []);
 
-  // Configure Push Notifications
+  // Configure Push Notifications with foreground handling
   const configurePushNotifications = () => {
     PushNotification.configure({
       onRegister: token => {
         console.log('New token registered:', token);
-        // You might want to compare/store this with your existing token
       },
       onNotification: notification => {
         console.log('NOTIFICATION:', notification);
+
+        // Required for foreground notifications on Android
+        if (Platform.OS === 'android') {
+          PushNotification.localNotification({
+            channelId: 'foreground-channel', // Must match channel created in Android
+            title: notification.title || 'Notification',
+            message: notification.message,
+            playSound: true,
+            soundName: 'default',
+          });
+        }
+
         if (notification.userInteraction) {
           Alert.alert(
             'App Launched',
             `Notification tapped with token: ${deviceToken}`,
           );
-        } else if (AppState.currentState === 'background') {
-          PushNotification.localNotification({
-            title: 'Background Notification',
-            message: notification.message,
-          });
         }
       },
-      permissions: {alert: true, badge: true, sound: true},
+      // Required for foreground notifications on iOS
+      requestPermissions: true,
+      permissions: {
+        alert: true,
+        badge: true,
+        sound: true,
+      },
       popInitialNotification: true,
-      requestPermissions: Platform.OS === 'ios',
     });
   };
 
   // Background Task
-  const backgroundTask = async () => {
+  const backgroundTask = async taskData => {
     await new Promise(async resolve => {
+      // For infinite loop
       while (BackgroundService.isRunning()) {
-        console.log('Background task active. Token:', deviceToken);
-        await new Promise(res => setTimeout(res, 10000));
+        console.log('Background service running with token:', deviceToken);
+        // Perform your background work here
+
+        // Important: Add delay to prevent battery drain
+        await new Promise(res => setTimeout(res, 5000));
       }
     });
   };
 
   // Handle foreground/background states
   useEffect(() => {
-    if (!deviceToken) return; // Don't proceed without token
+    if (!deviceToken) return;
 
-    const handleAppStateChange = nextAppState => {
+    const handleAppStateChange = async nextAppState => {
       if (nextAppState === 'active') {
         console.log('App in FOREGROUND. Token:', deviceToken);
-        fetch('https://api.example.com/app-state', {
-          method: 'POST',
-          body: JSON.stringify({token: deviceToken, state: 'foreground'}),
-        });
+        // Stop background service when in foreground
+        try {
+          await BackgroundService.stop();
+        } catch (error) {
+          console.log('Background service not running or already stopped');
+        }
       } else if (nextAppState === 'background') {
         console.log('App in BACKGROUND. Token:', deviceToken);
         if (Platform.OS === 'android') {
-          BackgroundService.start(backgroundTask, {
-            taskName: 'MyBackgroundTask',
-            taskTitle: 'Running in background',
-            taskDesc: 'Using token: ' + deviceToken,
-          });
+          try {
+            await BackgroundService.start(backgroundTask, {
+              taskName: 'MyBackgroundTask',
+              taskTitle: 'My App Background Service',
+              taskDesc: 'Keeping your app alive',
+              taskIcon: {
+                name: 'ic_notification',
+                type: 'drawable',
+              },
+              color: '#ff00ff',
+              linkingURI: 'yourScheme://chat/jane', // Deep link URL
+              parameters: {
+                token: deviceToken,
+              },
+            });
+          } catch (error) {
+            console.error('Error starting background service:', error);
+          }
         }
       }
     };
@@ -90,11 +121,12 @@ const NotificationHandler = () => {
       'change',
       handleAppStateChange,
     );
+
     return () => {
       subscription.remove();
       BackgroundService.stop();
     };
-  }, [deviceToken]); // Re-run when token changes
+  }, [deviceToken]);
 
   // Check if app was opened from killed state
   useEffect(() => {
@@ -113,9 +145,23 @@ const NotificationHandler = () => {
   // Set up push notifications
   useEffect(() => {
     configurePushNotifications();
+
+    // Create notification channel for Android (required for foreground)
+    if (Platform.OS === 'android') {
+      PushNotification.createChannel(
+        {
+          channelId: 'foreground-channel',
+          channelName: 'Foreground Notifications',
+          channelDescription: 'Notifications for when app is in foreground',
+          playSound: true,
+          soundName: 'default',
+          importance: 4, // IMPORTANCE_HIGH
+          vibrate: true,
+        },
+        created => console.log(`Channel created: ${created}`),
+      );
+    }
   }, []);
 
   return null;
 };
-
-export default NotificationHandler;

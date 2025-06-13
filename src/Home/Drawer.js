@@ -72,7 +72,7 @@ const Drawer = props => {
   useFocusEffect(
     React.useCallback(() => {
       const checkProfileCompletion = async () => {
-        if (userDataa && userDataa.PR_IS_COMPLETED === 'N') {
+        if (userData && userData.PR_IS_COMPLETED === 'N') {
           setPRModalVisible(true);
         }
       };
@@ -257,7 +257,11 @@ const Drawer = props => {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => props.navigation.navigate('AddFamilyMembers')}
+              onPress={() =>
+                props.navigation.navigate('AddFamilyMembers', {
+                  currentuserPR_ID: userData?.PR_ID,
+                })
+              }
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',

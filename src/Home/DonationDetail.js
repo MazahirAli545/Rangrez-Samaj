@@ -43,6 +43,10 @@ import {BASE_URL} from '../api/ApiInfo';
 import PastEvent from '../Home/PastEvent';
 // import PastEventsDetails from '../Home/PastEventsDetails';
 import PastEventsDetails from '../Home/PastEventsDetails';
+import {
+  sendTestNotification,
+  setupForegroundNotificationHandler,
+} from '../Notification/Foreground';
 
 const DonationDetail = ({route, props, navigation}) => {
   const {event} = route.params || {};
@@ -59,6 +63,10 @@ const DonationDetail = ({route, props, navigation}) => {
 
   console.log('Current eventy coming from donation screen', event);
   console.log('PastEvents', pastEvents);
+
+  useEffect(() => {
+    setupForegroundNotificationHandler();
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -317,6 +325,15 @@ const DonationDetail = ({route, props, navigation}) => {
 
       if (captureResponse.data.success) {
         setPaymentSuccess(true);
+
+        if (userData?.PR_FULL_NAME) {
+          const templateParams = {
+            title: 'Payment Done Successfully',
+            body: `Dear ${userData.PR_FULL_NAME}, your payment of ₹${amount} is completed.`,
+          };
+          console.log('🔔 Sending local notification:', templateParams);
+          sendTestNotification(templateParams);
+        }
       } else {
         throw new Error(captureResponse.data.error || 'Payment capture failed');
       }

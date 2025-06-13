@@ -93,7 +93,7 @@ const OverView = props => {
   useFocusEffect(
     React.useCallback(() => {
       const checkProfileCompletion = async () => {
-        if (userDataa && userDataa.PR_IS_COMPLETED === 'N') {
+        if (userData && userData.PR_IS_COMPLETED === 'N') {
           setPRModalVisible(true);
         }
       };

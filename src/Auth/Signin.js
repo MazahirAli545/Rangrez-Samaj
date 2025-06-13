@@ -30,11 +30,27 @@ import phone from '../provider/png/phone.png';
 import AppLoader from '../components/AppLoader';
 import axios from 'axios';
 import {BASE_URL} from '../api/ApiInfo';
-import {storeData, async_keys, getData} from '../api/UserPreference';
+import {
+  storeData,
+  async_keys,
+  getData,
+  multiStore, // Add this
+  removeData,
+} from '../api/UserPreference';
 import OTPInputView from '@twotalltotems/react-native-otp-input';
 import Modal from 'react-native-modal';
 import {useTranslation} from 'react-i18next';
 import i18n from '../components/i18n';
+import {setupForegroundNotificationHandler} from '../Notification/Foreground';
+// import {handleUserLogin, handleUserLogout} from '../utils/fcm';
+import {
+  getFCMToken,
+  getDeviceId,
+  setupForegroundHandler,
+  setupTokenRefreshHandler,
+} from '../utils/fcm';
+import notifee from '@notifee/react-native';
+// import {sendTestNotification} from '../Notification/Foreground';
 
 const Signin = props => {
   const [apiLoader, setApiLoader] = useState(false);
@@ -68,6 +84,13 @@ const Signin = props => {
   };
 
   const handleSignIn = async () => {
+    // const templateParams = {
+    //   title: 'Login Successful',
+    //   body: 'Welcome! You have successfully logged in.',
+    // };
+
+    // sendTestNotification(templateParams);
+
     if (mobile.length !== 10) {
       setErrorMessage('Please enter a valid 10-digit mobile number');
       return;
@@ -134,6 +157,7 @@ const Signin = props => {
             async_keys.user_data,
             JSON.stringify(response.data.user),
           );
+          await handleSuccessfulLogin(response.data);
 
           ToastAndroid.showWithGravity(
             'Login successful!',
@@ -168,7 +192,51 @@ const Signin = props => {
     }
   };
 
-  // When user selects an account from the list
+  const handleSuccessfulLogin = async responseData => {
+    // 1. Store user data
+    await storeData(async_keys.auth_token, responseData.token);
+    await storeData(async_keys.user_data, JSON.stringify(responseData.user));
+
+    // 2. Get FCM token and device ID
+    const fcmToken = await getFCMToken();
+    const deviceId = await getDeviceId();
+
+    if (fcmToken && deviceId) {
+      // 3. Register with backend
+      try {
+        const registerResponse = await axios.post(
+          `https://node2-plum.vercel.app/api/fcm/register`,
+          {
+            PR_ID: responseData.user.PR_ID,
+            fcmToken,
+            deviceId,
+          },
+        );
+
+        if (registerResponse.data.success) {
+          console.log('FCM registration successful');
+        }
+      } catch (error) {
+        console.error('FCM registration error:', error);
+      }
+    }
+
+    // 4. Setup notification handlers
+    setupForegroundHandler();
+    setupTokenRefreshHandler();
+
+    // 5. Complete login
+    ToastAndroid.showWithGravity(
+      'Login successful!',
+      ToastAndroid.LONG,
+      ToastAndroid.TOP,
+    );
+
+    setOtp('');
+    setOtpModalVisible(false);
+    props.navigation.navigate('HomeScreen');
+  };
+
   const handleUserSelection = async userId => {
     setApiLoader(true);
     try {
@@ -187,6 +255,7 @@ const Signin = props => {
           async_keys.user_data,
           JSON.stringify(response.data.user),
         );
+        await handleSuccessfulLogin(response.data);
 
         ToastAndroid.showWithGravity(
           'Login successful!',

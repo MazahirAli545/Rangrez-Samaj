@@ -66,6 +66,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ProfileDataContext} from '../Auth/ProfileDataContext';
 import ImageResizer from 'react-native-image-resizer';
 import {use} from 'i18next';
+import {sendTestNotification} from '../Notification/Foreground';
 
 const Signup = props => {
   const [fullname, setFullName] = useState('');
@@ -115,12 +116,25 @@ const Signup = props => {
   const [fatherId, setfatherId] = useState(null);
   const [motherId, setMotherId] = useState(null);
   const [spouseId, setSpouseId] = useState(null);
+  const [uniqueId, setUniqueId] = useState(null);
 
   const [errorMessage, setErrorMessage] = useState('');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
   const [isPersonalDetailsChanged, setIsPersonalDetailsChanged] =
     useState(false);
+
+  console.log('idd', uniqueId);
+
+  //below useEffect for cuurrebt user pr id who add family member
+  useEffect(() => {
+    if (props.route?.params?.currentuserPR_ID) {
+      console.log(
+        '🔍 Received currentuserPR_ID:',
+        props.route.params.currentuserPR_ID,
+      );
+    }
+  }, [props.route?.params?.currentuserPR_ID]);
 
   const handleImageSelect = image => {
     console.log('Selected image:', image);
@@ -482,7 +496,14 @@ const Signup = props => {
       //   'PR_PR_ID',
       //   fatherId ? Number(fatherId) : motherId ? Number(motherId) : null,
       // );
-      formData.append('PR_PR_ID', fatherPrId || motherPrId || null);
+      formData.append(
+        'PR_PR_ID',
+        fatherPrId ||
+          motherPrId ||
+          (props.pageName === 'AddFamilyMembers'
+            ? props.route.params.currentuserPR_ID
+            : NULL),
+      );
       formData.append(
         'PR_BUSS_STREAM',
         BUSSINTRST === 'N' ? '' : BUSSSTREAM || '',
@@ -576,6 +597,31 @@ const Signup = props => {
       });
 
       console.log('Response:', response.data);
+      setUniqueId(response.data.updatedProfile?.PR_UNIQUE_ID || null);
+
+      if (
+        props.pageName === 'signup' &&
+        response.data.updatedProfile?.PR_IS_COMPLETED === 'Y'
+      ) {
+        const templateParams = {
+          title: 'Registration Successfully',
+          body: `Dear ${fullname}, your PR ID is ${response.data.updatedProfile?.PR_UNIQUE_ID}. '\n' Please keep it safe for future reference.`,
+        };
+        sendTestNotification(templateParams);
+      }
+
+      if (
+        props.pageName === 'AddFamilyMembers' &&
+        response.data.updatedProfile?.PR_UNIQUE_ID
+      ) {
+        const templateParams = {
+          title: 'Family Member Added Successfully.',
+          // body: `Dear ${fullname}, is added in your family, Their  PR ID IS ${response.data.updatedProfile?.PR_UNIQUE_ID}.`,
+          body: `${fullname} has been successfully added to your family. Their PR ID is ${response.data.updatedProfile?.PR_UNIQUE_ID}.`,
+        };
+        sendTestNotification(templateParams);
+      }
+      // console.log('PR_UNIQUE_ID:', response.data.updatedProfile?.PR_UNIQUE_ID);
 
       if (response.data?.success) {
         let successMessage = 'Profile created successfully';
@@ -944,94 +990,6 @@ const Signup = props => {
     [],
   );
 
-  // const onMomentumScrollEnd = event => {
-  //   const offsetX = event.nativeEvent.contentOffset.x;
-  //   const pageIndex = Math.round(offsetX / wp(100));
-
-  //   if (!validateFields()) {
-  //     console.log('Validation failed, staying on current page');
-
-  //     setTimeout(() => {
-  //       if (scrollViewRef.current) {
-  //         scrollViewRef.current.scrollTo({
-  //           x: wp(100) * currentPage,
-  //           animated: false,
-  //         });
-  //       }
-  //     }, 200);
-
-  //     return;
-  //   }
-
-  //   setCurrentPage(pageIndex);
-  //   // if (pageIndex > 1) {
-  //   //   UpdateUser();
-  //   // }
-  // };
-
-  // const validateFields = () => {
-  //   let errors = {};
-
-  //   if (currentPage === 0) {
-  //     if (
-  //       props.pageName === 'profile' &&
-  //       isPersonalDetailsChanged &&
-  //       !isMobileVerified
-  //     ) {
-  //       errors.mobileVerification = 'Please verify your details';
-  //     } else if (props.pageName !== 'profile' && !isMobileVerified) {
-  //       errors.mobileVerification = 'Please verify your mobile number';
-  //     }
-
-  //     if (!fullname) errors.fullname = 'Full name is required';
-  //     if (!mobile) {
-  //       errors.mobile = 'Mobile number is required';
-  //     } else if (mobile.length !== 10) {
-  //       errors.mobile = 'Please enter 10 digits mobile number';
-  //     }
-  //     if (!date) errors.date = 'Date of birth is required';
-
-  //     if (props.pageName !== 'profile' && !isMobileVerified) {
-  //       errors.mobileVerification = 'Please verify your mobile number';
-  //     }
-  //   } else if (currentPage === 2) {
-  //     if (!pincode) errors.pincode = 'Pincode is required';
-  //     if (!city) errors.city = 'City is required';
-  //     if (!address) errors.address = 'Address is required';
-  //     // } else if (currentPage === 7 && age < 21) {
-  //   } else if (
-  //     pages[currentPage]?.type?.name === 'ParentsDetails' &&
-  //     age < 21
-  //   ) {
-  //     if (!fathername) errors.fathername = 'Father name is required';
-  //     if (!mothername) errors.mothername = 'Mother name is required';
-  //   }
-
-  //   if (
-  //     pages[currentPage]?.type?.name === 'SpouseChildDetails' &&
-  //     userMarried === 'Y'
-  //   ) {
-  //     children.forEach((child, index) => {
-  //       // Only validate if at least one field is filled
-  //       if (child.name?.trim() || child.dob) {
-  //         if (!child.name?.trim()) {
-  //           errors[`name_${child.id}`] = 'Child Name is required';
-  //         }
-  //         if (!child.dob) {
-  //           errors[`dob_${child.id}`] = 'Child DOB is required';
-  //         }
-  //       }
-  //     });
-  //   }
-
-  //   // || (!hasName && hasDOB)
-  //   if (JSON.stringify(errors) !== JSON.stringify(errorMessageRegister)) {
-  //     setErrorMessageRegister(errors);
-  //   }
-
-  //   return Object.keys(errors).length === 0;
-  // };
-
   const onMomentumScrollEnd = event => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const pageIndex = Math.round(offsetX / wp(100));
@@ -1395,6 +1353,7 @@ const Signup = props => {
       // setApiLoader(false);
     }
   };
+  console.log('uniqueIdff', uniqueId);
 
   return (
     <SignupDataContext.Provider value={signupData}>
@@ -1853,13 +1812,17 @@ const Signup = props => {
                         ) : // )}
                         props.pageName === 'AddFamilyMembers' ? (
                           <TouchableOpacity
-                            onPress={UpdateUser}
+                            onPress={async () => {
+                              await UpdateUser();
+                            }}
                             style={styles.signUpButton}>
                             <Text style={styles.signUpText}>Add Member</Text>
                           </TouchableOpacity>
                         ) : (
                           <TouchableOpacity
-                            onPress={UpdateUser}
+                            onPress={async () => {
+                              await UpdateUser();
+                            }}
                             style={styles.signUpButton}>
                             <Text style={styles.signUpText}>Sign Up</Text>
                           </TouchableOpacity>
