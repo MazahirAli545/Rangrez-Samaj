@@ -47,6 +47,8 @@ import {heightPercentageToDP} from 'react-native-responsive-screen';
 import i18n from './src/components/i18n';
 import {I18nextProvider} from 'react-i18next';
 import {setupForegroundNotificationHandler} from './src/Notification/Foreground';
+import PastAnnouncementsEvents from './src/Home/PastAnnouncementsEvents';
+
 const Stack = createNativeStackNavigator();
 
 const App = () => {
@@ -107,6 +109,10 @@ const App = () => {
           <Stack.Screen
             name="PastEventsDetails"
             component={PastEventsDetails}
+          />
+          <Stack.Screen
+            name="PastAnnouncementsEvents"
+            component={PastAnnouncementsEvents}
           />
         </Stack.Navigator>
       </NavigationContainer>

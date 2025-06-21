@@ -1,4 +1,4 @@
-import {React, useState} from 'react';
+import {React, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -29,6 +29,8 @@ import axios from 'axios';
 import {BASE_URL} from '../api/ApiInfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImageResizer from 'react-native-image-resizer';
+import {sendTestNotification} from '../Notification/Foreground';
+import {useTranslation} from 'react-i18next';
 
 // import RNFS from 'react-native-fs';
 
@@ -42,7 +44,8 @@ const Contact = props => {
   const [modalVisible, setModalVisible] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
   const [errorMessage, setErrorMessage] = useState({});
-
+  const [userData, setUserData] = useState('');
+  const {t} = useTranslation();
   const handleImageSelect = image => {
     setProfilePicture(image);
     console.log('Selected image:', image);
@@ -55,20 +58,65 @@ const Contact = props => {
 
   checkStoredToken();
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        // Get token first
+        const token = await getData(async_keys.auth_token);
+        if (!token) {
+          console.log(t('Contact.No token available'));
+          return;
+        }
+
+        const response = await fetch(`${BASE_URL}profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          setUserData(data.data);
+        } else {
+          setErrorMessage(
+            data.message || t('Contact.Failed to load profile data'),
+          );
+        }
+      } catch (error) {
+        console.error(t('Contact.Error fetching profile:'), error);
+        setErrorMessage(t('Contact.Failed to load user data.'));
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  console.log('Data', userData?.PR_NOTIFICATION);
+
   const handleConntact = async () => {
+    if (userData?.PR_NOTIFICATION === 'Y') {
+      const templateParams = {
+        title: t('Contact.Contact Form Submitted'),
+        body: t(
+          'Contact.Thank you for contacting us! We have received your message and will respond shortly.',
+        ),
+      };
+      sendTestNotification(templateParams);
+    }
     let error = {};
 
     if (!name.trim()) {
-      error.name = 'Please enter your name.';
+      error.name = t('Contact.Please enter your name.');
     }
     if (mobile.length !== 10) {
-      error.mobile = 'Please enter a valid 10-digit mobile number.';
+      error.mobile = t('Contact.Please enter a valid 10-digit mobile number.');
     }
     if (!message.trim()) {
-      error.message = 'Please enter a message';
+      error.message = t('Contact.Please enter a message');
     }
     if (!profilePicture || !profilePicture.uri) {
-      error.profilePicture = 'Please attach ScreenShots.';
+      error.profilePicture = t('Contact.Please attach ScreenShots.');
     }
 
     // ✅ Set error messages BEFORE returning
@@ -120,7 +168,7 @@ const Contact = props => {
 
       if (response.data.success) {
         ToastAndroid.showWithGravity(
-          'Form Submitted Successfully!',
+          t('Contact.Form Submitted Successfully!'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -130,15 +178,15 @@ const Contact = props => {
         setProfilePicture(null);
       } else {
         ToastAndroid.showWithGravity(
-          response.data.message || 'Form Submission Failed!',
+          response.data.message || t('Contact.Form Submission Failed!'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
       }
     } catch (error) {
-      console.error('Contact Error:', error);
+      console.error(t('Contact.Contact Error:'), error);
       ToastAndroid.showWithGravity(
-        'Something went wrong. Please try again.',
+        t('Contact.Something went wrong. Please try again.'),
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -189,7 +237,7 @@ const Contact = props => {
                   fontWeight: '600',
                   fontSize: hp(3),
                 }}>
-                Contact Us
+                {t('Contact.Contact Us')}
               </Text>
             </View>
           </View>
@@ -209,7 +257,7 @@ const Contact = props => {
                 fontFamily: 'Poppins-Medium',
                 color: '#1F260F',
               }}>
-              Rangrez Contact
+              {t('Contact.Rangrez Contact')}
             </Text>
 
             <Text
@@ -224,9 +272,9 @@ const Contact = props => {
                 fontFamily: 'Poppins-Regular',
                 color: '#152340',
               }}>
-              We’re here to help! Feel free to reach out to us with your
-              questions, concerns, or suggestions. We’ll get back to you as soon
-              as possible.
+              {t(
+                'Contact.We’re here to help! Feel free to reach out to us with your questions, concerns, or suggestions. We’ll get back to you as soon as possible.',
+              )}
             </Text>
 
             <View
@@ -254,7 +302,7 @@ const Contact = props => {
                     marginTop: hp(1.5),
                     fontFamily: 'Poppins-Medium',
                   }}
-                  label="Full Name"
+                  label={t('Contact.Full Name')}
                   mode="outlined"
                   value={name}
                   outlineColor="#F27141"
@@ -291,7 +339,7 @@ const Contact = props => {
                   keyboardType="phone-pad"
                   nu
                   maxLength={10}
-                  label="Enter Mobile No."
+                  label={t('Contact.Enter Mobile No.')}
                   mode="outlined"
                   value={mobile}
                   outlineColor="#F27141"
@@ -327,7 +375,7 @@ const Contact = props => {
                     height: hp(21),
                   }}
                   textAlignVertical="top"
-                  label="Enter Your Message"
+                  label={t('Contact.Enter Your Message')}
                   mode="outlined"
                   value={message}
                   numberOfLines={8} // Adjust based on how many lines you want to show
@@ -362,7 +410,7 @@ const Contact = props => {
                     marginTop: hp(2),
                     marginLeft: wp(4),
                   }}>
-                  Attach ScreenShots
+                  {t('Contact.Attach ScreenShots')}
                 </Text>
                 <View
                   style={{
@@ -446,7 +494,7 @@ const Contact = props => {
                   }}>
                   <Text
                     style={{fontFamily: 'Poppins-Medium', fontSize: hp(2.2)}}>
-                    Submit
+                    {t('Contact.Submit')}
                   </Text>
                 </TouchableOpacity>
               </KeyboardAwareScrollView>

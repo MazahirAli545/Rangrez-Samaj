@@ -63,6 +63,7 @@ import IncompleteProfileModal from '../components/profileCompleted/IncompletePro
 import {useFocusEffect} from '@react-navigation/native';
 import {BASE_URL} from '../api/ApiInfo';
 import {getData, async_keys, clearData, storeData} from '../api/UserPreference';
+import {useTranslation} from 'react-i18next';
 
 const OverView = props => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -70,6 +71,8 @@ const OverView = props => {
   const [edit, setEdit] = useState('False');
   const {userDataa, PRmodalVisible, setPRModalVisible, completionPercentagee} =
     useUserProfile();
+
+  const {t} = useTranslation();
 
   const {route} = props;
   // const {member} = route.params || {};
@@ -150,7 +153,7 @@ const OverView = props => {
                   fontWeight: '600',
                   fontSize: hp(3),
                 }}>
-                OverView
+                {t('OverView.OverView')}
               </Text>
             </View>
           </View>
@@ -181,47 +184,59 @@ const OverView = props => {
 
             <View style={{marginBottom: hp(2)}}>
               <View style={styles.FormContainer}>
-                <Text style={styles.HeaderLabel}>Personal OverView</Text>
-                <Text style={styles.HeaderLabel1}>Full Name</Text>
+                <Text style={styles.HeaderLabel}>
+                  {t('OverView.Personal OverView')}
+                </Text>
+                <Text style={styles.HeaderLabel1}>
+                  {t('OverView.Full Name')}
+                </Text>
                 <Text style={styles.InputTextField}>
                   {displayData?.PR_FULL_NAME || 'Not available'}
                 </Text>
-                <Text style={styles.HeaderLabel1}>Mobile Number</Text>
+                <Text style={styles.HeaderLabel1}>
+                  {t('OverView.Mobile Number')}
+                </Text>
                 <Text style={styles.InputTextField}>
                   {displayData?.PR_MOBILE_NO || 'Not available'}
                 </Text>
-                <Text style={styles.HeaderLabel1}>Date Of Birth</Text>
+                <Text style={styles.HeaderLabel1}>
+                  {t('OverView.Date Of Birth')}
+                </Text>
                 <Text style={styles.InputTextField}>
                   {displayData?.PR_DOB || 'No date Available'}
                 </Text>
                 {/* {displayData?.PR_GENDER && displayData.PR_GENDER !== '' ? (
                   <> */}
-                <Text style={styles.HeaderLabel1}>Gender</Text>
+                <Text style={styles.HeaderLabel1}>{t('OverView.Gender')}</Text>
                 <Text style={styles.InputTextField}>
-                  {displayData.PR_GENDER}
+                  {displayData?.PR_GENDER}
                 </Text>
                 {/* </>
                 ) : null} */}
               </View>
 
               <View style={styles.FormContainer}>
-                <Text style={styles.HeaderLabel}>Address OverView</Text>
+                <Text style={styles.HeaderLabel}>
+                  {t('PverView.Address OverView')}
+                </Text>
 
                 {/* {displayData?.PR_PIN_CODE &&
                   displayData.PR_PIN_CODE.trim() !== '' && (
                     <> */}
-                <Text style={styles.HeaderLabel1}>Pincode</Text>
+                <Text style={styles.HeaderLabel1}>{t('OverView.Pincode')}</Text>
                 <Text style={styles.InputTextField}>
-                  {displayData.PR_PIN_CODE}
+                  {displayData?.PR_PIN_CODE}
                 </Text>
                 {/* </>
                   )} */}
                 {/* {displayData?.PR_AREA_NAME &&
                   displayData.PR_AREA_NAME.trim() !== '' && (
                     <> */}
-                <Text style={styles.HeaderLabel1}>City Name</Text>
+                <Text style={styles.HeaderLabel1}>
+                  {t('OverView.City Name')}
+                </Text>
                 <Text style={styles.InputTextField}>
-                  {displayData.PR_AREA_NAME}
+                  {displayData?.PR_AREA_NAME}
                 </Text>
                 {/* </>
                   )} */}
@@ -229,9 +244,9 @@ const OverView = props => {
                 {/* {displayData?.PR_ADDRESS &&
                   displayData.PR_ADDRESS.trim() !== '' && (
                     <> */}
-                <Text style={styles.HeaderLabel1}>Address</Text>
+                <Text style={styles.HeaderLabel1}>{t('OverView.Address')}</Text>
                 <Text style={styles.InputTextField}>
-                  {displayData.PR_ADDRESS}
+                  {displayData?.PR_ADDRESS}
                 </Text>
                 {/* </>
                   )} */}
@@ -239,44 +254,56 @@ const OverView = props => {
 
               <View style={styles.FormContainer}>
                 <Text style={styles.HeaderLabel}>
-                  Academic & Career Overview
+                  {t('OverView.Academic & Career Overview')}
                 </Text>
 
-                <Text style={styles.HeaderLabel1}>Education</Text>
+                <Text style={styles.HeaderLabel1}>
+                  {t('OverView.Education')}
+                </Text>
                 <Text style={styles.InputTextField}>
-                  {displayData.PR_EDUCATION}
+                  {displayData?.PR_EDUCATION}
                 </Text>
 
-                <Text style={styles.HeaderLabel1}>Stream</Text>
+                <Text style={styles.HeaderLabel1}>{t('OverView.Stream')}</Text>
                 <Text style={styles.InputTextField}>
-                  {displayData.PR_EDUCATION_DESC}
+                  {displayData?.PR_EDUCATION_DESC}
                 </Text>
 
-                <Text style={styles.HeaderLabel1}>Profession</Text>
+                <Text style={styles.HeaderLabel1}>
+                  {t('OverView.Profession')}
+                </Text>
                 <Text style={styles.InputTextField}>
                   {/* {Profesionnn || professionName1 || 'Not specified'} */}
                   {professionName}
                 </Text>
 
-                <Text style={styles.HeaderLabel1}>Profession Overview</Text>
+                <Text style={styles.HeaderLabel1}>
+                  {t('OverView.Profession Overview')}
+                </Text>
                 <Text style={styles.InputTextField}>
-                  {displayData.PR_PROFESSION_DETA}
+                  {displayData?.PR_PROFESSION_DETA}
                 </Text>
               </View>
 
               <View style={styles.FormContainer}>
-                <Text style={styles.HeaderLabel}>Family Overview</Text>
-
-                <Text style={styles.HeaderLabel1}>Father Name</Text>
-                <Text style={styles.InputTextField}>
-                  {/* {userData.PR_FATHER_NAME} */}
-                  {displayData.PR_FATHER_NAME}
+                <Text style={styles.HeaderLabel}>
+                  {t('OverView.Family Overview')}
                 </Text>
 
-                <Text style={styles.HeaderLabel1}>Mother Name</Text>
+                <Text style={styles.HeaderLabel1}>
+                  {t('OverView.Father Name')}
+                </Text>
+                <Text style={styles.InputTextField}>
+                  {/* {userData.PR_FATHER_NAME} */}
+                  {displayData?.PR_FATHER_NAME}
+                </Text>
+
+                <Text style={styles.HeaderLabel1}>
+                  {t('OverView.Mother Name')}
+                </Text>
                 <Text style={styles.InputTextField}>
                   {/* {userData.PR_MOTHER_NAME} */}
-                  {displayData.PR_MOTHER_NAME}
+                  {displayData?.PR_MOTHER_NAME}
                 </Text>
 
                 {/* {userData.PR_SPOUSE_NAME !== '' && (
@@ -288,63 +315,73 @@ const OverView = props => {
                   </>
                 )} */}
                 {displayData?.PR_SPOUSE_NAME &&
-                  displayData.PR_SPOUSE_NAME.trim() !== '' && (
+                  displayData?.PR_SPOUSE_NAME.trim() !== '' && (
                     <>
-                      <Text style={styles.HeaderLabel1}>Spouse Name</Text>
+                      <Text style={styles.HeaderLabel1}>
+                        {t('OverView.Spouse Name')}
+                      </Text>
                       <Text style={styles.InputTextField}>
-                        {displayData.PR_SPOUSE_NAME}
+                        {displayData?.PR_SPOUSE_NAME}
                       </Text>
                     </>
                   )}
               </View>
 
-              {displayData.PR_BUSS_INTER === 'Y' && (
+              {displayData?.PR_BUSS_INTER === 'Y' && (
                 <View style={{...styles.FormContainer}}>
                   <Text style={styles.HeaderLabel}>
-                    Business & Hobbies Overview
+                    {t('OverView.Business & Hobbies Overview')}
                   </Text>
 
-                  {displayData.PR_BUSS_STREAM !== '' && (
+                  {displayData?.PR_BUSS_STREAM !== '' && (
                     <>
-                      <Text style={styles.HeaderLabel1}>Business Stream</Text>
+                      <Text style={styles.HeaderLabel1}>
+                        {t('OverView.Business Stream')}
+                      </Text>
                       <Text style={styles.InputTextField}>
-                        {displayData.PR_BUSS_STREAM}
+                        {displayData?.PR_BUSS_STREAM}
                       </Text>
                     </>
                   )}
 
-                  {displayData.PR_BUSS_TYPE !== '' && (
+                  {displayData?.PR_BUSS_TYPE !== '' && (
                     <>
-                      <Text style={styles.HeaderLabel1}>Business Type</Text>
+                      <Text style={styles.HeaderLabel1}>
+                        {t('OverView.Business Type')}
+                      </Text>
                       <Text style={styles.InputTextField}>
-                        {displayData.PR_BUSS_TYPE}
+                        {displayData?.PR_BUSS_TYPE}
                       </Text>
                     </>
                   )}
 
-                  {displayData.PR_HOBBY !== '' && (
+                  {displayData?.PR_HOBBY !== '' && (
                     <>
-                      <Text style={styles.HeaderLabel1}>Hobbies</Text>
+                      <Text style={styles.HeaderLabel1}>
+                        {t('OverView.Hobbies')}
+                      </Text>
                       <Text style={styles.InputTextField}>
-                        {displayData.PR_HOBBY}
+                        {displayData?.PR_HOBBY}
                       </Text>
                     </>
                   )}
                 </View>
               )}
 
-              {displayData.PR_BUSS_INTER === 'N' &&
-                displayData.PR_HOBBY !== '' && (
+              {displayData?.PR_BUSS_INTER === 'N' &&
+                displayData?.PR_HOBBY !== '' && (
                   <View style={{...styles.FormContainer}}>
                     <Text style={styles.HeaderLabel}>
-                      Business & Hobbies Overview
+                      {t('OverView.Business & Hobbies Overview')}
                     </Text>
 
-                    {displayData.PR_HOBBY !== '' ? (
+                    {displayData?.PR_HOBBY !== '' ? (
                       <>
-                        <Text style={styles.HeaderLabel1}>Hobbies</Text>
+                        <Text style={styles.HeaderLabel1}>
+                          {t('OverView.Hobbies')}
+                        </Text>
                         <Text style={styles.InputTextField}>
-                          {displayData.PR_HOBBY}
+                          {displayData?.PR_HOBBY}
                         </Text>
                       </>
                     ) : (

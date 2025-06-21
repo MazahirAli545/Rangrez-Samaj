@@ -90,11 +90,15 @@ import useUserProfile from '../components/profileCompleted/useUserProfile';
 import IncompleteProfileModal from '../components/profileCompleted/IncompleteProfileModal';
 import {useFocusEffect} from '@react-navigation/native';
 import {SwiperFlatList} from 'react-native-swiper-flatlist';
+import LanguageModal from '../components/LanguageModal';
+import i18n from '../components/i18n';
+import {useTranslation} from 'react-i18next';
 
 // import { getData } from '../api/UserPreference';
 
 const HomeScren = props => {
   const [lang, setLang] = useState('ENGLISH');
+  const [langCode, setLangCode] = useState('en');
   const [modalVisible, setModalVisible] = useState(false);
   const [apiLoader, setApiLoader] = useState(true);
   const [events, setEvents] = useState([]);
@@ -102,6 +106,8 @@ const HomeScren = props => {
   // const [PRmodalVisible, setPRModalVisible] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [stats, setStats] = useState('');
+
+  const {t} = useTranslation();
 
   const isEventActive = eventToDate => {
     const today = new Date();
@@ -116,6 +122,8 @@ const HomeScren = props => {
   const {userDataa, PRmodalVisible, setPRModalVisible, completionPercentagee} =
     useUserProfile();
 
+  console.log('Information', userDataa);
+
   const handleRefresh = async () => {
     setRefresh(true);
     await Promise.all([fetchEvents(), fetchUserProfile()]);
@@ -124,7 +132,31 @@ const HomeScren = props => {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [langCode]);
+
+  const handleLanguageChange = async selectedLang => {
+    const newLangCode = selectedLang === 'ENGLISH' ? 'en' : 'hi';
+    console.log('Changing language to:', selectedLang, 'Code:', newLangCode);
+
+    try {
+      // Save to state
+      setLang(selectedLang);
+      setLangCode(newLangCode);
+
+      // Save to persistent storage
+      await storeData(async_keys.language, selectedLang);
+      await storeData(async_keys.language_code, newLangCode);
+
+      // If you're using i18n for translations, update it here
+      if (i18n && i18n.changeLanguage) {
+        i18n.changeLanguage(newLangCode);
+      }
+    } catch (error) {
+      console.error('Error saving language preference:', error);
+    } finally {
+      setModalVisible(false);
+    }
+  };
 
   // console.log('User Data:', userData);
   // console.log('User Data of pr is completed:', userData.PR_IS_COMPLETED);
@@ -148,13 +180,32 @@ const HomeScren = props => {
   useEffect(() => {
     const fetchToken = async () => {
       const storedToken = await getData(async_keys.auth_token);
-      setToken(storedToken || 'No Token Found');
+      setToken(storedToken || t('HomeScreen.No Token Found'));
     };
 
     fetchToken();
   }, []);
 
   // useEffect(())
+
+  useEffect(() => {
+    const loadLanguagePreference = async () => {
+      try {
+        const savedLang = await getData(async_keys.language);
+        const savedLangCode = await getData(async_keys.language_code);
+
+        if (savedLang && savedLangCode) {
+          setLang(savedLang);
+          setLangCode(savedLangCode);
+          console.log('Loaded language preference:', savedLang, savedLangCode);
+        }
+      } catch (error) {
+        console.error('Error loading language preference:', error);
+      }
+    };
+
+    loadLanguagePreference();
+  }, []);
 
   console.log('TOKENNNN', token);
 
@@ -166,31 +217,31 @@ const HomeScren = props => {
     {
       value: parseInt(stats.percentageDistribution?.male),
       color: '#fbd203',
-      text: 'Male',
+      text: t('HomeScreen.Male'),
     },
     {
       value: parseInt(stats.percentageDistribution?.female),
       color: '#ffb300',
-      text: 'Female',
+      text: t('HomeScreen.Female'),
     },
     {
       value: parseInt(stats.percentageDistribution?.child),
       color: '#ff9100',
-      text: 'Childrens',
+      text: t('HomeScreen.Childrens'),
     },
   ];
   const totalRatio = genderRatio.reduce((total, item) => total + item.value, 0);
 
   const donations = [
-    {
-      value: parseInt(stats.businessInterestStats?.percentageOfPopulation),
-      color: '#fbd203',
-      text: 'Business',
-    },
+    // {
+    //   value: parseInt(stats.businessInterestStats?.percentageOfPopulation),
+    //   color: '#fbd203',
+    //   text: 'Business',
+    // },
     {
       value: parseInt(stats.donationStats?.donationPercentageOfPopulation),
       color: '#ffb300',
-      text: 'Donations',
+      text: t('HomeScreen.Donations'),
     },
   ];
 
@@ -199,76 +250,110 @@ const HomeScren = props => {
     0,
   );
 
-  const Population = [
+  const Business = [
     {
-      value: 300,
+      value: parseInt(stats.businessInterestStats?.percentageOfPopulation),
       color: '#fbd203',
-      text: 'Male',
-      // label: { text: 'Male', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
+      text: t('HomeScreen.Business'),
     },
-    {
-      value: 100,
-      color: '#ffb300',
-      text: 'Female',
-      //  label: { text: 'Female', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
-    },
-    {
-      value: 100,
-      color: '#ff9100',
-      text: 'Family having 2 Children',
-      //  label: { text: 'Childrens', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
-    },
-    {
-      value: 100,
-      color: '#ff6c00',
-      text: 'Family having more than 2 Childrens',
-      // label: { text: 'Others', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
-    },
-
-    {
-      value: 90,
-      color: '#BF0426',
-      text: 'Others',
-      // label: { text: 'Others', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
-    },
-    // { value: 360, color: '#ff6c00',  label: { text: 'Others', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }  },
   ];
 
-  const totalPopulation = Population.reduce(
-    (total, item) => total + item.value,
-    0,
-  );
+  // const Population = [
+  //   {
+  //     value: 300,
+  //     color: '#fbd203',
+  //     text: 'Male',
+  //     // label: { text: 'Male', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
+  //   },
+  //   {
+  //     value: 100,
+  //     color: '#ffb300',
+  //     text: 'Female',
+  //     //  label: { text: 'Female', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
+  //   },
+  //   {
+  //     value: 100,
+  //     color: '#ff9100',
+  //     text: 'Family having 2 Children',
+  //     //  label: { text: 'Childrens', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
+  //   },
+  //   {
+  //     value: 100,
+  //     color: '#ff6c00',
+  //     text: 'Family having more than 2 Childrens',
+  //     // label: { text: 'Others', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
+  //   },
+
+  //   {
+  //     value: 90,
+  //     color: '#BF0426',
+  //     text: 'Others',
+  //     // label: { text: 'Others', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }
+  //   },
+  //   // { value: 360, color: '#ff6c00',  label: { text: 'Others', fontFamily: "Poppins-Medium", fontSize: hp(1.2) }  },
+  // ];
+
+  // const totalPopulation = Population.reduce(
+  //   (total, item) => total + item.value,
+  //   0,
+  // );
+
+  useEffect(() => {
+    console.log('Current language:', lang, langCode);
+  }, [lang, langCode]);
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/events`);
+      console.log('Fetching events with lang_code:', langCode);
+      const response = await fetch(`${BASE_URL}/events?lang_code=${langCode}`);
       const result = await response.json();
       console.log('Fetched Events:', result.events);
 
-      if (Array.isArray(result.events) && result.events.length > 0) {
-        const formattedData = result.events.map(item => ({
-          id: item.ENVT_ID,
-          eventCategoryID: item.ENVT_CATE_ID,
-          name: item.ENVT_DESC,
-          message: item.ENVT_EXCERPT,
-          Detail: item.ENVT_DETAIL,
-          headerImage: {uri: item.ENVT_BANNER_IMAGE},
-          EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
-          EventContact: item.ENVT_CONTACT_NO,
-          EventFromDate: item.EVNT_FROM_DT,
-          EventsToDate: item.EVNT_UPTO_DT,
-          address: item.ENVT_ADDRESS,
-          city: item.ENVT_CITY,
-          createdEventDate: item.EVET_CREATED_DT,
-          cate_desc: item?.SubCategory?.CATE_DESC || '',
-        }));
-        setEvents(formattedData);
-        console.log('Events information', formattedData);
+      if (Array.isArray(result.events)) {
+        // Filter out events that don't have content in the selected language
+        const formattedData = result.events
+          .filter(item => {
+            // Check if essential fields have content
+            return (
+              item.ENVT_DESC &&
+              item.ENVT_DESC.trim() !== '' &&
+              item.ENVT_EXCERPT &&
+              item.ENVT_EXCERPT.trim() !== ''
+            );
+          })
+          .map(item => ({
+            id: item.ENVT_ID,
+            eventCategoryID: item.ENVT_CATE_ID,
+            name: item.ENVT_DESC,
+            message: item.ENVT_EXCERPT,
+            Detail: item.ENVT_DETAIL,
+            headerImage: {uri: item.ENVT_BANNER_IMAGE},
+            EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
+            EventContact: item.ENVT_CONTACT_NO,
+            EventFromDate: item.EVNT_FROM_DT,
+            EventsToDate: item.EVNT_UPTO_DT,
+            address: item.ENVT_ADDRESS,
+            city: item.ENVT_CITY,
+            createdEventDate: item.EVET_CREATED_DT,
+            cate_desc: item?.SubCategory?.CATE_DESC || '',
+          }));
+
+        if (formattedData.length > 0) {
+          setEvents(formattedData);
+          console.log('Events information', formattedData);
+        } else {
+          console.warn(
+            t('HomeScreen.No events with content in selected language.'),
+          );
+          setEvents([]); // Clear events if none have content
+        }
       } else {
-        console.warn('No valid events data found.');
+        console.warn(t('HomeScreen.No valid events data found.'));
+        setEvents([]); // Clear events if response is invalid
       }
     } catch (error) {
-      console.error('Error fetching Events:', error);
+      console.error(t('HomeScreen.Error fetching Events:'), error);
+      setEvents([]); // Clear events on error
     } finally {
       setApiLoader(false);
     }
@@ -281,30 +366,8 @@ const HomeScren = props => {
       console.log('Fetched Stats:', result);
 
       setStats(result);
-      // if (Array.isArray(result.events) && result.events.length > 0) {
-      //   const formattedData = result.events.map(item => ({
-      //     id: item.ENVT_ID,
-      //     eventCategoryID: item.ENVT_CATE_ID,
-      //     name: item.ENVT_DESC,
-      //     message: item.ENVT_EXCERPT,
-      //     Detail: item.ENVT_DETAIL,
-      //     headerImage: {uri: item.ENVT_BANNER_IMAGE},
-      //     EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
-      //     EventContact: item.ENVT_CONTACT_NO,
-      //     EventFromDate: item.EVNT_FROM_DT,
-      //     EventsToDate: item.EVNT_UPTO_DT,
-      //     address: item.ENVT_ADDRESS,
-      //     city: item.ENVT_CITY,
-      //     createdEventDate: item.EVET_CREATED_DT,
-      //     cate_desc: item?.SubCategory?.CATE_DESC || '',
-      //   }));
-      //   setEvents(formattedData);
-      //   console.log('Events information', formattedData);
-      // } else {
-      //   console.warn('No valid events data found.');
-      // }
     } catch (error) {
-      console.error('Error fetching Stats:', error);
+      console.error(t('HomeScreen.Error fetching Stats:'), error);
     } finally {
       setApiLoader(false);
     }
@@ -405,8 +468,8 @@ const HomeScren = props => {
         setErrorMessage(data.data.message);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      setErrorMessage('Failed to load user data.');
+      console.error(t('HomeScreen.Error fetching profile:'), error);
+      setErrorMessage(t('HomeScreen.Failed to load user data.'));
     }
   };
 
@@ -470,98 +533,257 @@ const HomeScren = props => {
   };
 
   const slides = [
-    // <View style={{flex: 1, width: wp(100), flexDirection: 'row'}}>
-    <LinearGradient
-      key="slide-1"
-      start={{x: 1, y: 1.7}}
-      end={{x: 0.2, y: 0}}
-      colors={['#658DA6', '#FFFFFF']}
-      style={{
-        alignItems: 'center',
-        alignSelf: 'center',
-        width: wp(90),
-        backgroundColor: '#F2F0CE',
-        borderRadius: wp(3),
-        paddingVertical: hp(1),
-      }}>
-      <PieChart widthAndHeight={widthAndHeight} series={genderRatio} />
-      <View style={{alignSelf: 'flex-start', marginLeft: wp(2)}}>
-        {genderRatio.map((item, index) => {
-          const percentage = ((item.value / totalRatio) * 100).toFixed(1);
-          return (
-            <View
-              key={`gender-${index}`}
-              style={{flexDirection: 'row', alignItems: 'center'}}>
+    totalRatio > 0 ? (
+      <LinearGradient
+        key="slide-1"
+        start={{x: 1, y: 1.7}}
+        end={{x: 0.2, y: 0}}
+        colors={['#658DA6', '#FFFFFF']}
+        style={{
+          // borderWidth: wp(1),
+          alignItems: 'center',
+          alignSelf: 'center',
+          width: wp(90),
+          backgroundColor: '#F2F0CE',
+          borderRadius: wp(3),
+          height: hp(26),
+          // marginLeft: wp(5),
+          // marginRight: wp(5),
+          marginHorizontal: wp(5),
+        }}>
+        <Text
+          style={{
+            fontSize: hp(2),
+            marginTop: hp(1),
+            fontFamily: 'Poppins-Medium',
+            color: '#000000',
+          }}>
+          {t('HomeScreen.Gender Ratio')}
+        </Text>
+        {/* {totalRatio > 0 ? ( */}
+        <PieChart
+          widthAndHeight={widthAndHeight}
+          series={genderRatio}
+          style={{marginTop: hp(2)}}
+        />
+        {/* ) : (
+        <Text
+          style={{
+            marginTop: hp(2),
+            fontFamily: 'Poppins-Regular',
+            color: '#000',
+          }}>
+          No gender data available.
+        </Text>
+      )} */}
+        <View
+          style={{
+            alignSelf: 'flex-start',
+            marginLeft: wp(2),
+            position: 'absolute',
+            bottom: 0,
+          }}>
+          {genderRatio.map((item, index) => {
+            const percentage = ((item.value / totalRatio) * 100).toFixed(1);
+            return (
               <View
-                style={{
-                  height: hp(1.5),
-                  width: wp(3),
-                  backgroundColor: item.color,
-                }}
-              />
-              <Text
-                style={{
-                  marginLeft: wp(2.2),
-                  fontSize: hp(1.2),
-                  fontFamily: 'Poppins-Regular',
-                  width: wp(72),
-                }}>
-                {item.text} - {percentage}%
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-    </LinearGradient>,
-    <LinearGradient
-      key="slide-2"
-      start={{x: 1, y: 1.7}}
-      end={{x: 0.2, y: 0}}
-      colors={['#6F618C', '#FFFFFF']}
-      style={{
-        alignItems: 'center',
-        alignSelf: 'center',
-        width: wp(90),
-        backgroundColor: '#F2F0CE',
-        borderRadius: wp(3),
-        paddingVertical: hp(1),
-      }}>
-      <PieChart
-        widthAndHeight={widthAndHeight}
-        series={donations}
-        cover={{radius: 0.6}}
-        padAngle={0.01}
-        style={{backgroundColor: '#FFFFFF', borderRadius: wp(30)}}
-      />
-      <View style={{alignSelf: 'flex-start', marginLeft: wp(2)}}>
-        {donations.map((item, index) => {
-          const percentage = ((item.value / totaldonation) * 100).toFixed(1);
-          return (
-            <View
-              key={`donation-${index}`}
-              style={{flexDirection: 'row', alignItems: 'center'}}>
+                key={`gender-${index}`}
+                style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View
+                  style={{
+                    height: hp(1.5),
+                    width: wp(3),
+                    backgroundColor: item.color,
+                  }}
+                />
+                <Text
+                  style={{
+                    marginLeft: wp(2.2),
+                    fontSize: hp(1.5),
+                    fontFamily: 'Poppins-Regular',
+                    width: wp(72),
+                  }}>
+                  {item.text} - {percentage}%
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </LinearGradient>
+    ) : (
+      ''
+    ),
+
+    totaldonation > 0 ? (
+      <LinearGradient
+        key="slide-2"
+        start={{x: 1, y: 1.7}}
+        end={{x: 0.2, y: 0}}
+        colors={['#6F618C', '#FFFFFF']}
+        style={{
+          alignItems: 'center',
+          alignSelf: 'center',
+          width: wp(90),
+          backgroundColor: '#F2F0CE',
+          borderRadius: wp(3),
+
+          height: hp(26),
+          marginHorizontal: wp(5),
+        }}>
+        <Text
+          style={{
+            fontSize: hp(2),
+            marginTop: hp(1),
+            fontFamily: 'Poppins-Medium',
+            color: '#000000',
+          }}>
+          {t('Donation')}
+        </Text>
+        {/* {totaldonation > 0 ? ( */}
+        <PieChart
+          widthAndHeight={widthAndHeight}
+          series={donations}
+          cover={{radius: 0.6}}
+          padAngle={0.01}
+          style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: wp(30),
+            marginTop: hp(2),
+          }}
+        />
+        {/* ) : (
+        ''
+      )} */}
+        <View
+          style={{
+            alignSelf: 'flex-start',
+            marginLeft: wp(2),
+            position: 'absolute',
+            bottom: 10,
+          }}>
+          {donations.map((item, index) => {
+            const label =
+              item.text === 'Business'
+                ? stats.businessInterestStats?.percentageOfPopulation
+                : stats.donationStats?.donationPercentageOfPopulation;
+
+            return (
               <View
-                style={{
-                  height: hp(1.5),
-                  width: wp(3),
-                  backgroundColor: item.color,
-                }}
-              />
-              <Text
-                style={{
-                  marginLeft: wp(2.2),
-                  fontSize: hp(1.2),
-                  fontFamily: 'Poppins-Regular',
-                  width: wp(72),
-                }}>
-                {item.text} - {percentage}%
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-    </LinearGradient>,
-    // </View>,
+                key={`donation-${index}`}
+                style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View
+                  style={{
+                    height: hp(1.5),
+                    width: wp(3),
+                    backgroundColor: item.color,
+                  }}
+                />
+                <Text
+                  style={{
+                    marginLeft: wp(2.2),
+                    fontSize: hp(1.5),
+                    fontFamily: 'Poppins-Regular',
+                    width: wp(72),
+                  }}>
+                  {item.text} - {label}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </LinearGradient>
+    ) : (
+      ''
+    ),
+
+    Business[0].value > 0 ? (
+      <LinearGradient
+        key="slide-3"
+        start={{x: 1, y: 1.7}}
+        end={{x: 0.2, y: 0}}
+        colors={['#6F618C', '#FFFFFF']}
+        style={{
+          alignItems: 'center',
+          alignSelf: 'center',
+          width: wp(90),
+          backgroundColor: '#F2F0CE',
+          borderRadius: wp(3),
+          // paddingVertical: hp(2),
+          height: hp(26),
+          marginHorizontal: wp(5),
+        }}>
+        <Text
+          style={{
+            fontSize: hp(2),
+            marginTop: hp(1),
+            fontFamily: 'Poppins-Medium',
+            color: '#000000',
+          }}>
+          {t('HomeScreen.BUSSINESS')}
+        </Text>
+        {/* {Business[0].value > 0 ? ( */}
+        <PieChart
+          widthAndHeight={widthAndHeight}
+          series={Business}
+          cover={{radius: 0.6}}
+          padAngle={0.01}
+          style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: wp(30),
+            marginTop: hp(2),
+          }}
+        />
+        {/* ) : (
+        <Text
+          style={{
+            marginTop: hp(2),
+            fontFamily: 'Poppins-Regular',
+            color: '#000',
+          }}>
+          No business data available.
+        </Text>
+      )} */}
+        <View
+          style={{
+            alignSelf: 'flex-start',
+            marginLeft: wp(2),
+            position: 'absolute',
+            bottom: 10,
+          }}>
+          {Business.map((item, index) => {
+            const label =
+              item.text === 'Business'
+                ? stats.businessInterestStats?.percentageOfPopulation
+                : stats.donationStats?.donationPercentageOfPopulation;
+
+            return (
+              <View
+                key={`Business-${index}`}
+                style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View
+                  style={{
+                    height: hp(1.5),
+                    width: wp(3),
+                    backgroundColor: item.color,
+                  }}
+                />
+                <Text
+                  style={{
+                    marginLeft: wp(2.2),
+                    fontSize: hp(1.5),
+                    fontFamily: 'Poppins-Regular',
+                    width: wp(72),
+                  }}>
+                  {item.text} - {label}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </LinearGradient>
+    ) : (
+      ''
+    ),
   ];
 
   return (
@@ -644,10 +866,10 @@ const HomeScren = props => {
                 marginTop: hp(2),
                 color: '#2F4032',
               }}>
-              Connecting Rangrej Samaj Across…
+              {t('HomeScreen.Connecting Rangrej Samaj Across…')}
             </Text>
 
-            <View style={{marginTop: hp(1)}}>
+            {/* <View style={{marginTop: hp(1)}}>
               <SwiperFlatList
                 autoplay={events.length > 0}
                 autoplayDelay={3}
@@ -658,8 +880,6 @@ const HomeScren = props => {
                   alignItems: 'center',
 
                   height: hp(0.3),
-                  // width: wp(5),
-                  // marginHorizontal: wp(20),
                 }}
                 paginationStyleItem={{
                   width: wp(3),
@@ -692,7 +912,7 @@ const HomeScren = props => {
                           LinearGradient={LinearGradient}
                           style={{
                             height: hp(25),
-                            width: wp(90),
+                            width: wp(100),
                             borderRadius: wp(3),
                             marginTop: hp(1),
                           }}
@@ -751,7 +971,88 @@ const HomeScren = props => {
                 }
                 style={{height: hp(30)}}
               />
-            </View>
+            </View> */}
+
+            {events.length > 0 && (
+              <View style={{marginTop: hp(1)}}>
+                <SwiperFlatList
+                  autoplay={events.length > 0}
+                  autoplayDelay={3}
+                  autoplayLoop={events.length >= 5}
+                  showPagination={events.length > 0}
+                  paginationStyle={{
+                    alignSelf: 'center',
+                    alignItems: 'center',
+                    height: hp(0.3),
+                  }}
+                  paginationStyleItem={{
+                    width: wp(3),
+                    aspectRatio: 1 / 1,
+                    borderRadius: wp(100),
+                    justifyContent: 'center',
+                  }}
+                  paginationStyleItemActive={{
+                    width: wp(3.5),
+                    justifyContent: 'center',
+                    aspectRatio: 1 / 1,
+                    borderRadius: wp(100),
+                  }}
+                  paginationActiveColor="#2F4032"
+                  paginationDefaultColor="rgba(217, 217, 217, 1)"
+                  data={
+                    events.length === 0
+                      ? [] // Empty array instead of shimmer placeholders
+                      : events
+                          .filter(event => event.headerImage?.uri)
+                          .slice(0, 5)
+                  }
+                  renderItem={({item, index}) => {
+                    // Only show actual content if we have events
+                    if (events.length === 0) return null;
+
+                    const uri = item.headerImage.uri;
+                    return (
+                      <TouchableOpacity
+                        key={`event-${index}`}
+                        style={{width: wp(100)}}
+                        onPress={() => {
+                          const id = item.eventCategoryID;
+                          const screenMap = {
+                            1: 'DonationDetail',
+                            2: 'AnnouncementDetail',
+                            3: 'Aboutus',
+                            4: 'PrivacyPolicy',
+                            5: 'TermsAndConditions',
+                            6: 'Fundinsights',
+                            7: 'FeedBack',
+                            8: 'Contact',
+                            9: 'MyProfile',
+                            10: 'FamilyMemberDetails',
+                            11: 'AddFamilyMembers',
+                            12: 'MyDonation',
+                          };
+                          const screen = screenMap[id];
+                          if (screen)
+                            props.navigation.navigate(screen, {event: item});
+                        }}>
+                        <Image
+                          source={{uri}}
+                          style={{
+                            height: hp(26),
+                            width: wp(90),
+                            alignSelf: 'center',
+                            borderRadius: wp(3),
+                            marginTop: hp(1),
+                          }}
+                        />
+                      </TouchableOpacity>
+                    );
+                  }}
+                  keyExtractor={(item, index) => `event-${item?.id ?? index}`}
+                  style={{height: hp(30)}}
+                />
+              </View>
+            )}
 
             <View
               style={{
@@ -809,7 +1110,7 @@ const HomeScren = props => {
                     alignSelf: 'center',
                     marginTop: hp(1),
                   }}>
-                  Total Population
+                  {t('HomeScreen.Total Population')}
                 </Text>
               </View>
 
@@ -860,12 +1161,12 @@ const HomeScren = props => {
                     alignSelf: 'center',
                     marginTop: hp(1),
                   }}>
-                  Family
+                  {t('HomeScreen.Family')}
                 </Text>
               </View>
             </View>
 
-            {events.eventCategoryID === 1 && (
+            {events.some(event => event.eventCategoryID === 1) && (
               <View
                 style={{
                   marginHorizontal: wp(5.5),
@@ -881,7 +1182,7 @@ const HomeScren = props => {
                     color: '#1F260F',
                     fontFamily: 'Poppins-Medium',
                   }}>
-                  Donations
+                  {t('HomeScreen.Donations')}
                 </Text>
 
                 <TouchableOpacity
@@ -893,7 +1194,7 @@ const HomeScren = props => {
                       color: '#1F260F',
                       fontFamily: 'Poppins-Medium',
                     }}>
-                    More
+                    {t('HomeScreen.More')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -972,13 +1273,15 @@ const HomeScren = props => {
                             end={{x: 0.4, y: 1}}
                             colors={['#FFFFFF', '#ffffcc']}
                             style={styles.card}>
-                            <View style={styles.categoryContainer}>
-                              <Text
-                                numberOfLines={1}
-                                style={styles.categoryStyle}>
-                                {item.cate_desc}
-                              </Text>
-                            </View>
+                            {item.cate_desc !== '' && (
+                              <View style={styles.categoryContainer}>
+                                <Text
+                                  numberOfLines={1}
+                                  style={styles.categoryStyle}>
+                                  {item.cate_desc}
+                                </Text>
+                              </View>
+                            )}
                             <Text numberOfLines={1} style={styles.eventName}>
                               {item.name}
                             </Text>
@@ -1017,7 +1320,7 @@ const HomeScren = props => {
                     color: '#1F260F',
                     fontFamily: 'Poppins-Medium',
                   }}>
-                  Insights
+                  {t('HomeScreen.Insights')}
                 </Text>
                 <TouchableOpacity
                   onPress={() => props.navigation.navigate('Fundinsights')}>
@@ -1027,7 +1330,7 @@ const HomeScren = props => {
                       color: '#1F260F',
                       fontFamily: 'Poppins-Medium',
                     }}>
-                    More
+                    {t('HomeScreen.More')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1047,7 +1350,7 @@ const HomeScren = props => {
                 autoplayLoop
                 autoplayDelay={3}
                 showPagination={false}
-                style={{height: hp(26), marginHorizontal: wp(5)}}
+                style={{height: hp(26)}}
               />
 
               {/* <Swiper
@@ -1211,14 +1514,14 @@ const HomeScren = props => {
 
             {/* Announcement*/}
 
-            {events.eventCategoryID === 2 && (
+            {events.some(event => event.eventCategoryID === 2) && (
               <View
                 style={{
                   marginHorizontal: wp(5.5),
                   flexDirection: 'row',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginTop: hp(1),
+                  marginTop: hp(2.5),
                 }}>
                 <Text
                   style={{
@@ -1226,7 +1529,7 @@ const HomeScren = props => {
                     color: '#1F260F',
                     fontFamily: 'Poppins-Medium',
                   }}>
-                  Announcements
+                  {t('HomeScreen.Announcements')}
                 </Text>
 
                 <TouchableOpacity
@@ -1237,7 +1540,7 @@ const HomeScren = props => {
                       color: '#1F260F',
                       fontFamily: 'Poppins-Medium',
                     }}>
-                    More
+                    {t('HomeScreen.More')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1393,20 +1696,23 @@ const HomeScren = props => {
                             backgroundColor: '#F2DBD5',
                             marginBottom: hp(2),
                           }}>
-                          <View
-                            style={[
-                              styles.categoryContainer,
-                              {
-                                backgroundColor: '#ac2b3b',
-                                marginBottom: hp(0.3),
-                              },
-                            ]}>
-                            <Text
-                              numberOfLines={1}
-                              style={styles.categoryStyle}>
-                              {item.cate_desc}
-                            </Text>
-                          </View>
+                          {item.cate_desc !== '' && (
+                            <View
+                              style={[
+                                styles.categoryContainer,
+                                {
+                                  backgroundColor: '#ac2b3b',
+                                  marginBottom: hp(0.3),
+                                },
+                              ]}>
+                              <Text
+                                numberOfLines={1}
+                                style={styles.categoryStyle}>
+                                {item.cate_desc}
+                              </Text>
+                            </View>
+                          )}
+
                           <View
                             style={{
                               flexDirection: 'row',
@@ -1429,15 +1735,13 @@ const HomeScren = props => {
                                 color: '#000',
                                 fontSize: hp(2),
                                 width: wp(73),
-
-                                fontWeight: '800',
+                                fontWeight: '500',
                                 marginLeft: wp(3),
                                 fontFamily: 'Poppins-Medium',
                               }}>
                               {item.name}
                             </Text>
                           </View>
-
                           <Text
                             numberOfLines={1}
                             style={{
@@ -1447,11 +1751,11 @@ const HomeScren = props => {
 
                               marginLeft: wp(3),
                               marginTop: hp(0.2),
-                              fontFamily: 'Poppins-Medium',
+                              fontFamily: 'Poppins-Regular',
+                              fontWeight: '500',
                             }}>
                             {item.message}
                           </Text>
-
                           {item.EventFromDate ? (
                             <Text
                               numberOfLines={1}
@@ -1464,14 +1768,20 @@ const HomeScren = props => {
                                 marginLeft: wp(3),
                                 fontFamily: 'Poppins-Medium',
                               }}>
-                              <Text style={{fontWeight: '800'}}>DATE : </Text>
+                              <Text
+                                style={{
+                                  fontWeight: '500',
+
+                                  fontFamily: 'Poppins-Medium',
+                                }}>
+                                {t('HomeScreen.DATE')} :{' '}
+                              </Text>
                               {item.EventFromDate}
                               {item.EventsToDate
                                 ? ` - ${item.EventsToDate}`
                                 : ''}
                             </Text>
                           ) : null}
-
                           {item.address ? (
                             <Text
                               numberOfLines={1}
@@ -1484,14 +1794,18 @@ const HomeScren = props => {
                                 marginLeft: wp(3),
                                 fontFamily: 'Poppins-Medium',
                               }}>
-                              <Text style={{fontWeight: '800'}}>
-                                LOCATION :
+                              <Text
+                                style={{
+                                  fontWeight: '500',
+
+                                  fontFamily: 'Poppins-Medium',
+                                }}>
+                                {t('HomeScreen.LOCATION')} :
                               </Text>{' '}
                               {item.address}
                               {item.city ? ` , ${item.city}` : ''}
                             </Text>
                           ) : null}
-
                           {item.Detail ? (
                             <Text
                               numberOfLines={2}
@@ -1504,7 +1818,13 @@ const HomeScren = props => {
                                 marginLeft: wp(3),
                                 fontFamily: 'Poppins-Medium',
                               }}>
-                              <Text style={{fontWeight: '800'}}>NOTE :</Text>{' '}
+                              <Text
+                                style={{
+                                  fontWeight: '500',
+                                  fontFamily: 'Poppins-Medium',
+                                }}>
+                                {t('HomeScreen.NOTE')} :
+                              </Text>{' '}
                               {item.Detail}
                             </Text>
                           ) : null}
@@ -1527,7 +1847,7 @@ const HomeScren = props => {
         </LinearGradient>
       </ImageBackground>
 
-      <Modal
+      {/* <Modal
         transparent={true}
         visible={modalVisible}
         animationType="slide"
@@ -1572,7 +1892,14 @@ const HomeScren = props => {
             ))}
           </View>
         </TouchableOpacity>
-      </Modal>
+      </Modal> */}
+
+      <LanguageModal
+        visible={modalVisible}
+        setVisible={setModalVisible}
+        lang={lang}
+        setLang={handleLanguageChange} // Use the handler function
+      />
 
       <View
         style={{
@@ -1586,7 +1913,6 @@ const HomeScren = props => {
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   categoryStyle: {
     color: '#FFFFFF',

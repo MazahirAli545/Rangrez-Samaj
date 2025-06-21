@@ -7,6 +7,8 @@ export const async_keys = {
   PR_ID: 'PR_ID',
   user_data: 'user_data',
   fcm_token: 'fcmToken',
+  language: '@language', // Add this
+  language_code: '@language_code', // Add this
 };
 
 // User Preferences Methods

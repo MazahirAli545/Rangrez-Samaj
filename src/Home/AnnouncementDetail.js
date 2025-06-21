@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   Image,
   ImageBackground,
+  FlatList,
   Animated,
+  RefreshControl,
   ScrollView,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -23,13 +25,21 @@ import share from '../provider/png/share.png';
 import rightarrow from '../provider/png/rightarrow.png';
 import BackgroundImage from '../provider/png/BackgroundImage.png';
 import Swiper from 'react-native-swiper';
+import {BASE_URL} from '../api/ApiInfo';
+import moment from 'moment';
+import PastAnnouncementsEvents from '../Home/PastAnnouncementsEvents';
+import {useTranslation} from 'react-i18next';
 
 const AnnouncementDetail = ({route, props, navigation}) => {
   const {event} = route.params || {};
-
+  const [pastEvents, setPastEvents] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [apiLoader, setApiLoader] = useState(true);
+  const [langCode, setLangCode] = useState('en');
   const scrollY = useRef(new Animated.Value(0)).current;
   const [scrollDirection, setScrollDirection] = useState('up');
   const prevScrollY = useRef(0);
+  const {t} = useTranslation();
 
   // Text animation values
   const textOpacity = scrollY.interpolate({
@@ -38,48 +48,151 @@ const AnnouncementDetail = ({route, props, navigation}) => {
     extrapolate: 'clamp',
   });
 
+  // const handleScroll = Animated.event(
+  //   [{nativeEvent: {contentOffset: {y: scrollY}}}],
+  //   {
+  //     useNativeDriver: false,
+  //     listener: event => {
+  //       const currentScrollY = event.nativeEvent.contentOffset.y;
+  //       if (currentScrollY > prevScrollY.current) {
+  //         setScrollDirection('down');
+  //       } else if (currentScrollY < prevScrollY.current) {
+  //         setScrollDirection('up');
+  //       }
+  //       prevScrollY.current = currentScrollY;
+  //     },
+  //   },
+  // );
+
+  // useEffect(() => {
+  //   const fetchEvents = async () => {
+  //     try {
+  //       const response = await fetch(`${BASE_URL}/events`);
+  //       const result = await response.json();
+  //       console.log('Fetched Past Eventswww:', result.events);
+
+  //       if (Array.isArray(result.events) && result.events.length > 0) {
+  //         const currentDate = new Date();
+
+  //         const formattedData = result.events
+  //           .filter(item => {
+  //             // Only include events where EventsToDate is in the past
+  //             const eventEndDate = new Date(item.EVNT_UPTO_DT);
+  //             return eventEndDate < currentDate;
+  //           })
+  //           .map(item => ({
+  //             id: item.ENVT_ID,
+  //             eventCategoryID: item.ENVT_CATE_ID,
+  //             name: item.ENVT_DESC,
+  //             message: item.ENVT_EXCERPT,
+  //             Detail: item.ENVT_DETAIL,
+  //             headerImage: {uri: item.ENVT_BANNER_IMAGE},
+  //             EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
+  //             EventContact: item.ENVT_CONTACT_NO,
+  //             EventFromDate: item.EVNT_FROM_DT,
+  //             EventsToDate: item.EVNT_UPTO_DT,
+  //             address: item.ENVT_ADDRESS,
+  //             city: item.ENVT_CITY,
+  //             createdEventDate: item.EVET_CREATED_DT,
+  //             cate_desc: item?.SubCategory?.CATE_DESC || '',
+  //           }));
+  //         setPastEvents(formattedData);
+  //         console.log('Events information', formattedData);
+  //       } else {
+  //         console.warn(t('AnnouncementDetail.No valid events data found.'));
+  //       }
+  //     } catch (error) {
+  //       console.error(t('AnnouncementDetail.Error fetching Events:'), error);
+  //     } finally {
+  //       setApiLoader(false);
+  //     }
+  //   };
+
+  //   fetchEvents();
+  // }, []);
+
   const handleScroll = Animated.event(
     [{nativeEvent: {contentOffset: {y: scrollY}}}],
     {
       useNativeDriver: false,
       listener: event => {
         const currentScrollY = event.nativeEvent.contentOffset.y;
-        if (currentScrollY > prevScrollY.current) {
-          setScrollDirection('down');
-        } else if (currentScrollY < prevScrollY.current) {
-          setScrollDirection('up');
-        }
+        setScrollDirection(
+          currentScrollY > prevScrollY.current ? 'down' : 'up',
+        );
         prevScrollY.current = currentScrollY;
       },
     },
   );
 
+  useEffect(() => {
+    const loadLanguagePreference = async () => {
+      try {
+        const savedLangCode = await getData(async_keys.language_code);
+        if (savedLangCode) {
+          setLangCode(savedLangCode);
+        }
+      } catch (error) {
+        console.error('Error loading language preference:', error);
+      }
+    };
+
+    loadLanguagePreference();
+  }, []);
+
+  const fetchPastEvents = async () => {
+    try {
+      setRefreshing(true);
+      setApiLoader(true);
+      const response = await fetch(`${BASE_URL}/events?lang_code=${langCode}`);
+      const result = await response.json();
+
+      if (Array.isArray(result.events)) {
+        const currentDate = new Date();
+        const formattedData = result.events
+          .filter(item => {
+            // Only include events where EventsToDate is in the past
+            const eventEndDate = new Date(item.EVNT_UPTO_DT);
+            return eventEndDate < currentDate && item.ENVT_CATE_ID === 2;
+          })
+          .map(item => ({
+            id: item.ENVT_ID,
+            eventCategoryID: item.ENVT_CATE_ID,
+            name: item.ENVT_DESC,
+            message: item.ENVT_EXCERPT,
+            Detail: item.ENVT_DETAIL,
+            headerImage: {uri: item.ENVT_BANNER_IMAGE},
+            EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
+            EventContact: item.ENVT_CONTACT_NO,
+            EventFromDate: item.EVNT_FROM_DT,
+            EventsToDate: item.EVNT_UPTO_DT,
+            address: item.ENVT_ADDRESS,
+            city: item.ENVT_CITY,
+            createdEventDate: item.EVET_CREATED_DT,
+            cate_desc: item?.SubCategory?.CATE_DESC || '',
+          }));
+        setPastEvents(formattedData);
+      } else {
+        console.warn(t('AnnouncementDetail.No valid events data found.'));
+      }
+    } catch (error) {
+      console.error(t('AnnouncementDetail.Error fetching Events:'), error);
+    } finally {
+      setRefreshing(false);
+      setApiLoader(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPastEvents();
+  }, [langCode]);
+
+  const onRefresh = () => {
+    fetchPastEvents();
+  };
+
   return (
     <SafeAreaView style={styles.MainContainer}>
-      {/* <Animated.View
-        style={[
-          styles.imageContainer,
-          {height: imageHeight, opacity: imageOpacity},
-        ]}>
-        <ImageBackground
-          source={event.headerImage} // Replace with your image source
-          style={styles.imageBackground}>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.leftButton}>
-              <Image
-                source={leftback}
-                style={styles.leftButtonImage}
-                tintColor="#000000"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.rightButton}>
-              <Image source={share} style={styles.rightButtonImage} />
-            </TouchableOpacity>
-          </View>
-        </ImageBackground>
-      </Animated.View> */}
       <Animated.View
         style={[
           styles.floatingTextContainer,
@@ -107,11 +220,15 @@ const AnnouncementDetail = ({route, props, navigation}) => {
       <Animated.ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
-        onScroll={Animated.event(
-          [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: false},
-        )}
-        scrollEventThrottle={16}>
+        // onScroll={Animated.event(
+        //   [{nativeEvent: {contentOffset: {y: scrollY}}}],
+        //   {useNativeDriver: false},
+        // )}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           bounces={false}
@@ -125,28 +242,10 @@ const AnnouncementDetail = ({route, props, navigation}) => {
             style={{flex: 1, paddingBottom: hp(10)}}>
             <ImageBackground
               source={event.headerImage} // Replace with your image source
-              style={{height: hp(25), width: wp(100)}}>
-              {/* <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  onPress={() => navigation.goBack()}
-                  style={styles.leftButton}>
-                  <Image
-                source={leftback}
-                style={styles.leftButtonImage}
-                tintColor="#000000"
-              />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.rightButton}>
-                  <Image source={share} style={styles.rightButtonImage} />
-                </TouchableOpacity>
-              </View> */}
-            </ImageBackground>
+              style={{height: hp(25), width: wp(100)}}></ImageBackground>
             <View
               style={{
                 marginHorizontal: wp(4.5),
-                //  marginTop: hp(27)
-                // backgroundColor: '#000000',
-                // marginTop: hp(21.5),
               }}>
               <Text
                 style={{
@@ -154,9 +253,6 @@ const AnnouncementDetail = ({route, props, navigation}) => {
                   fontWeight: '500',
                   fontSize: hp(2.3),
                   width: wp(80),
-                  // borderWidth: wp(0.1),
-
-                  // marginTop: hp(6),
                   fontFamily: 'Poppins-SemiBold',
                 }}>
                 {event.name}
@@ -230,7 +326,7 @@ const AnnouncementDetail = ({route, props, navigation}) => {
                         textAlign: 'left',
                         fontFamily: 'Poppins-Medium',
                       }}>
-                      Event Date :{' '}
+                      {t('AnnouncementDetail.Event Date')} :{' '}
                       {event.EventFromDate ? event.EventFromDate : '-'}
                       {event.EventsToDate ? ` / ${event.EventsToDate}` : ''}
                     </Text>
@@ -247,7 +343,7 @@ const AnnouncementDetail = ({route, props, navigation}) => {
                         textAlign: 'left',
                         fontFamily: 'Poppins-Medium',
                       }}>
-                      Further Contact :{' '}
+                      {t('AnnouncementDetail.Further Contact')} :{' '}
                       {event.EventContact ? event.EventContact : '-'}
                     </Text>
                     <Text
@@ -262,7 +358,7 @@ const AnnouncementDetail = ({route, props, navigation}) => {
                         textAlign: 'left',
                         fontFamily: 'Poppins-Medium',
                       }}>
-                      Location : {event.address}
+                      {t('AnnouncementDetail.Location')} : {event.address}
                     </Text>
                     <Text
                       style={{
@@ -276,7 +372,7 @@ const AnnouncementDetail = ({route, props, navigation}) => {
 
                         fontFamily: 'Poppins-Medium',
                       }}>
-                      City: {event.city}
+                      {t('AnnouncementDetail.City:')} {event.city}
                     </Text>
                   </View>
                 </View>
@@ -336,33 +432,66 @@ const AnnouncementDetail = ({route, props, navigation}) => {
               </Swiper>
             </View>
 
-            {/* <Text
+            {/* PastEvents */}
+            <View
               style={{
-                marginLeft: wp(6),
-                fontSize: hp(2.2),
-                fontFamily: 'Poppins-Medium',
-                color: '#1F260F',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginHorizontal: wp(6),
               }}>
-              Past Events
-            </Text>
+              <Text
+                style={{
+                  fontSize: hp(2.2),
+                  fontFamily: 'Poppins-Medium',
+                  color: '#1F260F',
+                }}>
+                {t('AnnouncementDetail.Past Events')}
+              </Text>
 
-            <View style={{marginTop: hp(1.5), alignItems: 'center'}}>
+              <Text
+                onPress={() => navigation.navigate('PastAnnouncementsEvents')}
+                style={{
+                  fontSize: hp(2.2),
+                  fontFamily: 'Poppins-Medium',
+                  color: '#1F260F',
+                }}>
+                {t('AnnouncementDetail.more')}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                marginTop: hp(1.5),
+                alignItems: 'center',
+                marginHorizontal: wp(4),
+              }}>
               {pastEvents.length > 0 ? (
                 <FlatList
-                  data={pastEvents}
-                  horizontal={false}
+                  removeClippedSubviews={false}
+                  data={[...pastEvents]
+                    .sort(
+                      (a, b) =>
+                        new Date(b.EventsToDate) - new Date(a.EventsToDate),
+                    )
+                    .filter(event => event.eventCategoryID === 2)
+                    .reverse()
+                    .slice(0, 5)}
+                  horizontal={true}
                   showsHorizontalScrollIndicator={false}
                   showsVerticalScrollIndicator={false}
+                  pagingEnabled={true}
                   keyExtractor={item => item.id.toString()}
                   renderItem={({item}) => (
                     <TouchableOpacity
                       onPress={() =>
-                        props.navigation.navigate('DonationDetail', {
-                          event: item,
+                        navigation.navigate('PastEventsDetails', {
+                          pastEvent: item,
                         })
                       }
                       style={{
-                        marginHorizontal: wp(2),
+                        marginHorizontal: wp(1.5),
+                        // marginLeft: wp(1),
+                        // marginRight: wp(1),
                         width: wp(89),
                         paddingBottom: hp(1),
                         borderRadius: wp(3),
@@ -381,7 +510,7 @@ const AnnouncementDetail = ({route, props, navigation}) => {
                           marginTop: hp(0.6),
                           fontFamily: 'Poppins-Medium',
                         }}>
-                        {moment(item.createdEventDate).format('DD MMM YYYY')}
+                        {moment(item.EventsToDate).format('DD MMM YYYY')}
                       </Text>
                       <Text
                         numberOfLines={2}
@@ -423,10 +552,10 @@ const AnnouncementDetail = ({route, props, navigation}) => {
                     fontFamily: 'Poppins-Medium',
                     alignSelf: 'center',
                   }}>
-                  No past events available.
+                  {t('AnnouncementDetail.No past events available.')}
                 </Text>
               )}
-            </View> */}
+            </View>
           </LinearGradient>
         </KeyboardAwareScrollView>
       </Animated.ScrollView>

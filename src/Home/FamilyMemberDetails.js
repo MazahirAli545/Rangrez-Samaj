@@ -27,8 +27,10 @@ import user from '../provider/png/user.png';
 import {BASE_URL} from '../api/ApiInfo';
 import {getData, async_keys} from '../api/UserPreference';
 import axios from 'axios';
+import {useTranslation} from 'react-i18next';
 
 const FamilyMemberDetails = ({navigation}) => {
+  const {t} = useTranslation();
   // Add the conversion function
   const convertUniqueIdToPrId = async uniqueId => {
     if (!uniqueId) return null;
@@ -37,7 +39,9 @@ const FamilyMemberDetails = ({navigation}) => {
       if (response.data.success && response.data.data) {
         return response.data.data.PR_ID;
       } else {
-        throw new Error(response.data.message || 'Conversion failed');
+        throw new Error(
+          response.data.message || t('FamilyMemberDetails.Conversion failed'),
+        );
       }
     } catch (error) {
       console.error('Error converting PR_UNIQUE_ID:', error);
@@ -71,7 +75,7 @@ const FamilyMemberDetails = ({navigation}) => {
         ) {
           fatherPrId = await convertUniqueIdToPrId(userData.PR_FATHER_ID);
           if (!fatherPrId) {
-            throw new Error('Invalid father ID');
+            throw new Error(t('FamilyMemberDetails.Invalid father ID'));
           }
         }
 
@@ -81,7 +85,7 @@ const FamilyMemberDetails = ({navigation}) => {
         ) {
           motherPrId = await convertUniqueIdToPrId(userData.PR_MOTHER_ID);
           if (!motherPrId) {
-            throw new Error('Invalid mother ID');
+            throw new Error(t('FamilyMemberDetails.Invalid mother ID'));
           }
         }
 
@@ -97,7 +101,10 @@ const FamilyMemberDetails = ({navigation}) => {
 
         const data = await response.json();
         if (!response.ok || !data.success) {
-          throw new Error(data.message || 'Failed to fetch family members');
+          throw new Error(
+            data.message ||
+              t('FamilyMemberDetails.Failed to fetch family members'),
+          );
         }
 
         const filteredMembers = (data.familyMembers || []).filter(
@@ -113,10 +120,12 @@ const FamilyMemberDetails = ({navigation}) => {
       } catch (error) {
         setState(prev => ({
           ...prev,
-          error: error.message || 'Failed to load family members',
+          error:
+            error.message ||
+            t('FamilyMemberDetails.Failed to load family members'),
           loading: false,
         }));
-        console.error('Fetch error:', error);
+        console.error(t('FamilyMemberDetails.Fetch error:'), error);
       }
     },
     [state.token],
@@ -143,7 +152,7 @@ const FamilyMemberDetails = ({navigation}) => {
       } catch (error) {
         setState(prev => ({
           ...prev,
-          error: 'Failed to initialize data',
+          error: t('FamilyMemberDetails.Failed to initialize data'),
           loading: false,
         }));
       }
@@ -174,7 +183,9 @@ const FamilyMemberDetails = ({navigation}) => {
         <TouchableOpacity
           style={styles.retryButton}
           onPress={() => state.userData && fetchFamilyMembers(state.userData)}>
-          <Text style={styles.retryButtonText}>Retry</Text>
+          <Text style={styles.retryButtonText}>
+            {t('FamilyMemberDetails.Retry')}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -234,14 +245,16 @@ const FamilyMemberDetails = ({navigation}) => {
                 tintColor="#000"
               />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Family Details</Text>
+            <Text style={styles.headerTitle}>
+              {t('FamilyMemberDetails.Family Details')}
+            </Text>
           </View>
 
           {/* Search Bar */}
           <View style={styles.searchContainer}>
             <Image source={search} style={styles.searchIcon} />
             <TextInput
-              placeholder="Search family members..."
+              placeholder={t('FamilyMemberDetails.Search family members...')}
               placeholderTextColor="#000"
               value={state.searchText}
               onChangeText={text =>
@@ -259,8 +272,8 @@ const FamilyMemberDetails = ({navigation}) => {
             {filteredData.length === 0 ? (
               <Text style={styles.noResultsText}>
                 {state.searchText
-                  ? 'No matching family members found'
-                  : 'No family members found'}
+                  ? t('FamilyMemberDetails.No matching family members found')
+                  : t('FamilyMemberDetails.No family members found')}
               </Text>
             ) : (
               <FlatList

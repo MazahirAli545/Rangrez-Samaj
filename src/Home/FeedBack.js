@@ -1,4 +1,4 @@
-import {React, useState} from 'react';
+import {React, useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -25,13 +25,16 @@ import axios from 'axios';
 import {BASE_URL} from '../api/ApiInfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImageResizer from 'react-native-image-resizer';
-
+import {sendTestNotification} from '../Notification/Foreground';
+import {useTranslation} from 'react-i18next';
 const FeedBack = props => {
   const [name, setName] = useState('');
   const [mobile, setMobileNo] = useState('');
   const [message, setMessage] = useState('');
   const [apiLoader, setApiLoader] = useState(false);
   const [rating, setRating] = useState(5);
+  const [userData, setUserData] = useState('');
+  const {t} = useTranslation();
   console.log('RATING', rating);
 
   const [errorMessage, setErrorMessage] = useState({});
@@ -48,17 +51,74 @@ const FeedBack = props => {
 
   checkStoredToken();
 
+  // useEffect(() => {
+  //   const checkStoredData = async () => {
+  //     const AuthData = await getData(async_keys.user_data);
+  //     setUserData(AuthData);
+  //   };
+  //   checkStoredData();
+  // }, []);
+
+  // console.log('user Role', userData.PR_NOTIFICATION);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        // Get token first
+        const token = await getData(async_keys.auth_token);
+        if (!token) {
+          console.log('No token available');
+          return;
+        }
+
+        const response = await fetch(`${BASE_URL}profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          setUserData(data.data);
+        } else {
+          setErrorMessage(
+            data.message || t('Feedback.Failed to load profile data'),
+          );
+        }
+      } catch (error) {
+        console.error(t('Feedback.Error fetching profile:'), error);
+        setErrorMessage(t('FeedBack.Failed to load user data.'));
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  console.log('Data', userData?.PR_NOTIFICATION);
+
   const handleConntact = async () => {
+    if (userData?.PR_NOTIFICATION === 'Y') {
+      const templateParams = {
+        title: t('FeedBack.Feedback Received'),
+        body: t(
+          'FeedBack.We appreciate your feedback! Your submission has been received.',
+        ),
+      };
+
+      sendTestNotification(templateParams);
+    }
+
     let error = {};
 
     if (!name.trim()) {
-      error.name = 'Please enter your name.';
+      error.name = t('FeedBack.Please enter your name.');
     }
     if (mobile.length !== 10) {
-      error.mobile = 'Please enter a valid 10-digit mobile number.';
+      error.mobile = t('FeedBack.Please enter a valid 10-digit mobile number.');
     }
     if (!message.trim()) {
-      error.message = 'Please enter a message';
+      error.message = t('FeedBack.Please enter a message');
     }
 
     if (Object.keys(error).length > 0) {
@@ -92,7 +152,7 @@ const FeedBack = props => {
 
       if (response.data.success) {
         ToastAndroid.showWithGravity(
-          'Form Submitted Successfully!',
+          t('FeedBack.Form Submitted Successfully!'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -101,15 +161,15 @@ const FeedBack = props => {
         setMessage('');
       } else {
         ToastAndroid.showWithGravity(
-          response.data.message || 'Form Submission Failed!',
+          response.data.message || t('FeedBack.Form Submission Failed!'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
       }
     } catch (error) {
-      console.error('FeedBack Error:', error);
+      console.error(t('FeedBack.FeedBack Error:'), error);
       ToastAndroid.showWithGravity(
-        'Something went wrong. Please try again.',
+        t('FeedBack.Something went wrong. Please try again.'),
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -160,7 +220,7 @@ const FeedBack = props => {
                   fontWeight: '600',
                   fontSize: hp(3),
                 }}>
-                FeedBack
+                {t('FeedBack.FeedBack')}
               </Text>
             </View>
           </View>
@@ -180,7 +240,7 @@ const FeedBack = props => {
                 fontFamily: 'Poppins-Medium',
                 color: '#1F260F',
               }}>
-              Rangrez FeedBack Form
+              {t('FeedBack.Rangrez FeedBack Form')}
             </Text>
 
             <View
@@ -208,7 +268,7 @@ const FeedBack = props => {
                     marginTop: hp(1.5),
                     fontFamily: 'Poppins-Medium',
                   }}
-                  label="Full Name"
+                  label={t('FeedBack.Full Name')}
                   mode="outlined"
                   value={name}
                   outlineColor="#F27141"
@@ -245,7 +305,7 @@ const FeedBack = props => {
                   keyboardType="phone-pad"
                   nu
                   maxLength={10}
-                  label="Enter Mobile No."
+                  label={t('FeedBack.Enter Mobile No.')}
                   mode="outlined"
                   value={mobile}
                   outlineColor="#F27141"
@@ -281,7 +341,7 @@ const FeedBack = props => {
                     height: hp(21),
                   }}
                   textAlignVertical="top"
-                  label="Enter Your FeedBack"
+                  label={t('FeedBack.Enter Your FeedBack')}
                   mode="outlined"
                   value={message}
                   numberOfLines={8} // Adjust based on how many lines you want to show
@@ -328,7 +388,7 @@ const FeedBack = props => {
                       fontFamily: 'Poppins-SemiBold',
                       color: '#2F4032',
                     }}>
-                    Enjoying the Rangrez App ?
+                    {t('FeedBack.Enjoying the Rangrez App ?')}
                   </Text>
                   <Text
                     style={{
@@ -337,12 +397,18 @@ const FeedBack = props => {
                       fontFamily: 'Poppins-SemiBold',
                       color: '#2F4032',
                     }}>
-                    Rate Us
+                    {t('FeedBack.Rate Us')}
                   </Text>
 
                   <AirbnbRating
                     count={5}
-                    reviews={['Bad', 'ok', 'Average', 'Good', 'Amazing']}
+                    reviews={[
+                      t('FeedBack.Bad'),
+                      t('FeedBack.ok'),
+                      t('FeedBack.Average'),
+                      t('FeedBack.Good'),
+                      t('FeedBack.Amazing'),
+                    ]}
                     defaultRating={5}
                     size={35}
                     reviewSize={25} // Font size of reviews
@@ -376,7 +442,7 @@ const FeedBack = props => {
                   }}>
                   <Text
                     style={{fontFamily: 'Poppins-Medium', fontSize: hp(2.2)}}>
-                    Submit
+                    {t('FeedBack.Submit')}
                   </Text>
                 </TouchableOpacity>
               </KeyboardAwareScrollView>

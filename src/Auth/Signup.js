@@ -66,7 +66,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ProfileDataContext} from '../Auth/ProfileDataContext';
 import ImageResizer from 'react-native-image-resizer';
 import {use} from 'i18next';
-import {sendTestNotification} from '../Notification/Foreground';
+import {
+  sendPushNotification,
+  sendTestNotification,
+  sendAdminNotification,
+} from '../Notification/Foreground';
+import {useTranslation} from 'react-i18next';
 
 const Signup = props => {
   const [fullname, setFullName] = useState('');
@@ -123,6 +128,9 @@ const Signup = props => {
   const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
   const [isPersonalDetailsChanged, setIsPersonalDetailsChanged] =
     useState(false);
+  const [userNotificationData, setUserNotificationData] = useState('');
+  const [adminFcmToken, setAdminFcmToken] = useState([]);
+  const {t} = useTranslation();
 
   console.log('idd', uniqueId);
 
@@ -275,7 +283,7 @@ const Signup = props => {
     if (props.pageName == 'profile') {
       const fetchToken = async () => {
         const storedToken = await getData(async_keys.auth_token);
-        setToken(storedToken || 'No Token Found');
+        setToken(storedToken || t('Sign up.No Token Found'));
       };
 
       fetchToken();
@@ -290,7 +298,7 @@ const Signup = props => {
           setToken(storedToken);
 
           if (!storedToken) {
-            throw new Error('No authentication token found');
+            throw new Error(t('Sign up.No authentication token found'));
           }
 
           setErrorMessage('');
@@ -304,7 +312,9 @@ const Signup = props => {
           const data = await response.json();
 
           if (!response.ok) {
-            throw new Error(data.message || 'Failed to fetch profile data');
+            throw new Error(
+              data.message || t('Sign up.Failed to fetch profile data'),
+            );
           }
 
           if (data.success && data.data) {
@@ -352,17 +362,21 @@ const Signup = props => {
               animated: false,
             });
           } else {
-            setErrorMessage(data.message || 'Failed to load user data');
+            setErrorMessage(
+              data.message || t('Sign up.Failed to load user data'),
+            );
           }
         } catch (error) {
           console.error('Error fetching profile:', error);
-          setErrorMessage('Failed to load user data.');
+          setErrorMessage(t('Sign up.Failed to load user data'));
         }
       };
 
       fetchTokenAndProfile();
     }
   }, [props.pageName, token]);
+
+  // console.log('Information', userData);
 
   useEffect(() => {
     if (userData?.Children && Array.isArray(userData.Children)) {
@@ -379,6 +393,45 @@ const Signup = props => {
 
   // console.log('PRofession', profession);
 
+  //this one is for notification is y or N in Add FamilyMember
+  if (props.pageName === 'AddFamilyMembers') {
+    useEffect(() => {
+      const fetchUserProfile = async () => {
+        try {
+          // Get token first
+          const token = await getData(async_keys.auth_token);
+          if (!token) {
+            console.log('No token available');
+            return;
+          }
+
+          const response = await fetch(`${BASE_URL}profile`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const data = await response.json();
+
+          if (data.success && data.data) {
+            setUserNotificationData(data.data);
+          } else {
+            setErrorMessage(
+              data.message || t('Sign up.Failed to load profile data'),
+            );
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+          setErrorMessage(t('Sign up.Failed to load user data'));
+        }
+      };
+
+      fetchUserProfile();
+    }, []);
+  }
+
+  console.log('Response', userNotificationData);
+
   const existingHobbies = userData?.PR_HOBBY
     ? userData.PR_HOBBY.split(',')
     : [];
@@ -394,7 +447,9 @@ const Signup = props => {
       if (response.data.success && response.data.data) {
         return response.data.data.PR_ID;
       } else {
-        throw new Error(response.data.message || 'Conversion failed');
+        throw new Error(
+          response.data.message || t('Sign up.Conversion failed'),
+        );
       }
     } catch (error) {
       console.error('Error converting PR_UNIQUE_ID:', error);
@@ -407,16 +462,16 @@ const Signup = props => {
 
     let errors = {};
 
-    if (!fullname) errors.fullname = 'Full name is required';
-    if (!mobile) errors.mobile = 'Mobile number is required';
-    if (!date) errors.date = 'Date of birth is required';
+    if (!fullname) errors.fullname = t('Sign up.Full name is required');
+    if (!mobile) errors.mobile = t('Sign up.Mobile number is required');
+    if (!date) errors.date = t('Sign up.Date of birth is required');
 
-    if (!pincode) errors.pincode = 'Pincode is required';
-    if (!city) errors.city = 'City is required';
-    if (!address) errors.address = 'Address is required';
+    if (!pincode) errors.pincode = t('Sign up.Pincode is required');
+    if (!city) errors.city = t('Sign up.City is required');
+    if (!address) errors.address = t('Sign up.Address is required');
 
-    if (!fathername) errors.fathername = 'Father name is required';
-    if (!mothername) errors.mothername = 'Mother name is required';
+    if (!fathername) errors.fathername = t('Sign up.Father name is required');
+    if (!mothername) errors.mothername = t('Sign up.Mother name is required');
 
     // If there are validation errors, stop registration
     if (Object.keys(errors).length > 0) {
@@ -447,7 +502,7 @@ const Signup = props => {
       if (!prIdToUse) {
         console.error('PR_ID is missing!');
         ToastAndroid.showWithGravity(
-          'User identification failed. Please login again.',
+          t('Sign up.User identification failed. Please login again.'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -502,7 +557,7 @@ const Signup = props => {
           motherPrId ||
           (props.pageName === 'AddFamilyMembers'
             ? props.route.params.currentuserPR_ID
-            : NULL),
+            : null),
       );
       formData.append(
         'PR_BUSS_STREAM',
@@ -544,7 +599,7 @@ const Signup = props => {
         } catch (resizeError) {
           console.error('Image Resize Error:', resizeError);
           ToastAndroid.showWithGravity(
-            'Image processing failed. Try another image.',
+            t('Sign up.Image processing failed. Try another image.'),
             ToastAndroid.LONG,
             ToastAndroid.TOP,
           );
@@ -600,38 +655,66 @@ const Signup = props => {
       setUniqueId(response.data.updatedProfile?.PR_UNIQUE_ID || null);
 
       if (
-        props.pageName === 'signup' &&
+        props.pageName !== 'profile' &&
+        props.pageName !== 'AddFamilyMembers' &&
         response.data.updatedProfile?.PR_IS_COMPLETED === 'Y'
       ) {
         const templateParams = {
-          title: 'Registration Successfully',
-          body: `Dear ${fullname}, your PR ID is ${response.data.updatedProfile?.PR_UNIQUE_ID}. '\n' Please keep it safe for future reference.`,
+          title: t('Sign up.Registration Successfully'),
+          body: `${t('Sign up.Dear')} ${fullname}${t(
+            'Sign up., your PR ID is',
+          )} ${response.data.updatedProfile?.PR_UNIQUE_ID}. ${t(
+            'Sign up.Please keep it safe for future reference.',
+          )}`,
+        };
+        const templateParams2 = {
+          title: t('Sign up.Registration Successfull'),
+          body: `${t('Sign up.User')} ${fullname} ${t('Sign up.with PR ID')} ${
+            response.data.updatedProfile?.PR_UNIQUE_ID
+          } ${t('has been registered successfully.')}`,
+        };
+        sendTestNotification(templateParams);
+        sendAdminNotification(templateParams2.title, templateParams2.body);
+      }
+
+      if (
+        props.pageName === 'AddFamilyMembers' &&
+        response.data.updatedProfile?.PR_UNIQUE_ID &&
+        userNotificationData?.PR_NOTIFICATION === 'Y'
+      ) {
+        const templateParams = {
+          title: t('Sign up.Family Member Added Successfully.'),
+          body: `${fullname} ${t(
+            'Sign up.has been successfully added to your family. Their PR ID is',
+          )} ${response.data.updatedProfile?.PR_UNIQUE_ID}.`,
         };
         sendTestNotification(templateParams);
       }
 
       if (
-        props.pageName === 'AddFamilyMembers' &&
-        response.data.updatedProfile?.PR_UNIQUE_ID
+        props.pageName === 'profile' &&
+        // response.data.updatedProfile?.PR_UNIQUE_ID &&
+        userNotificationData?.PR_NOTIFICATION === 'Y'
       ) {
         const templateParams = {
-          title: 'Family Member Added Successfully.',
-          // body: `Dear ${fullname}, is added in your family, Their  PR ID IS ${response.data.updatedProfile?.PR_UNIQUE_ID}.`,
-          body: `${fullname} has been successfully added to your family. Their PR ID is ${response.data.updatedProfile?.PR_UNIQUE_ID}.`,
+          title: t('Sign up.Your Profile Updated Successfully.'),
+          body: `${fullname}'${t(
+            'Sign up.s profile has been successfully updated. Their PR ID is',
+          )} ${response.data.updatedProfile?.PR_UNIQUE_ID}.`,
         };
         sendTestNotification(templateParams);
       }
-      // console.log('PR_UNIQUE_ID:', response.data.updatedProfile?.PR_UNIQUE_ID);
+      // }
 
       if (response.data?.success) {
-        let successMessage = 'Profile created successfully';
-        let navigationTarget = 'Signin';
+        let successMessage = t('Sign up.Profile created successfully');
+        let navigationTarget = t('Sign up.Signin');
 
         if (props.pageName === 'profile') {
-          successMessage = 'Profile updated successfully';
+          successMessage = t('Sign up.Profile updated successfully');
           navigationTarget = 'HomeScreen';
         } else if (props.pageName === 'AddFamilyMembers') {
-          successMessage = 'Family member added successfully';
+          successMessage = t('Sign up.Family member added successfully');
           navigationTarget = 'Drawer';
         }
 
@@ -644,7 +727,7 @@ const Signup = props => {
         props.navigation.navigate(navigationTarget);
       } else {
         ToastAndroid.showWithGravity(
-          response.data.message || 'Update failed',
+          response.data.message || t('Sign up.Update failed'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -653,7 +736,7 @@ const Signup = props => {
       console.error('Updation Error:', error.response || error);
       console.log(error.response?.data?.message);
       ToastAndroid.showWithGravity(
-        'Something went wrong. Please try again.',
+        t('Sign up.Something went wrong. Please try again.'),
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -1052,33 +1135,35 @@ const Signup = props => {
         isPersonalDetailsChanged &&
         !isMobileVerified
       ) {
-        errors.mobileVerification = 'Please verify your details';
+        errors.mobileVerification = t('Sign up.Please verify your details');
       } else if (props.pageName !== 'profile' && !isMobileVerified) {
-        errors.mobileVerification = 'Please verify your mobile number';
+        errors.mobileVerification = t(
+          'Sign up.Please verify your mobile number',
+        );
       }
 
-      if (!fullname) errors.fullname = 'Full name is required';
+      if (!fullname) errors.fullname = t('Sign up.Full name is required');
       if (!mobile) {
-        errors.mobile = 'Mobile number is required';
+        errors.mobile = t('Sign up.Mobile number is required');
       } else if (mobile.length !== 10) {
-        errors.mobile = 'Please enter 10 digits mobile number';
+        errors.mobile = t('Sign up.Please enter 10 digits mobile number');
       }
-      if (!date) errors.date = 'Date of birth is required';
+      if (!date) errors.date = t('Sign up.Date of birth is required');
     }
     // Add this condition to validate AddressDetails when it's the current page
     else if (
       currentPage === 2 ||
       pages[currentPage]?.type?.name === 'AddressDetails'
     ) {
-      if (!pincode) errors.pincode = 'Pincode is required';
-      if (!city) errors.city = 'City is required';
-      if (!address) errors.address = 'Address is required';
+      if (!pincode) errors.pincode = t('Sign up.Pincode is required');
+      if (!city) errors.city = t('Sign up.City is required');
+      if (!address) errors.address = t('Sign up.Address is required');
     } else if (
       pages[currentPage]?.type?.name === 'ParentsDetails' &&
       age < 21
     ) {
-      if (!fathername) errors.fathername = 'Father name is required';
-      if (!mothername) errors.mothername = 'Mother name is required';
+      if (!fathername) errors.fathername = t('Sign up.Father name is required');
+      if (!mothername) errors.mothername = t('Sign up.Mother name is required');
 
       if (errorMessageRegister?.fatherId) {
         errors.fatherId = errorMessageRegister.fatherId;
@@ -1099,10 +1184,10 @@ const Signup = props => {
       children.forEach((child, index) => {
         if (child.name?.trim() || child.dob) {
           if (!child.name?.trim()) {
-            errors[`name_${child.id}`] = 'Child Name is required';
+            errors[`name_${child.id}`] = t('Sign up.Child Name is required');
           }
           if (!child.dob) {
-            errors[`dob_${child.id}`] = 'Child DOB is required';
+            errors[`dob_${child.id}`] = t('Sign up.Child DOB is required');
           }
         }
       });
@@ -1149,7 +1234,7 @@ const Signup = props => {
     ) {
       setErrorMessageRegister({
         ...errorMessageRegister,
-        mobileVerification: 'Please verify your details',
+        mobileVerification: t('Sign up.Please verify your details'),
       });
       return;
     }
@@ -1253,106 +1338,131 @@ const Signup = props => {
 
   const progressPercentage = ((currentPage + 1) / pages.length) * 100;
 
-  const registerUser = async () => {
-    setErrorMessageRegister('');
-
-    let errors = {};
-
-    if (!fullname) errors.fullname = 'Full name is required';
-    if (!mobile) errors.mobile = 'Mobile number is required';
-    if (!date) errors.date = 'Date of birth is required';
-
-    if (!pincode) errors.pincode = 'Pincode is required';
-    if (!city) errors.city = 'City is required';
-    if (!address) errors.address = 'Address is required';
-
-    if (age < 21) {
-      if (!fathername) errors.fathername = 'Father name is required';
-      if (!mothername) errors.mothername = 'Mother name is required';
-    }
-
-    // If there are validation errors, stop registration
-    if (Object.keys(errors).length > 0) {
-      setErrorMessageRegister(errors);
-
-      if (!fullname || !mobile || !date) {
-        setCurrentPage(0);
-      } else if (!pincode || !city || !address) {
-        setCurrentPage(2);
-      } else if (age < 21 && (!fathername || !mothername)) {
-        setCurrentPage(7);
-      }
-
-      // Scroll to the required section
-      if (scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({
-          x: wp(100) * currentPage,
-          animated: true,
-        });
-      }
-
-      return;
-    }
-
-    // setApiLoader(true);
-
-    try {
-      const response = await axios.post(`${BASE_URL}register`, {
-        PR_FULL_NAME: String(fullname),
-        PR_DOB: String(date),
-        PR_MOBILE_NO: String(mobile),
-        PR_GENDER: String(gender),
-        PR_PIN_CODE: String(pincode),
-
-        PR_ADDRESS: String(address),
-        PR_CITY_CODE: String(cityCode),
-        PR_STATE_CODE: String(stateCode),
-        PR_STATE_NAME: String(stateName),
-        PR_DISTRICT_CODE: String(districtCode),
-        PR_DISTRICT_NAME: String(districtName),
-        PR_AREA_NAME: String(city),
-        PR_EDUCATION: String(education),
-        PR_EDUCATION_DESC: String(institution),
-        PR_PROFESSION_ID: Number(professionId),
-        PR_PROFESSION_DETA: String(professionDesc),
-        PR_SPOUSE_NAME: String(spousename),
-        PR_FATHER_NAME: String(fathername),
-        // PR_FATHER_ID: String(fatherId),
-        // PR_MOTHER_ID: String(motherId),
-        PR_SPOUSE_ID: Number(spouseId),
-        PR_MOTHER_NAME: String(mothername),
-        Children: children,
-        PR_MARRIED_YN: String(userMarried),
-      });
-
-      console.log('TTTTTTT', response.data);
-
-      if (response.data.success) {
-        ToastAndroid.showWithGravity(
-          'Registration Successful!',
-          ToastAndroid.LONG,
-          ToastAndroid.TOP,
+  useEffect(() => {
+    const getAllAdminFcmTokens = async () => {
+      try {
+        const response = await axios.get(
+          `https://node2-plum.vercel.app/api/fcm/get-all-admin-fcm-tokens`,
         );
-        props.navigation.navigate('Signin');
-      } else {
-        setErrorMessageRegister(response.data.message) ||
-          ToastAndroid.showWithGravity(
-            response.data.message || 'Registration failed',
-            ToastAndroid.LONG,
-            ToastAndroid.TOP,
-          );
+        if (response.data.success) {
+          console.log('Admin FCM tokens:', response.data.data);
+
+          // const AdminFcmToken = response.data.data;
+          setAdminFcmToken(response.data.data.map(item => item.fcmToken));
+          // Optional: Save to state if needed
+        } else {
+          console.error('Failed to get admin tokens:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error getting admin tokens:', error);
       }
-    } catch (error) {
-      console.error('Registration Error:', error);
-      ToastAndroid.showWithGravity(
-        'Something went wrong. Please try again.',
-        ToastAndroid.LONG,
-        ToastAndroid.TOP,
-      );
-    } finally {
-      // setApiLoader(false);
-    }
-  };
+    };
+
+    getAllAdminFcmTokens();
+  }, []);
+
+  console.log('GATATAT', adminFcmToken);
+
+  // const registerUser = async () => {
+  //   setErrorMessageRegister('');
+
+  //   let errors = {};
+
+  //   if (!fullname) errors.fullname = 'Full name is required';
+  //   if (!mobile) errors.mobile = 'Mobile number is required';
+  //   if (!date) errors.date = 'Date of birth is required';
+
+  //   if (!pincode) errors.pincode = 'Pincode is required';
+  //   if (!city) errors.city = 'City is required';
+  //   if (!address) errors.address = 'Address is required';
+
+  //   if (age < 21) {
+  //     if (!fathername) errors.fathername = 'Father name is required';
+  //     if (!mothername) errors.mothername = 'Mother name is required';
+  //   }
+
+  //   // If there are validation errors, stop registration
+  //   if (Object.keys(errors).length > 0) {
+  //     setErrorMessageRegister(errors);
+
+  //     if (!fullname || !mobile || !date) {
+  //       setCurrentPage(0);
+  //     } else if (!pincode || !city || !address) {
+  //       setCurrentPage(2);
+  //     } else if (age < 21 && (!fathername || !mothername)) {
+  //       setCurrentPage(7);
+  //     }
+
+  //     // Scroll to the required section
+  //     if (scrollViewRef.current) {
+  //       scrollViewRef.current.scrollTo({
+  //         x: wp(100) * currentPage,
+  //         animated: true,
+  //       });
+  //     }
+
+  //     return;
+  //   }
+
+  //   // setApiLoader(true);
+
+  //   try {
+  //     const response = await axios.post(`${BASE_URL}register`, {
+  //       PR_FULL_NAME: String(fullname),
+  //       PR_DOB: String(date),
+  //       PR_MOBILE_NO: String(mobile),
+  //       PR_GENDER: String(gender),
+  //       PR_PIN_CODE: String(pincode),
+
+  //       PR_ADDRESS: String(address),
+  //       PR_CITY_CODE: String(cityCode),
+  //       PR_STATE_CODE: String(stateCode),
+  //       PR_STATE_NAME: String(stateName),
+  //       PR_DISTRICT_CODE: String(districtCode),
+  //       PR_DISTRICT_NAME: String(districtName),
+  //       PR_AREA_NAME: String(city),
+  //       PR_EDUCATION: String(education),
+  //       PR_EDUCATION_DESC: String(institution),
+  //       PR_PROFESSION_ID: Number(professionId),
+  //       PR_PROFESSION_DETA: String(professionDesc),
+  //       PR_SPOUSE_NAME: String(spousename),
+  //       PR_FATHER_NAME: String(fathername),
+  //       // PR_FATHER_ID: String(fatherId),
+  //       // PR_MOTHER_ID: String(motherId),
+  //       PR_SPOUSE_ID: Number(spouseId),
+  //       PR_MOTHER_NAME: String(mothername),
+  //       Children: children,
+  //       PR_MARRIED_YN: String(userMarried),
+  //     });
+
+  //     console.log('TTTTTTT', response.data);
+
+  //     if (response.data.success) {
+  //       ToastAndroid.showWithGravity(
+  //         'Registration Successful!',
+  //         ToastAndroid.LONG,
+  //         ToastAndroid.TOP,
+  //       );
+  //       props.navigation.navigate('Signin');
+  //     } else {
+  //       setErrorMessageRegister(response.data.message) ||
+  //         ToastAndroid.showWithGravity(
+  //           response.data.message || 'Registration failed',
+  //           ToastAndroid.LONG,
+  //           ToastAndroid.TOP,
+  //         );
+  //     }
+  //   } catch (error) {
+  //     console.error('Registration Error:', error);
+  //     ToastAndroid.showWithGravity(
+  //       'Something went wrong. Please try again.',
+  //       ToastAndroid.LONG,
+  //       ToastAndroid.TOP,
+  //     );
+  //   } finally {
+  //     // setApiLoader(false);
+  //   }
+  // };
   console.log('uniqueIdff', uniqueId);
 
   return (
@@ -1414,7 +1524,7 @@ const Signup = props => {
                             fontFamily: 'Poppins-SemiBold',
                             alignSelf: 'flex-end',
                           }}>
-                          OverView
+                          {t('Sign up.OverView')}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
@@ -1447,34 +1557,6 @@ const Signup = props => {
                       ) : (
                         <Image source={user} style={styles.UserImageDesign} />
                       )}
-                      {/* <Image
-                        source={
-                          profilePicture?.uri
-                            ? {uri: profilePicture.uri}
-                            : PROFILE && typeof PROFILE === 'string'
-                            ? {
-                                uri: PROFILE.startsWith('http')
-                                  ? PROFILE
-                                  : `https://${PROFILE}`,
-                              }
-                            : user
-                        }
-                        style={{
-                          height: hp(13),
-                          width: hp(13),
-                          borderRadius: hp(6.5),
-                          borderWidth: 1,
-                          borderColor: 'red',
-                          resizeMode: 'cover',
-                        }}
-                        onError={e => {
-                          console.log(
-                            '❌ Failed to load image:',
-                            e.nativeEvent,
-                          );
-                          console.log('Attempted URL:', PROFILE);
-                        }}
-                      /> */}
 
                       <Image
                         source={add}
@@ -1505,7 +1587,7 @@ const Signup = props => {
                       fontFamily: 'Poppins-Medium',
                     }}>
                     {}
-                    {fullname || 'Full Name'}
+                    {fullname || t('Sign up.Full Name')}
                   </Text>
                   <Text
                     style={{
@@ -1516,7 +1598,7 @@ const Signup = props => {
                     }}>
                     {city
                       ? `${city}${stateName ? ', ' + stateName : ''}`
-                      : stateName || 'Jaipur, Rajasthan'}
+                      : stateName || t('Sign up.Jaipur, Rajasthan')}
                   </Text>
                 </View>
               ) : props.pageName === 'AddFamilyMembers' ? (
@@ -1549,54 +1631,17 @@ const Signup = props => {
                           fontWeight: '600',
                           fontSize: hp(3),
                         }}>
-                        Add Family Members
+                        {/* Add Family Members */}
+                        {t('Sign up.Add Family Members')}
                       </Text>
                     </View>
                   </View>
 
                   <Text style={styles.HeadingText}>
-                    Keep your family details updated{'\n'}to help build a
-                    stronger Rangrej{'\n'}Samaj community
+                    {/* Keep your family details updated{'\n'}to help build a
+                    stronger Rangrej{'\n'}Samaj community */}
+                    {t('Sign up.AddMemberMessg')}
                   </Text>
-
-                  {/* <View
-                    style={{
-                      alignItems: 'center',
-                      marginTop: hp(2),
-                      marginBottom: hp(2),
-                    }}>
-                    <TouchableOpacity>
-                      {profilePicture === null ? (
-                        <Image source={user} style={styles.UserImageDesign} />
-                      ) : (
-                        <TouchableOpacity onPress={() => setModalVisible(true)}>
-                          <Image
-                            source={{uri: profilePicture.uri}}
-                            style={styles.UserImageDesign}
-                          />
-                        </TouchableOpacity>
-                      )}
-                      <TouchableOpacity onPress={() => setModalVisible(true)}>
-                        <Image
-                          source={add}
-                          style={{
-                            height: hp(3),
-                            width: wp(6),
-                            position: 'absolute',
-                            bottom: hp(0.5),
-                            right: wp(3),
-                          }}
-                          tintColor={'#000000'}
-                        />
-                      </TouchableOpacity>
-                    </TouchableOpacity>
-
-                    <CustomImagePicker
-                      modalVisible={modalVisible}
-                      onClose={() => setModalVisible(false)}
-                      onImageSelect={handleImageSelect}
-                    />
-                  </View> */}
                 </>
               ) : (
                 <View>
@@ -1613,7 +1658,8 @@ const Signup = props => {
                       fontSize: hp(3.1),
                       fontFamily: 'Poppins-Medium',
                     }}>
-                    Create Account
+                    {/* Create Account */}
+                    {t('Sign up.Create Account')}
                   </Text>
 
                   <Text
@@ -1624,41 +1670,12 @@ const Signup = props => {
                       textAlign: 'center',
                       marginTop: hp(2),
                     }}>
-                    Create your account to connect {'\n'} grow, and thrive with
-                    our Rangrej{'\n'} Samaj community
+                    {/* Create your account to connect {'\n'} grow, and thrive with
+                    our Rangrej{'\n'} Samaj community */}
+                    {t('Sign up.Create Message')}
                   </Text>
                 </View>
               )}
-
-              {/* <View>
-                  <TouchableOpacity onPress={() => props.navigation.goBack()}>
-                    <Image
-                      source={leftback}
-                      tintColor={'black'}
-                      style={{height: hp(5), aspectRatio: 1 / 1, margin: hp(2)}}
-                    />
-                  </TouchableOpacity>
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      fontSize: hp(3.1),
-                      fontFamily: 'Poppins-Medium',
-                    }}>
-                    Create Account
-                  </Text>
-
-                  <Text
-                    style={{
-                      alignSelf: 'center',
-                      fontFamily: 'Poppins-Regular',
-                      fontSize: hp(2),
-                      textAlign: 'center',
-                      marginTop: hp(2),
-                    }}>
-                    Create your account to connect {'\n'} grow, and thrive with
-                    our Rangrej{'\n'} Samaj community
-                  </Text>
-                </View> */}
 
               <View style={styles.progressBarContainer}>
                 <View
@@ -1669,7 +1686,7 @@ const Signup = props => {
                 />
               </View>
               <Text style={styles.progressText}>
-                {Math.round(progressPercentage)}% Completed
+                {Math.round(progressPercentage)}% {t('Sign up.Completed')}
               </Text>
 
               <View style={{flex: 1, height: hp(55)}}>
@@ -1750,7 +1767,8 @@ const Signup = props => {
                               justifyContent: 'center',
                             }}>
                             <Text style={{color: '#FFF', fontSize: hp(1.8)}}>
-                              Continue
+                              {/* Continue */}
+                              {t('Sign up.Continue')}
                             </Text>
                           </TouchableOpacity>
                           // </View>
@@ -1771,7 +1789,8 @@ const Signup = props => {
                           justifyContent: 'center',
                         }}>
                         <Text style={{color: '#FFF', fontSize: hp(2)}}>
-                          Save & Continue
+                          {/* Save & Continue */}
+                          {t('Sign up.Save & Continue')}
                         </Text>
                       </TouchableOpacity>
                     )}
@@ -1783,12 +1802,16 @@ const Signup = props => {
                         (currentPage < pages.length - 1 ? (
                           <View style={styles.navButtons}>
                             <TouchableOpacity onPress={handleSkip}>
-                              <Text style={styles.skipText}>Skip all</Text>
+                              <Text style={styles.skipText}>
+                                {t('Sign up.Skip all')}
+                              </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                               onPress={handleContinue}
                               style={styles.continueButton}>
-                              <Text style={styles.continueText}>Continue</Text>
+                              <Text style={styles.continueText}>
+                                {t('Sign up.Continue')}
+                              </Text>
                             </TouchableOpacity>
                           </View>
                         ) : props.pageName === 'profile' ? (
@@ -1806,7 +1829,8 @@ const Signup = props => {
                               justifyContent: 'center',
                             }}>
                             <Text style={{color: '#FFF', fontSize: hp(2)}}>
-                              Save & Continue
+                              {/* Save & Continue */}
+                              {t('Sign up.Save & Continue')}
                             </Text>
                           </TouchableOpacity>
                         ) : // )}
@@ -1816,7 +1840,9 @@ const Signup = props => {
                               await UpdateUser();
                             }}
                             style={styles.signUpButton}>
-                            <Text style={styles.signUpText}>Add Member</Text>
+                            <Text style={styles.signUpText}>
+                              {t('Sign up.Add Member')}
+                            </Text>
                           </TouchableOpacity>
                         ) : (
                           <TouchableOpacity
@@ -1824,7 +1850,9 @@ const Signup = props => {
                               await UpdateUser();
                             }}
                             style={styles.signUpButton}>
-                            <Text style={styles.signUpText}>Sign Up</Text>
+                            <Text style={styles.signUpText}>
+                              {t('Sign up.Sign up')}
+                            </Text>
                           </TouchableOpacity>
                         ))
                       // <TouchableOpacity
@@ -1893,13 +1921,10 @@ const styles = StyleSheet.create({
   },
   dropdown1: {
     height: hp(6),
-
     width: wp(88),
-
     elevation: 5,
     backgroundColor: '#FFFFFF',
     borderBottomColor: 'gray',
-    // borderWidth: wp(.3),
     alignItems: 'center',
     alignSelf: 'center',
     paddingHorizontal: wp(5),
@@ -1941,15 +1966,8 @@ const styles = StyleSheet.create({
     marginTop: hp(2),
   },
   preview: {
-    // flex: 1,
     height: hp(47),
-    // width: wp(40),
-    // justifyContent: 'center',
-    // alignItems: 'center',
-    // justifyContent: 'flex-end',
-    // alignItems: 'center',
     marginHorizontal: wp(4),
-    // marginVertical: hp(2),
   },
   insideCaptureButton: {
     width: 65,

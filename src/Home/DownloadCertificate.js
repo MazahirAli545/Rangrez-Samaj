@@ -31,11 +31,17 @@ import leftback from '../provider/png/leftback.png';
 import downloadicon from '../provider/png/downloadicon.png';
 import CertificateUser from '../provider/png/CertificateUser.png';
 import Share from 'react-native-share';
+import {sendTestNotification} from '../Notification/Foreground';
+import {useTranslation} from 'react-i18next';
 const CertificateScreen = ({route, navigation}) => {
-  // const [lastSavedPath, setLastSavedPath] = useState(null);
+  const {t} = useTranslation();
+
+  console.log('Data', userData?.PR_NOTIFICATION);
   const userData = route.params;
 
   const viewShotRef = useRef(null);
+
+  console.log('WEWEWEWE', userData?.PR_NOTIFICATION);
 
   const requestPermission = async () => {
     if (Platform.OS === 'android') {
@@ -46,27 +52,19 @@ const CertificateScreen = ({route, navigation}) => {
           : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
 
       const granted = await PermissionsAndroid.request(permission, {
-        title: 'Storage Permission',
-        message: 'App needs access to your storage to save the certificate.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
+        title: t('DownLoadCertificate.Storage Permission'),
+        message: t(
+          'DownLoadCertificate.App needs access to your storage to save the certificate.',
+        ),
+        buttonNeutral: t('DownLoadCertificate.Ask Me Later'),
+        buttonNegative: t('DownLoadCertificate.Cancel'),
+        buttonPositive: t('DownLoadCertificate.OK'),
       });
 
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     }
     return true;
   };
-
-  // const CertificateTemplate = ({userName, courseName, date, userUniqueId}) => (
-  //   <ImageBackground
-  //     source={CertificateUser}
-  //     style={styles.templateContainer}
-  //     resizeMode="contain">
-  //     <Text style={styles.templateUser1}>{userUniqueId}</Text>
-  //     <Text style={styles.templateUser}>{userName}</Text>
-  //   </ImageBackground>
-  // );
 
   const CertificateTemplate = ({userName, userUniqueId}) => (
     <View style={styles.templateContainer}>
@@ -90,19 +88,31 @@ const CertificateScreen = ({route, navigation}) => {
     try {
       const permission = await requestPermission();
       if (!permission) {
-        Alert.alert('Permission denied', 'Cannot save without permission.');
+        Alert.alert(
+          t(
+            'DownLoadCertificate.Permission denied',
+            'Cannot save without permission.',
+          ),
+        );
         return;
       }
 
       setTimeout(async () => {
         if (!viewShotRef.current) {
-          Alert.alert('Error', 'Certificate not ready for capture.');
+          Alert.alert(
+            t('DownLoadCertificate.Error'),
+            t('DownLoadCertificate.Certificate not ready for capture.'),
+          );
           return;
         }
 
         const uri = await viewShotRef.current.capture();
-        const folderPath = `${RNFS.DownloadDirectoryPath}/Rangrez`;
-        const fileName = `Certificate_${userData.PR_FULL_NAME}${userData.PR_UNIQUE_ID}.png`;
+        const folderPath = `${RNFS.DownloadDirectoryPath}/${t(
+          'DownLoadCertificate.Rangrez',
+        )}`;
+        const fileName = `${t('DownLoadCertificate,Certificate')}_${
+          userData.PR_FULL_NAME
+        }_${userData.PR_UNIQUE_ID}.png`;
         const destPath = `${folderPath}/${fileName}`;
 
         // ✅ Create the folder if it doesn't exist
@@ -114,11 +124,22 @@ const CertificateScreen = ({route, navigation}) => {
         // ✅ Save the image to the new folder
         await RNFS.copyFile(uri, destPath);
 
-        Alert.alert('Success', `Certificate saved to: ${destPath}`);
+        // Alert.alert('Success', `Certificate saved to: ${destPath}`);
+
+        if (userData?.PR_NOTIFICATION === 'Y') {
+          const templateParams = {
+            title: t('DownLoadCertificate.DownLoad Certificate Successfully'),
+            body: `${t(
+              'DownLoadCertificate.certificate Saved at',
+            )} ${destPath} `,
+          };
+
+          sendTestNotification(templateParams);
+        }
         await FileViewer.open(destPath);
       }, 500);
     } catch (error) {
-      console.error('Save error:', error);
+      console.error(t('DownLoadCertificate.Save error:'), error);
       Alert.alert('Error', error.message || 'Failed to save certificate');
     }
   };
@@ -126,7 +147,10 @@ const CertificateScreen = ({route, navigation}) => {
   const shareCertificate = async () => {
     try {
       if (!viewShotRef.current) {
-        Alert.alert('Error', 'Certificate not ready for sharing.');
+        Alert.alert(
+          t('DownLoadCertificate.Error'),
+          t('DownLoadCertificate.Certificate not ready for sharing.'),
+        );
         return;
       }
 
@@ -135,23 +159,23 @@ const CertificateScreen = ({route, navigation}) => {
       let shareUri = uri;
 
       if (Platform.OS === 'android') {
-        const destPath = `${
-          RNFS.CachesDirectoryPath
-        }/certificate_${Date.now()}.png`;
+        const destPath = `${RNFS.CachesDirectoryPath}/${t(
+          'DownLoadCertificate.certificate',
+        )}_${Date.now()}.png`;
         await RNFS.copyFile(uri, destPath);
-        shareUri = `file://${destPath}`; // ✅ use shareUri, not uri
+        shareUri = `${t('DownLoadCertificate.file')}://${destPath}`; // ✅ use shareUri, not uri
       }
 
       const shareOptions = {
-        title: 'Share Certificate',
+        title: t('DownLoadCertificateShare Certificate'),
         url: shareUri,
-        subject: 'Certificate of Completion',
+        subject: t('DownLoadCertificate.Certificate of Completion'),
       };
 
       await Share.open(shareOptions); // If using react-native-share
       // await Share.share(shareOptions); // If using React Native's built-in Share API
     } catch (error) {
-      console.error('Share error:', error);
+      console.error(t('DownLoadCertificate.Share error:'), error);
       //   Alert.alert('Error', 'Failed to share certificate. Please try again.');
     }
   };
@@ -204,7 +228,7 @@ const CertificateScreen = ({route, navigation}) => {
                     fontSize: hp(3),
                     marginTop: hp(9),
                   }}>
-                  DownLoad Certificate
+                  {t('DownLoadCertificate.DownLoad Certificate')}
                 </Text>
               </View>
             </View>
@@ -243,7 +267,7 @@ const CertificateScreen = ({route, navigation}) => {
                     color: '#FFFFFF',
                     fontFamily: 'Poppins-Medium',
                   }}>
-                  DownLoad Certificate
+                  {t('DownLoadCertificate.DownLoad Certificate')}
                 </Text>
               </TouchableOpacity>
 
@@ -265,7 +289,7 @@ const CertificateScreen = ({route, navigation}) => {
                     marginLeft: wp(2),
                     color: '#FFFFFF',
                   }}>
-                  Share Certificate
+                  {t('DownLoadCertificate.Share Certificate')}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -20,7 +20,7 @@ import {SignupDataContext} from '../SignupDataContext';
 import Right from '../../provider/png/markRight.png';
 import Wrong from '../../provider/png/markNo.png';
 // import {useNavigation} from '@react-navigation/native';
-
+import {useTranslation} from 'react-i18next';
 const UserMarriedYN = props => {
   // const navigate = useNavigation;
   // const [checked, setChecked] = useState(null);
@@ -28,6 +28,8 @@ const UserMarriedYN = props => {
   const {USERMARRIED, setUSERMARRIED} = useContext(ProfileDataContext) || {};
 
   const {userMarried, setUserMarried} = useContext(SignupDataContext) || {};
+
+  const {t} = useTranslation();
 
   // const handleSelection = value => {
   //   setChecked(value);
@@ -82,7 +84,7 @@ const UserMarriedYN = props => {
             alignSelf: 'center',
             color: '#000000',
           }}>
-          FAMILY
+          {t('UserMarriedYN.FAMILY')}
         </Text>
 
         <View style={{marginBottom: hp(10)}}>
@@ -92,7 +94,7 @@ const UserMarriedYN = props => {
               fontFamily: 'Poppins-Medium',
               color: 'Black',
             }}>
-            Are you Married?
+            {t('UserMarriedYN.Are you Married?')}
           </Text>
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <TouchableOpacity
@@ -124,7 +126,7 @@ const UserMarriedYN = props => {
                   fontWeight: '700',
                   color: checked === true ? '#FFFFFF' : '#000000',
                 }}>
-                Yes
+                {t('UserMarriedYN.Yes')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -156,7 +158,7 @@ const UserMarriedYN = props => {
                   fontWeight: '700',
                   color: checked === false ? '#FFFFFF' : '#000000',
                 }}>
-                No
+                {t('UserMarriedYN.No')}
               </Text>
             </TouchableOpacity>
           </View>

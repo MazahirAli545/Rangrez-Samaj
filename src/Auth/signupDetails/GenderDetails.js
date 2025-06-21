@@ -25,6 +25,7 @@ import Female from '../../provider/png/Female.png';
 import Others from '../../provider/png/Others.png';
 import {SignupDataContext} from '../SignupDataContext';
 import {ProfileDataContext} from '../ProfileDataContext';
+import {useTranslation} from 'react-i18next';
 
 const GenderDetails = ({pageName = 'signup'}) => {
   const {
@@ -40,6 +41,8 @@ const GenderDetails = ({pageName = 'signup'}) => {
   const {GENDER, setGENDER} = useContext(ProfileDataContext) || {};
 
   const [localGender, setLocalGender] = useState(gender || GENDER || '');
+
+  const {t} = useTranslation();
 
   useEffect(() => {
     if (gender) {
@@ -71,8 +74,8 @@ const GenderDetails = ({pageName = 'signup'}) => {
 
   const data = {
     Gender: [
-      {text: 'Male', id: 'M', icon: Male},
-      {text: 'Female', id: 'F', icon: Female},
+      {text: t('GenderDetails.Male'), id: 'M', icon: Male},
+      {text: t('GenderDetails.Female'), id: 'F', icon: Female},
       // {text: 'Other', id: 'O', icon: Others},
     ],
   };
@@ -108,7 +111,7 @@ const GenderDetails = ({pageName = 'signup'}) => {
             alignSelf: 'center',
             color: '#000000',
           }}>
-          Gender Details
+          {t('GenderDetails.Gender Details')}
         </Text>
 
         <Text
@@ -119,7 +122,7 @@ const GenderDetails = ({pageName = 'signup'}) => {
             fontSize: hp(2),
             marginTop: hp(3),
           }}>
-          Choose Your Gender
+          {t('GenderDetails.Choose Your Gender')}
         </Text>
 
         <View

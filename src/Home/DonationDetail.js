@@ -11,6 +11,7 @@ import {
   ImageBackground,
   TextInput,
   Linking,
+  RefreshControl,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -44,15 +45,22 @@ import PastEvent from '../Home/PastEvent';
 // import PastEventsDetails from '../Home/PastEventsDetails';
 import PastEventsDetails from '../Home/PastEventsDetails';
 import {
+  sendAdminNotification,
   sendTestNotification,
   setupForegroundNotificationHandler,
 } from '../Notification/Foreground';
+import {useTranslation} from 'react-i18next';
+// import {getData, async_keys} from '../api/UserPreference';
 
 const DonationDetail = ({route, props, navigation}) => {
   const {event} = route.params || {};
   const [isAmountModalVisible, setIsAmountModalVisible] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
   const [userData, setUserData] = useState(null);
+  const [refresh, setRefresh] = useState(false);
+  const [langCode, setLangCode] = useState('en');
+
+  const {t} = useTranslation();
 
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentProcessingSuccess, setPaymentProcessingSuccess] =
@@ -68,58 +76,148 @@ const DonationDetail = ({route, props, navigation}) => {
     setupForegroundNotificationHandler();
   }, []);
 
+  // useEffect(() => {
+  //   const fetchEvents = async () => {
+  //     try {
+  //       const response = await fetch(`${BASE_URL}/events`);
+  //       const result = await response.json();
+  //       console.log('Fetched Past Eventswww:', result.events);
+
+  //       if (Array.isArray(result.events) && result.events.length > 0) {
+  //         const currentDate = new Date();
+
+  //         const formattedData = result.events
+  //           .filter(item => {
+  //             // Only include events where EventsToDate is in the past
+  //             const eventEndDate = new Date(item.EVNT_UPTO_DT);
+  //             return eventEndDate < currentDate;
+  //           })
+  //           .map(item => ({
+  //             id: item.ENVT_ID,
+  //             eventCategoryID: item.ENVT_CATE_ID,
+  //             name: item.ENVT_DESC,
+  //             message: item.ENVT_EXCERPT,
+  //             Detail: item.ENVT_DETAIL,
+  //             headerImage: {uri: item.ENVT_BANNER_IMAGE},
+  //             EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
+  //             EventContact: item.ENVT_CONTACT_NO,
+  //             EventFromDate: item.EVNT_FROM_DT,
+  //             EventsToDate: item.EVNT_UPTO_DT,
+  //             address: item.ENVT_ADDRESS,
+  //             city: item.ENVT_CITY,
+  //             createdEventDate: item.EVET_CREATED_DT,
+  //             cate_desc: item?.SubCategory?.CATE_DESC || '',
+  //           }));
+  //         setPastEvents(formattedData);
+  //         console.log('Events information', formattedData);
+  //       } else {
+  //         console.warn(t('DonationDetail.No valid events data found.'));
+  //       }
+  //     } catch (error) {
+  //       console.error(t('DonationDetail.Error fetching Events:'), error);
+  //     } finally {
+  //       setApiLoader(false);
+  //     }
+  //   };
+
+  //   fetchEvents();
+  // }, []);
+
   useEffect(() => {
-    const fetchEvents = async () => {
+    const loadLanguagePreference = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/events`);
-        const result = await response.json();
-        console.log('Fetched Past Eventswww:', result.events);
-
-        if (Array.isArray(result.events) && result.events.length > 0) {
-          const currentDate = new Date();
-
-          const formattedData = result.events
-            .filter(item => {
-              // Only include events where EventsToDate is in the past
-              const eventEndDate = new Date(item.EVNT_UPTO_DT);
-              return eventEndDate < currentDate;
-            })
-            .map(item => ({
-              id: item.ENVT_ID,
-              eventCategoryID: item.ENVT_CATE_ID,
-              name: item.ENVT_DESC,
-              message: item.ENVT_EXCERPT,
-              Detail: item.ENVT_DETAIL,
-              headerImage: {uri: item.ENVT_BANNER_IMAGE},
-              EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
-              EventContact: item.ENVT_CONTACT_NO,
-              EventFromDate: item.EVNT_FROM_DT,
-              EventsToDate: item.EVNT_UPTO_DT,
-              address: item.ENVT_ADDRESS,
-              city: item.ENVT_CITY,
-              createdEventDate: item.EVET_CREATED_DT,
-              cate_desc: item?.SubCategory?.CATE_DESC || '',
-            }));
-          setPastEvents(formattedData);
-          console.log('Events information', formattedData);
-        } else {
-          console.warn('No valid events data found.');
+        const savedLangCode = await getData(async_keys.language_code);
+        if (savedLangCode) {
+          setLangCode(savedLangCode);
         }
       } catch (error) {
-        console.error('Error fetching Events:', error);
-      } finally {
-        setApiLoader(false);
+        console.error('Error loading language preference:', error);
       }
     };
 
-    fetchEvents();
+    loadLanguagePreference();
   }, []);
+
+  const handleRefresh = async () => {
+    setRefresh(true);
+    await fetchEvents();
+    setRefresh(false);
+  };
+
+  const fetchEvents = async () => {
+    try {
+      console.log('Fetching past events with lang_code:', langCode);
+      const response = await fetch(`${BASE_URL}/events?lang_code=${langCode}`);
+      const result = await response.json();
+      console.log('Fetched Past Events:', result.events);
+
+      if (Array.isArray(result.events)) {
+        const currentDate = new Date();
+
+        const formattedData = result.events
+          .filter(item => {
+            // Filter events that have content in selected language
+            const hasContent =
+              item.ENVT_DESC &&
+              item.ENVT_DESC.trim() !== '' &&
+              item.ENVT_EXCERPT &&
+              item.ENVT_EXCERPT.trim() !== '';
+
+            // Only include events where EventsToDate is in the past
+            const eventEndDate = new Date(item.EVNT_UPTO_DT);
+            return hasContent && eventEndDate < currentDate;
+          })
+          .map(item => ({
+            id: item.ENVT_ID,
+            eventCategoryID: item.ENVT_CATE_ID,
+            name: item.ENVT_DESC,
+            message: item.ENVT_EXCERPT,
+            Detail: item.ENVT_DETAIL,
+            headerImage: {uri: item.ENVT_BANNER_IMAGE},
+            EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
+            EventContact: item.ENVT_CONTACT_NO,
+            EventFromDate: item.EVNT_FROM_DT,
+            EventsToDate: item.EVNT_UPTO_DT,
+            address: item.ENVT_ADDRESS,
+            city: item.ENVT_CITY,
+            createdEventDate: item.EVET_CREATED_DT,
+            cate_desc: item?.SubCategory?.CATE_DESC || '',
+          }));
+
+        if (formattedData.length > 0) {
+          setPastEvents(formattedData);
+          console.log('Past events information', formattedData);
+        } else {
+          console.warn(
+            t(
+              'DonationDetail.No past events with content in selected language.',
+            ),
+          );
+          setPastEvents([]);
+        }
+      } else {
+        console.warn(t('DonationDetail.No valid events data found.'));
+        setPastEvents([]);
+      }
+    } catch (error) {
+      console.error(t('DonationDetail.Error fetching Events:'), error);
+      setPastEvents([]);
+    } finally {
+      setApiLoader(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, [langCode]);
 
   const openWhatsApp = () => {
     const url = `https://wa.me/91${event.EventContact}`;
 
     // Check if the device can open the URL
-    Linking.openURL(url).catch(err => console.error('An error occurred', err));
+    Linking.openURL(url).catch(err =>
+      console.error(t('DonationDetail.An error occurred'), err),
+    );
   };
 
   useEffect(() => {
@@ -167,11 +265,14 @@ const DonationDetail = ({route, props, navigation}) => {
             setIsCaptured(true); // Prevent re-calling
             // show success message or update UI
           } else {
-            console.error('Payment capture failed:', response.data.error);
+            console.error(
+              t('DonationDetail.Payment capture failed:'),
+              response.data.error,
+            );
           }
         } catch (error) {
           console.error(
-            'Error during capture:',
+            t('DonationDetail.Error during capture:'),
             error.response?.data || error.message,
           );
         }
@@ -222,8 +323,8 @@ const DonationDetail = ({route, props, navigation}) => {
         'https://api.razorpay.com/v1/orders',
         {
           amount: amountInPaise,
-          currency: 'INR',
-          receipt: `receipt_${Date.now()}`,
+          currency: t('DonationDetail.INR'),
+          receipt: `${t('DonationDetail.receipt_')}${Date.now()}`,
           payment_capture: 1, // auto-capture payment
         },
         {
@@ -239,9 +340,9 @@ const DonationDetail = ({route, props, navigation}) => {
       // Then open checkout with this order ID
       var options = {
         order_id: orderId, // Add the order_id here
-        description: `Payment for ${event.name}`,
+        description: `${t('DonationDetail.Payment for')} ${event.name}`,
         image: 'https://your-logo-url.com',
-        currency: 'INR',
+        currency: t('DonationDetail.INR'),
         key: 'rzp_test_ANawZDTfnQ7fjY',
         amount: amountInPaise.toString(),
         name: event.name,
@@ -264,7 +365,9 @@ const DonationDetail = ({route, props, navigation}) => {
       console.log('Full Payment Data:', paymentData);
 
       if (!paymentData.razorpay_payment_id) {
-        throw new Error('No payment ID received from Razorpay');
+        throw new Error(
+          t('DonationDetail.No payment ID received from Razorpay'),
+        );
       }
 
       setPaymentProcessingSuccess(true);
@@ -290,9 +393,9 @@ const DonationDetail = ({route, props, navigation}) => {
         ENVIT_ID: event.id,
         PR_ID: userData?.PR_ID,
         PR_FULL_NAME: userData?.PR_FULL_NAME || '',
-        entity: fullPaymentData.entity || 'payment',
-        currency: fullPaymentData.currency || 'INR',
-        status: fullPaymentData.status || 'captured',
+        entity: fullPaymentData.entity || t('DonationDetail.payment'),
+        currency: fullPaymentData.currency || t('DonationDetail.INR'),
+        status: fullPaymentData.status || t('DonationDetail.captured'),
         order_id: fullPaymentData.order_id || orderId, // Use the orderId we created
         invoice_id: fullPaymentData.invoice_id || null,
         international: fullPaymentData.international ? 1 : 0,
@@ -300,7 +403,9 @@ const DonationDetail = ({route, props, navigation}) => {
         amount_refunded: fullPaymentData.amount_refunded || 0,
         refund_status: fullPaymentData.refund_status ? 1 : 0,
         captured: fullPaymentData.captured || false,
-        description: fullPaymentData.description || `Payment for ${event.name}`,
+        description:
+          fullPaymentData.description ||
+          `${t('DonationDetail.Payment for')} ${event.name}`,
         bank: fullPaymentData.bank ? 1 : 0,
         wallet: fullPaymentData.wallet ? 1 : 0,
         vpa: fullPaymentData.vpa ? 1 : 0,
@@ -328,17 +433,29 @@ const DonationDetail = ({route, props, navigation}) => {
 
         if (userData?.PR_FULL_NAME) {
           const templateParams = {
-            title: 'Payment Done Successfully',
-            body: `Dear ${userData.PR_FULL_NAME}, your payment of ₹${amount} is completed.`,
+            title: t('DonationDetail.Payment Done Successfully'),
+            body: `${t('DonationDetail.Dear')} ${userData.PR_FULL_NAME}, ${t(
+              'DonationDetail.your payment of',
+            )} ₹${amount} ${t('DonationDetail.is completed.')}`,
           };
-          console.log('🔔 Sending local notification:', templateParams);
+          const templateParams2 = {
+            title: t('DonationDetail.Payment Done Successfully'),
+            body: `${t('DonationDetail.User')} ${userData.PR_FULL_NAME}, ${t(
+              'DonationDetail.paying',
+            )} ₹${amount} ${t('DonationDetail.is completed.')}`,
+          };
+          // console.log('🔔 Sending local notification:', templateParams);
           sendTestNotification(templateParams);
+          sendAdminNotification(templateParams2.title, templateParams2.body);
         }
       } else {
-        throw new Error(captureResponse.data.error || 'Payment capture failed');
+        throw new Error(
+          captureResponse.data.error ||
+            t('DonationDetail.Payment capture failed'),
+        );
       }
     } catch (error) {
-      console.error('Payment processing error:', error);
+      console.error(t('DonationDetail.Payment processing error:'), error);
     }
   };
   return (
@@ -374,7 +491,10 @@ const DonationDetail = ({route, props, navigation}) => {
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {useNativeDriver: false},
         )}
-        scrollEventThrottle={16}>
+        scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl refreshing={refresh} onRefresh={handleRefresh} />
+        }>
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           bounces={false}
@@ -477,7 +597,7 @@ const DonationDetail = ({route, props, navigation}) => {
                         textAlign: 'left',
                         fontFamily: 'Poppins-Medium',
                       }}>
-                      Location : {event.address}
+                      {t('DonationDetail.Location')} : {event.address}
                     </Text>
                     <Text
                       style={{
@@ -491,7 +611,7 @@ const DonationDetail = ({route, props, navigation}) => {
 
                         fontFamily: 'Poppins-Medium',
                       }}>
-                      City: {event.city}
+                      ${t('DonationDetail.City')}: {event.city}
                     </Text>
                   </View>
                 </View>
@@ -564,7 +684,7 @@ const DonationDetail = ({route, props, navigation}) => {
                   fontFamily: 'Poppins-Medium',
                   color: '#1F260F',
                 }}>
-                Past Events
+                {t('DonationDetail.Past Events')}
               </Text>
 
               <Text
@@ -574,7 +694,7 @@ const DonationDetail = ({route, props, navigation}) => {
                   fontFamily: 'Poppins-Medium',
                   color: '#1F260F',
                 }}>
-                more
+                {t('DonationDetail.more')}
               </Text>
             </View>
 
@@ -592,6 +712,8 @@ const DonationDetail = ({route, props, navigation}) => {
                       (a, b) =>
                         new Date(b.EventsToDate) - new Date(a.EventsToDate),
                     )
+                    .filter(event => event.eventCategoryID === 1)
+                    .reverse()
                     .slice(0, 5)}
                   horizontal={true}
                   showsHorizontalScrollIndicator={false}
@@ -669,7 +791,7 @@ const DonationDetail = ({route, props, navigation}) => {
                     fontFamily: 'Poppins-Medium',
                     alignSelf: 'center',
                   }}>
-                  No past events available.
+                  {t('DonationDetail.No past events available.')}
                 </Text>
               )}
             </View>
@@ -715,7 +837,7 @@ const DonationDetail = ({route, props, navigation}) => {
                 fontFamily: 'Poppins-SemiBold',
                 color: '#FFFFFF',
               }}>
-              Donate Me
+              {t('DonationDetail.Donate Me')}
             </Text>
 
             <Image source={doller} style={{height: hp(2.5), width: wp(5.2)}} />
@@ -742,7 +864,7 @@ const DonationDetail = ({route, props, navigation}) => {
                 fontFamily: 'Poppins-SemiBold',
                 color: '#FFFFFF',
               }}>
-              Chat
+              {t('DonationDetail.Chat')}
             </Text>
             <Image
               source={whatsapp}
@@ -759,7 +881,9 @@ const DonationDetail = ({route, props, navigation}) => {
         onRequestClose={() => setIsAmountModalVisible(false)}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Enter Donation Amount</Text>
+            <Text style={styles.modalTitle}>
+              {t('DonationDetail.Enter Donation Amount')}
+            </Text>
 
             <View style={styles.quickAmountsContainer}>
               <TouchableOpacity
@@ -790,11 +914,11 @@ const DonationDetail = ({route, props, navigation}) => {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.orText}>OR</Text>
+            <Text style={styles.orText}>{t('DonationDetail.OR')}</Text>
 
             <TextInput
               style={styles.amountInput}
-              placeholder="Enter custom amount"
+              placeholder={t('DonationDetail.Enter custom amount')}
               keyboardType="numeric"
               value={customAmount}
               onChangeText={text => setCustomAmount(text)}
@@ -804,7 +928,9 @@ const DonationDetail = ({route, props, navigation}) => {
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => setIsAmountModalVisible(false)}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>
+                  {t('DonationDetail.Cancel')}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -815,10 +941,12 @@ const DonationDetail = ({route, props, navigation}) => {
                     setIsAmountModalVisible(false);
                     openCheckout(donationAmount);
                   } else {
-                    alert('Please enter an amount');
+                    alert(t('DonationDetail.Please enter an amount'));
                   }
                 }}>
-                <Text style={styles.donateButtonText}>Proceed to Pay</Text>
+                <Text style={styles.donateButtonText}>
+                  {t('DonationDetail.Proceed to Pay')}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -869,7 +997,8 @@ const DonationDetail = ({route, props, navigation}) => {
               marginHorizontal: wp(1),
               color: '#2D4B73',
             }}>
-            Payment successful! {'\n'} Processing donation...
+            {t('DonationDetail.Payment successful!')} {'\n'}{' '}
+            {t('DonationDetail.Processing donation...')}
           </Text>
         </View>
       </Modal>
@@ -920,7 +1049,8 @@ const DonationDetail = ({route, props, navigation}) => {
               color: '#000000',
               letterSpacing: 0.3,
             }}>
-            Donation processed successfully! {'\n'} Thank you.
+            {t('DonationDetail.Donation processed successfully!')} {'\n'}{' '}
+            {t('DonationDetail.Thank you.')}
           </Text>
         </View>
       </Modal>

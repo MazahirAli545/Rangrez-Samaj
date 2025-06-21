@@ -38,12 +38,12 @@ import {storeData} from '../../api/UserPreference';
 import updatedsucess1 from '../../provider/png/updatedsucess1.png';
 // import {BASE_URL} from '../../api/ApiInfo';
 import {sendFCMTokenToBackend} from '../../utils/fcm';
+import {useTranslation} from 'react-i18next';
+
 const UserDetails = ({pageName = 'signup'}) => {
   const navigation = useNavigation();
-  // const route = useRoute();
-  // const isProfilePage = route.name.toLowerCase().includes('profile');
-  // Get dynamic data from context
-  //hideVerifyButton = false, isEditable = true
+
+  const {t} = useTranslation();
   const isEditable = useContext(SignupDataContext)?.isEditable || true;
   const {
     userData,
@@ -118,7 +118,9 @@ const UserDetails = ({pageName = 'signup'}) => {
         const response = await fetch(`${BASE_URL}/registerUser`);
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(
+            `${t('UserDetails.HTTP error! status:')} ${response.status}`,
+          );
         }
 
         const data = await response.json();
@@ -144,9 +146,9 @@ const UserDetails = ({pageName = 'signup'}) => {
   const validateFields = () => {
     let errors = {};
 
-    if (!fullname) errors.fullname = 'Full name is required';
-    if (!date) errors.date = 'Date of birth is required';
-    if (!mobile) errors.mobile = 'Mobile number is required';
+    if (!fullname) errors.fullname = t('UserDetails.Full name is required');
+    if (!date) errors.date = t('UserDetails.Date of birth is required');
+    if (!mobile) errors.mobile = t('UserDetails.Mobile number is required');
 
     setErrorMessageRegister(errors);
 
@@ -206,7 +208,7 @@ const UserDetails = ({pageName = 'signup'}) => {
               date: '',
               mobileVerification:
                 pageName === 'profile' && !isSameAsOriginal && !isMobileVerified
-                  ? 'Please verify your details'
+                  ? t('UserDetails.Please verify your details')
                   : '',
               // : '',
             }));
@@ -265,7 +267,9 @@ const UserDetails = ({pageName = 'signup'}) => {
     setErrorMessage('');
 
     if (!mobile || mobile.length !== 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number');
+      setErrorMessage(
+        t('UserDetails.Please enter a valid 10-digit mobile number'),
+      );
       return;
     }
 
@@ -296,7 +300,7 @@ const UserDetails = ({pageName = 'signup'}) => {
 
       if (response.data.success) {
         ToastAndroid.showWithGravity(
-          'OTP sent successfully!',
+          t('UserDetails.OTP sent successfully!'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -306,13 +310,13 @@ const UserDetails = ({pageName = 'signup'}) => {
       } else {
         // Show error message in Toast only
         ToastAndroid.showWithGravity(
-          response.data.message || 'Failed to send OTP',
+          response.data.message || t('UserDetails.Failed to send OTP'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
       }
     } catch (error) {
-      let errorMsg = 'Something went wrong. Please try again.';
+      let errorMsg = t('UserDetails.Something went wrong. Please try again.');
 
       if (error.response?.data?.message) {
         errorMsg = error.response.data.message;
@@ -337,20 +341,22 @@ const UserDetails = ({pageName = 'signup'}) => {
     const errors = {};
 
     if (!fullname) {
-      errors.fullname = 'Full name is required';
+      errors.fullname = t('UserDetails.Full name is required');
       isValid = false;
     }
 
     if (!date) {
-      errors.date = 'Date of birth is required';
+      errors.date = t('UserDetails.Date of birth is required');
       isValid = false;
     }
 
     if (!mobile) {
-      errors.mobile = 'Mobile number is required';
+      errors.mobile = t('UserDetails.Mobile number is required');
       isValid = false;
     } else if (mobile.length !== 10) {
-      errors.mobile = 'Please enter a valid 10-digit mobile number';
+      errors.mobile = t(
+        'UserDetails.Please enter a valid 10-digit mobile number',
+      );
       isValid = false;
     }
 
@@ -379,7 +385,7 @@ const UserDetails = ({pageName = 'signup'}) => {
   const updateProfile = async () => {
     seterrorMessageVerify('');
     if (!otp || otp.length !== 4) {
-      seterrorMessageVerify('Please enter a valid 4-digit OTP');
+      seterrorMessageVerify(t('UserDetails.Please enter a valid 4-digit OTP'));
       return false;
     }
 
@@ -398,7 +404,7 @@ const UserDetails = ({pageName = 'signup'}) => {
 
       if (response.data.success) {
         ToastAndroid.showWithGravity(
-          'Profile updated successfully!',
+          t('UserDetails.Profile updated successfully!'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -416,7 +422,7 @@ const UserDetails = ({pageName = 'signup'}) => {
         return true;
       } else {
         ToastAndroid.showWithGravity(
-          response.data.message || 'Profile update failed',
+          response.data.message || t('UserDetails.Profile update failed'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -426,7 +432,7 @@ const UserDetails = ({pageName = 'signup'}) => {
       console.error('Profile Update Error:', error);
       ToastAndroid.showWithGravity(
         error.response?.data?.message ||
-          'Something went wrong. Please try again.',
+          t('UserDetails.Something went wrong. Please try again.'),
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -484,7 +490,7 @@ const UserDetails = ({pageName = 'signup'}) => {
             mobileVerification: '',
           }));
           ToastAndroid.showWithGravity(
-            'OTP Verified Successfully!',
+            t('UserDetails.OTP Verified Successfully!'),
             ToastAndroid.LONG,
             ToastAndroid.TOP,
           );
@@ -495,7 +501,7 @@ const UserDetails = ({pageName = 'signup'}) => {
           setSuccessModalVisible(true);
         } else {
           ToastAndroid.showWithGravity(
-            response.data.message || 'OTP verification failed',
+            response.data.message || t('UserDetails.OTP verification failed'),
             ToastAndroid.LONG,
             ToastAndroid.TOP,
           );
@@ -505,7 +511,7 @@ const UserDetails = ({pageName = 'signup'}) => {
       console.error('Verification Error:', error);
       ToastAndroid.showWithGravity(
         error.response?.data?.message ||
-          'Something went wrong. Please try again.',
+          t('UserDetails.Something went wrong. Please try again.'),
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -537,11 +543,11 @@ const UserDetails = ({pageName = 'signup'}) => {
       fullname: text.trim()
         ? ''
         : isAttempted
-        ? 'Full Name is required'
+        ? t('UserDetails.Full Name is required')
         : prevErrors.fullname,
       mobileVerification:
         pageName === 'profile' && !isSameAsOriginal && !isMobileVerified
-          ? 'Please verify your details'
+          ? t('UserDetails.Please verify your details')
           : '',
       // : '',
     }));
@@ -571,12 +577,12 @@ const UserDetails = ({pageName = 'signup'}) => {
           ? ''
           : isAttempted
           ? text.trim().length > 0
-            ? 'Please enter 10 digits mobile number'
-            : 'Mobile number is required'
+            ? t('UserDetails.Please enter 10 digits mobile number')
+            : t('UserDetails.Mobile number is required')
           : prevErrors.mobile,
       mobileVerification:
         pageName === 'profile' && !isSameAsOriginal && !isMobileVerified
-          ? 'Please verify your details'
+          ? t('UserDetails.Please verify your details')
           : '',
     }));
     // }
@@ -607,7 +613,7 @@ const UserDetails = ({pageName = 'signup'}) => {
             alignSelf: 'center',
             color: '#000000',
           }}>
-          Personal Details
+          {t('UserDetails.Personal Details')}
         </Text>
 
         <View
@@ -663,7 +669,7 @@ const UserDetails = ({pageName = 'signup'}) => {
               justifyContent: 'center',
               alignContent: 'center',
             }}
-            placeholder="Full Name"
+            placeholder={t('UserDetails.Full Name')}
             placeholderTextColor={'#BFBDBE'}
           />
         </View>
@@ -708,7 +714,7 @@ const UserDetails = ({pageName = 'signup'}) => {
             }}>
             {displayDate
               ? new Date(displayDate).toLocaleDateString('en-GB')
-              : 'Enter Your DOB'}
+              : t('UserDetails.Enter Your DOB')}
           </Text>
         </TouchableOpacity>
 
@@ -755,61 +761,6 @@ const UserDetails = ({pageName = 'signup'}) => {
             />
             <TextInput
               value={mobile || MOBILE}
-              // onChangeText={text => handleTextChange(text, 'mobile')}
-              //   onChangeText={text => {
-              //     setMobile?.(text);
-              //     setMOBILE?.(text);
-              //     setIsChanged(true);
-
-              //     // if (pageName === 'profile') setIsChanged(true);
-              //     // if (setFullName) setFullName(text); // If in signup, update signup state
-              //     // if (setFULLNAME) setFULLNAME(text);
-
-              //     // ✅ Clear error message when user starts typing
-              //     // if (pageName !== 'profile') {
-              //     //   setErrorMessageRegister(prevErrors => ({
-              //     //     ...prevErrors,
-              //     //     mobile: text.trim() ? '' : 'Mobile number is required',
-              //     //   }));
-
-              //     //   setErrorMessageRegister(prevErrors => ({
-              //     //     ...prevErrors,
-              //     //     mobileVerification: text.trim()
-              //     //       ? ''
-              //     //       : 'Please verify your mobile number',
-              //     //   }));
-              //     // }
-              //     if (pageName === 'profile' && text !== MOBILE) {
-              //       setIsMobileVerified?.(false);
-              //       setErrorMessageRegister?.(prevErrors => ({
-              //         ...prevErrors,
-              //         mobileVerification: 'Please verify your mobile number',
-              //       }));
-              //     }
-              //     setErrorMessageRegister(prevErrors => ({
-              //       ...prevErrors,
-              //       mobile:
-              //         text.trim().length === 10
-              //           ? ''
-              //           : text.trim().length > 0
-              //           ? 'Please enter 10 digits mobile number'
-              //           : 'Mobile number is required',
-              //       // Only set mobileVerification error in signup flow
-              //       ...(pageName !== 'profile' && {
-              //         mobileVerification:
-              //           text.trim() === ''
-              //             ? 'Please verify your mobile number'
-              //             : '',
-              //       }),
-              //       ...(pageName !== 'profile' && {
-              //         mobileVerification: isMobileVerified
-              //           ? ''
-              //           : 'Please verify your mobile number',
-              //       }),
-              //     }));
-              //   }
-
-              // }
               onChangeText={handleMobileChange}
               editable={isEditable}
               numberOfLines={1}
@@ -825,51 +776,12 @@ const UserDetails = ({pageName = 'signup'}) => {
                 alignContent: 'center',
               }}
               maxLength={10}
-              placeholder="Mobile Number"
+              placeholder={t('UserDetails.Mobile Number')}
               placeholderTextColor={'#BFBDBE'}
               keyboardType="phone-pad"
             />
           </View>
-          {/* <View style={{position: 'absolute', marginTop: hp(7)}}>
-            {errorMessageRegister?.mobileVerification && (
-              <Text style={styles.errorText}>
-                {errorMessageRegister.mobileVerification}
-              </Text>
-            )}
 
-            {errorMessage ? (
-              <Text
-                style={{
-                  color: 'red',
-                  marginTop: 10,
-                }}>
-                {errorMessage}
-              </Text>
-            ) : null}
-
-            {errorMessageRegister?.mobile && (
-              <Text style={styles.errorText}>
-                {errorMessageRegister.mobile}
-              </Text>
-            )}
-          </View> */}
-          {/* <View style={{position: 'absolute', marginTop: hp(7)}}>
-            {pageName !== 'profile' && (
-              <>
-                {errorMessageRegister?.mobile ? (
-                  <Text style={styles.errorText}>
-                    {errorMessageRegister.mobile}
-                  </Text>
-                ) : errorMessageRegister?.mobileVerification ? (
-                  <Text style={styles.errorText}>
-                    {errorMessageRegister.mobileVerification}
-                  </Text>
-                ) : errorMessage ? (
-                  <Text style={styles.errorText}>{errorMessage}</Text>
-                ) : null}
-              </>
-            )}
-          </View> */}
           <View style={{position: 'absolute', marginTop: hp(7)}}>
             {errorMessageRegister?.mobile ? (
               <Text style={styles.errorText}>
@@ -916,30 +828,18 @@ const UserDetails = ({pageName = 'signup'}) => {
                   fontFamily: 'Poppins-Medium',
                   color: '#FFFFFF',
                 }}>
-                {apiLoader ? 'Sending...' : 'Send OTP'}
+                {apiLoader
+                  ? t('UserDetails.Sending...')
+                  : t('UserDetails.Send OTP')}
               </Text>
             </TouchableOpacity>
           ) : null}
-          {/* {isMobileVerified && (
-            <Image
-              source={Success} // You'll need to import this image
-              style={{
-                height: hp(2.5),
-                width: wp(5),
-                position: 'absolute',
-                right: wp(3),
-              }}
-            />
-          )} */}
 
           {errorMessageRegister?.otp && (
             <Text style={styles.errorText}>{errorMessageRegister.otp}</Text>
           )}
           {/* )} */}
-          <Modal
-            isVisible={isModalVisible}
-            // onBackdropPress={() => setModalVisible(false)}
-          >
+          <Modal isVisible={isModalVisible}>
             <LinearGradient
               start={{x: 1, y: 1.7}}
               end={{x: 0.2, y: 0}}
@@ -961,31 +861,8 @@ const UserDetails = ({pageName = 'signup'}) => {
                   color: '#FFFFFF',
                   marginHorizontal: wp(3),
                 }}>
-                Enter OTP sent to your mobile number
+                {t('UserDetails.Enter OTP sent to your mobile number')}
               </Text>
-
-              {/* <OTPInputView
-                style={{
-                  width: '80%',
-                  alignSelf: 'center',
-                  marginTop: hp(5),
-                  height: hp(5),
-                  alignItems: 'center',
-                  alignContent: 'center',
-                }}
-                pinCount={4}
-                code={otp}
-                onCodeChanged={setOtp}
-                autoFocusOnLoad={false}
-                codeInputFieldStyle={styles.underlineStyleBase}
-                codeInputHighlightStyle={styles.underlineStyleHighLighted}
-                onCodeFilled={code => {
-                  console.log(`Code is ${code}, you are good to go!`);
-                }}
-                // placeholderCharacter=" - "
-                placeholderTextColor="#000"
-                keyboardType="phone-pad"
-              /> */}
 
               <View
                 style={{
@@ -1071,7 +948,7 @@ const UserDetails = ({pageName = 'signup'}) => {
                     alignItems: 'center',
                     fontFamily: 'Poppins-Regular',
                   }}>
-                  didn't receive the code?
+                  {t("UserDetails.didn't receive the code?")}
                 </Text>
                 {/* </View>    */}
                 <TouchableOpacity
@@ -1089,7 +966,7 @@ const UserDetails = ({pageName = 'signup'}) => {
                       color: isCounting ? '#8C8C8C' : '#DEB737',
                       fontFamily: 'Poppins-SemiBold',
                     }}>
-                    Resend OTP
+                    {t('UserDetails.Resend OTP')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1131,7 +1008,9 @@ const UserDetails = ({pageName = 'signup'}) => {
                       color: '#000000',
                       fontSize: hp(2.4),
                     }}>
-                    {apiLoader ? 'Verifying...' : 'Verify'}
+                    {apiLoader
+                      ? t('UserDetails.Verifying...')
+                      : t('UserDetails.Verify')}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -1182,7 +1061,7 @@ const UserDetails = ({pageName = 'signup'}) => {
                   textAlign: 'center',
                   color: '#2F4032',
                 }}>
-                Success
+                {t('UserDetails.Success')}
               </Text>
               <Text
                 style={{
@@ -1193,7 +1072,7 @@ const UserDetails = ({pageName = 'signup'}) => {
                   marginTop: hp(2),
                   color: '#697368',
                 }}>
-                Success! Your number is now registered.
+                {t('UserDetails.Success! Your number is now registered.')}
               </Text>
               <Text
                 style={{
@@ -1204,7 +1083,9 @@ const UserDetails = ({pageName = 'signup'}) => {
                   marginTop: hp(2),
                   color: '#697368',
                 }}>
-                Great! Now, let's add some more details to set up your account.
+                {t(
+                  "UserDetails.Great! Now, let's add some more details to set up your account.",
+                )}
               </Text>
             </View>
           </Modal>
@@ -1247,7 +1128,7 @@ const UserDetails = ({pageName = 'signup'}) => {
                   textAlign: 'center',
                   color: '#2F4032',
                 }}>
-                Registered
+                {t('UserDetails.Registered')}
               </Text>
               <Text
                 style={{
@@ -1258,7 +1139,7 @@ const UserDetails = ({pageName = 'signup'}) => {
                   marginTop: hp(2),
                   color: '#697368',
                 }}>
-                Your profile is already registered.
+                {t('UserDetails.Your profile is already registered.')}
               </Text>
 
               <TouchableOpacity
@@ -1267,7 +1148,9 @@ const UserDetails = ({pageName = 'signup'}) => {
                   navigation.navigate('Signin'); // Navigate to Signin screen
                 }}
                 style={styles.LoginButton}>
-                <Text style={styles.LoginButtonText}>Sign In</Text>
+                <Text style={styles.LoginButtonText}>
+                  {t('UserDetails.Sign In')}
+                </Text>
               </TouchableOpacity>
             </View>
           </Modal>
@@ -1316,7 +1199,7 @@ const UserDetails = ({pageName = 'signup'}) => {
                   textAlign: 'center',
                   color: '#2F4032',
                 }}>
-                Success
+                {t('UserDetails.Success')}
               </Text>
               <Text
                 style={{
@@ -1327,7 +1210,7 @@ const UserDetails = ({pageName = 'signup'}) => {
                   marginTop: hp(2),
                   color: '#697368',
                 }}>
-                Success! Your number is now updated.
+                {t('UserDetails.Success! Your number is now updated.')}
               </Text>
               <Text
                 style={{
@@ -1338,7 +1221,9 @@ const UserDetails = ({pageName = 'signup'}) => {
                   marginTop: hp(2),
                   color: '#697368',
                 }}>
-                Great! Now, let's add some more details to set up your account.
+                {t(
+                  "UserDetails.Great! Now, let's add some more details to set up your account.",
+                )}
               </Text>
             </View>
           </Modal>

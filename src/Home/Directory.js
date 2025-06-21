@@ -47,6 +47,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // import IncompleteProfileModal from '../components/profileCompleted/IncompleteProfileModal';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import LinearGradientComponent from 'react-native-linear-gradient';
+import {useTranslation} from 'react-i18next';
 
 const Directory = props => {
   const [selectedPincode, setSelectedPincode] = useState(null);
@@ -57,6 +58,8 @@ const Directory = props => {
   const [loading, setLoading] = useState(true);
   const [areaOptions, setAreaOptions] = useState([]);
   const inputRef = useRef(null);
+
+  const {t} = useTranslation();
   // const {userDataa, PRmodalVisible, setPRModalVisible, completionPercentagee} =
   //   useUserProfile();
 
@@ -107,7 +110,7 @@ const Directory = props => {
         const result = await response.json();
 
         if (!Array.isArray(result.Directory)) {
-          console.warn('Invalid response format');
+          console.warn(t('Directory.Invalid response format'));
           return;
         }
 
@@ -136,7 +139,7 @@ const Directory = props => {
         setAreaOptions(areaNames);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching directory:', error);
+        console.error(t('HomeScreen.Error fetching directory:'), error);
         setLoading(false);
       }
     };
@@ -195,7 +198,7 @@ const Directory = props => {
     setCopiedNumber(number); // Set the copied number in state
 
     // Show a toast message (Android only)
-    ToastAndroid.show('Number copied!', ToastAndroid.SHORT);
+    ToastAndroid.show(t('HomeScreen.Number copied!'), ToastAndroid.SHORT);
 
     // Focus input to show keyboard
     setTimeout(() => inputRef.current?.focus(), 300);
@@ -205,7 +208,10 @@ const Directory = props => {
     if (phoneNumber) {
       Linking.openURL(`tel:${phoneNumber}`);
     } else {
-      Alert.alert('Error', 'Phone number is not available');
+      Alert.alert(
+        t('Directory.Error'),
+        t('Directory.Phone number is not available'),
+      );
     }
   };
 
@@ -251,7 +257,7 @@ const Directory = props => {
                   fontWeight: '600',
                   fontSize: hp(3),
                 }}>
-                Directory
+                {t('Directory.Directory')}
               </Text>
             </View>
           </View>
@@ -268,8 +274,8 @@ const Directory = props => {
             maxHeight={300}
             labelField="areaName" // Correct label field
             valueField="areaName"
-            placeholder="Select a Town/City"
-            searchPlaceholder="Search..."
+            placeholder={t('Directory.Select a Town/City')}
+            searchPlaceholder={t('Directory.Search...')}
             // value={searchText}
             // onChangeText={text => setSearchText(text)}
             value={searchArea?.mobileNo || ''}
@@ -330,7 +336,7 @@ const Directory = props => {
               }}
             />
             <TextInput
-              placeholder="Search..."
+              placeholder={t('Directory.Search...')}
               placeholderTextColor={'#000000'}
               numberOfLines={1}
               value={searchText}

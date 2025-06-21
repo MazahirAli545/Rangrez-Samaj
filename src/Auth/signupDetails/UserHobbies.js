@@ -1,4 +1,4 @@
-import {React, useState, useEffect, useContext} from 'react';
+import {React, useState, useEffect, useContext, useCallback} from 'react';
 import {
   View,
   Text,
@@ -21,31 +21,150 @@ import {ProfileDataContext} from '../ProfileDataContext';
 import {SignupDataContext} from '../SignupDataContext';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import LinearGradient from 'react-native-linear-gradient';
+import {useTranslation} from 'react-i18next';
+import i18n from '../../components/i18n';
+import {getData, async_keys} from '../../api/UserPreference';
 
 const UserHobbies = ({pageName = 'signup'}) => {
   const [selectedHobbies, setSelectedHobbies] = useState([]);
   const [updatedHobbies, setUpdatedHobbies] = useState([]);
   const [hobbies, setHobbies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [langCode, setLangCode] = useState('en'); // Add language state
 
   const context = useContext(SignupDataContext);
+  const {t} = useTranslation();
 
   const HOBBIES = context?.HOBBIES || [];
   const setHOBBIES = context?.setHOBBIES || (() => {});
 
   console.log('HHHHHH', HOBBIES);
 
-  useEffect(() => {
-    const fetchHobbies = async () => {
-      // setApiLoader(true);
+  // useEffect(() => {
+  //   const loadLanguagePreference = async () => {
+  //     try {
+  //       const savedLangCode = await getData(async_keys.language_code);
+  //       if (savedLangCode) {
+  //         setLangCode(savedLangCode);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error loading language preference:', error);
+  //     }
+  //   };
+
+  //   loadLanguagePreference();
+  // }, []);
+
+  // useEffect(() => {
+  //   const fetchHobbies = async () => {
+  //     // setApiLoader(true);
+  //     setLoading(true);
+  //     try {
+  //       const response = await fetch(
+  //         // 'https://node2-plum.vercel.app/api/user/hobbies',
+  //         `${BASE_URL}/hobbies?lang_code=${langCode}`,
+  //       );
+  //       const result = await response.json();
+  //       // console.log('Fetched Hobbies:', result.hobbies);
+
+  //       if (Array.isArray(result.hobbies) && result.hobbies.length > 0) {
+  //         const formattedData = result.hobbies.map(item => ({
+  //           id: item.HOBBY_ID,
+  //           Image: item.HOBBY_IMAGE_URL,
+  //           text: String(item.HOBBY_NAME),
+  //         }));
+  //         setHobbies(formattedData);
+
+  //         if (updatedHobbies.length > 0) {
+  //           setSelectedHobbies(
+  //             formattedData
+  //               .filter(hobby => updatedHobbies.includes(hobby.text))
+  //               .map(hobby => hobby.id),
+  //           );
+  //         }
+  //       } else {
+  //         console.warn('No valid Business Strem data found.');
+  //         setHobbies([]);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching Business:', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchHobbies();
+  // }, [langCode]);
+
+  // console.log('ewewe', hobbies);
+
+  // const handleHobbySelection = hobbyId => {
+  //   setSelectedHobbies(prevSelectedHobbies => {
+  //     let updatedSelection;
+
+  //     if (prevSelectedHobbies.includes(hobbyId)) {
+  //       updatedSelection = prevSelectedHobbies.filter(id => id !== hobbyId);
+  //     } else {
+  //       updatedSelection = [...prevSelectedHobbies, hobbyId];
+  //     }
+
+  //     if (setHOBBIES && hobbies.length > 0) {
+  //       const selectedHobbyNames = hobbies
+  //         .filter(hobby => updatedSelection.includes(hobby.id))
+  //         .map(hobby => hobby.text);
+
+  //       console.log('🚀 Selected Hobby Names:', selectedHobbyNames);
+  //       setHOBBIES(selectedHobbyNames);
+  //     }
+
+  //     return updatedSelection;
+  //   });
+  // };
+
+  // useEffect(() => {
+  //   console.log('Updated HOBBIES in Context:', HOBBIES);
+  //   setUpdatedHobbies(HOBBIES);
+  // }, [HOBBIES]);
+
+  // useEffect(() => {
+  //   if (hobbies.length > 0) {
+  //     if (typeof HOBBIES === 'string') {
+  //       const hobbyArray = HOBBIES.split(',');
+  //       setUpdatedHobbies(hobbyArray);
+  //       setSelectedHobbies(
+  //         hobbies
+  //           .filter(hobby => hobbyArray.includes(hobby.text))
+  //           .map(hobby => hobby.id),
+  //       );
+  //     } else {
+  //       setUpdatedHobbies(HOBBIES);
+  //       setSelectedHobbies(
+  //         hobbies
+  //           .filter(hobby => HOBBIES.includes(hobby.text))
+  //           .map(hobby => hobby.id),
+  //       );
+  //     }
+  //   }
+  // }, [HOBBIES, hobbies]);
+
+  // useEffect(() => {
+  //   if (hobbies.length > 0 && updatedHobbies.length > 0) {
+  //     setSelectedHobbies(
+  //       hobbies
+  //         .filter(hobby => updatedHobbies.includes(hobby.text))
+  //         .map(hobby => hobby.id),
+  //     );
+  //   }
+  // }, [hobbies, updatedHobbies]);
+
+  const fetchHobbies = useCallback(
+    async languageCode => {
       setLoading(true);
       try {
         const response = await fetch(
-          // 'https://node2-plum.vercel.app/api/user/hobbies',
-          `${BASE_URL}/hobbies`,
+          `${BASE_URL}/hobbies?lang_code=${languageCode}`,
         );
         const result = await response.json();
-        // console.log('Fetched Hobbies:', result.hobbies);
 
         if (Array.isArray(result.hobbies) && result.hobbies.length > 0) {
           const formattedData = result.hobbies.map(item => ({
@@ -54,76 +173,93 @@ const UserHobbies = ({pageName = 'signup'}) => {
             text: String(item.HOBBY_NAME),
           }));
           setHobbies(formattedData);
+
+          // Update selected hobbies based on updatedHobbies
+          if (updatedHobbies.length > 0) {
+            const newSelectedHobbies = formattedData
+              .filter(hobby => updatedHobbies.includes(hobby.text))
+              .map(hobby => hobby.id);
+            setSelectedHobbies(newSelectedHobbies);
+          }
         } else {
-          console.warn('No valid Business Strem data found.');
+          setHobbies([]);
         }
       } catch (error) {
-        console.error('Error fetching Business:', error);
+        console.error('Error fetching hobbies:', error);
       } finally {
         setLoading(false);
       }
+    },
+    [updatedHobbies],
+  );
+
+  // Load initial language preference
+  useEffect(() => {
+    const loadLanguagePreference = async () => {
+      try {
+        const savedLangCode = await getData(async_keys.language_code);
+        if (savedLangCode) {
+          setLangCode(savedLangCode);
+          fetchHobbies(savedLangCode);
+        }
+      } catch (error) {
+        console.error('Error loading language preference:', error);
+      }
     };
 
-    fetchHobbies();
-  }, []);
+    loadLanguagePreference();
+  }, [fetchHobbies]);
 
-  const handleHobbySelection = hobbyId => {
-    setSelectedHobbies(prevSelectedHobbies => {
-      let updatedSelection;
-
-      if (prevSelectedHobbies.includes(hobbyId)) {
-        updatedSelection = prevSelectedHobbies.filter(id => id !== hobbyId);
-      } else {
-        updatedSelection = [...prevSelectedHobbies, hobbyId];
-      }
-
-      if (setHOBBIES && hobbies.length > 0) {
-        const selectedHobbyNames = hobbies
-          .filter(hobby => updatedSelection.includes(hobby.id))
-          .map(hobby => hobby.text);
-
-        console.log('🚀 Selected Hobby Names:', selectedHobbyNames);
-        setHOBBIES(selectedHobbyNames);
-      }
-
-      return updatedSelection;
-    });
-  };
-
+  // Listen for language changes
   useEffect(() => {
-    console.log('Updated HOBBIES in Context:', HOBBIES);
-    setUpdatedHobbies(HOBBIES);
-  }, [HOBBIES]);
+    const handleLanguageChange = newLang => {
+      setLangCode(newLang);
+      fetchHobbies(newLang);
+    };
 
+    // Add event listener for language changes
+    i18n.on('languageChanged', handleLanguageChange);
+
+    return () => {
+      // Clean up event listener
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [fetchHobbies, i18n]);
+
+  // Handle hobby selection
+  const handleHobbySelection = useCallback(
+    hobbyId => {
+      setSelectedHobbies(prevSelectedHobbies => {
+        const updatedSelection = prevSelectedHobbies.includes(hobbyId)
+          ? prevSelectedHobbies.filter(id => id !== hobbyId)
+          : [...prevSelectedHobbies, hobbyId];
+
+        if (setHOBBIES && hobbies.length > 0) {
+          const selectedHobbyNames = hobbies
+            .filter(hobby => updatedSelection.includes(hobby.id))
+            .map(hobby => hobby.text);
+          setHOBBIES(selectedHobbyNames);
+        }
+
+        return updatedSelection;
+      });
+    },
+    [hobbies, setHOBBIES],
+  );
+
+  // Sync with context HOBBIES
   useEffect(() => {
-    if (typeof HOBBIES === 'string') {
-      const hobbyArray = HOBBIES.split(',');
+    if (hobbies.length > 0 && HOBBIES) {
+      const hobbyArray =
+        typeof HOBBIES === 'string' ? HOBBIES.split(',') : HOBBIES;
       setUpdatedHobbies(hobbyArray);
       setSelectedHobbies(
         hobbies
           .filter(hobby => hobbyArray.includes(hobby.text))
           .map(hobby => hobby.id),
       );
-    } else {
-      setUpdatedHobbies(HOBBIES);
-      setSelectedHobbies(
-        hobbies
-          .filter(hobby => HOBBIES.includes(hobby.text))
-          .map(hobby => hobby.id),
-      );
     }
-    console.log('Updated HOBBIES in Context:', HOBBIES);
   }, [HOBBIES, hobbies]);
-
-  useEffect(() => {
-    if (hobbies.length > 0 && updatedHobbies.length > 0) {
-      setSelectedHobbies(
-        hobbies
-          .filter(hobby => updatedHobbies.includes(hobby.text))
-          .map(hobby => hobby.id),
-      );
-    }
-  }, [hobbies, updatedHobbies]);
 
   const renderShimmer = () => {
     return [1, 2, 3, 4, 5].map((_, index) => (
@@ -155,7 +291,7 @@ const UserHobbies = ({pageName = 'signup'}) => {
             alignSelf: 'center',
             color: '#000000',
           }}>
-          Hobbies & Interest
+          {t('Hobbies.Hobbies & Interest')}
         </Text>
 
         <Text
@@ -166,7 +302,7 @@ const UserHobbies = ({pageName = 'signup'}) => {
             fontSize: hp(2),
             marginTop: hp(3),
           }}>
-          Select your Hobbies
+          {t('Hobbies.Select your Hobbies')}
         </Text>
 
         <View
@@ -181,46 +317,58 @@ const UserHobbies = ({pageName = 'signup'}) => {
               // flexWrap: 'wrap', // Enables wrapping to the next line
               justifyContent: 'center', // Ensures items are centered
             }}>
-            {loading
-              ? renderShimmer()
-              : hobbies.map(item => {
-                  const isSelected = selectedHobbies.includes(item.id);
-                  return (
-                    <TouchableOpacity
-                      key={item.id}
-                      onPress={() => handleHobbySelection(item.id)}
-                      style={{
-                        backgroundColor: isSelected ? '#0468BF' : '#697368',
-                        height: hp(5.5),
-                        width: wp(81),
+            {loading ? (
+              renderShimmer()
+            ) : hobbies.length > 0 ? (
+              hobbies.map(item => {
+                const isSelected = selectedHobbies.includes(item.id);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() => handleHobbySelection(item.id)}
+                    style={{
+                      backgroundColor: isSelected ? '#0468BF' : '#697368',
+                      height: hp(5.5),
+                      width: wp(81),
 
-                        margin: wp(2),
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: wp(2),
-                        flexDirection: 'row',
+                      margin: wp(2),
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: wp(2),
+                      flexDirection: 'row',
+                    }}>
+                    <Image
+                      source={{uri: item.Image}}
+                      style={{
+                        height: hp(3.2),
+                        width: wp(6.4),
+                        marginRight: wp(2),
+                      }}
+                    />
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        // width: wp(18),
+                        fontSize: hp(2),
+                        fontFamily: 'Poppins-Medium',
+                        color: '#FFFFFF',
                       }}>
-                      <Image
-                        source={{uri: item.Image}}
-                        style={{
-                          height: hp(3.2),
-                          width: wp(6.4),
-                          marginRight: wp(2),
-                        }}
-                      />
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          // width: wp(18),
-                          fontSize: hp(2),
-                          fontFamily: 'Poppins-Medium',
-                          color: '#FFFFFF',
-                        }}>
-                        {item.text}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+                      {item.text}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })
+            ) : (
+              <Text
+                style={{
+                  fontSize: hp(2),
+                  color: '#697368',
+                  textAlign: 'center',
+                  marginTop: hp(2),
+                }}>
+                No hobbies available in selected language
+              </Text>
+            )}
           </View>
         </View>
       </View>

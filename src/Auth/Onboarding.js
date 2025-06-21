@@ -44,6 +44,7 @@ import i18n from '../components/i18n';
 import {initializeApp} from '@react-native-firebase/app';
 import messaging from '@react-native-firebase/messaging';
 import {async_keys, getData, storeData} from '../api/UserPreference';
+import LanguageModal from '../components/LanguageModal';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAl9oJoyk1vacypoEVBChRjAeJrpCfhnlo',
@@ -72,6 +73,44 @@ const Onboarding = props => {
   const {t} = useTranslation();
 
   const [fcmToken, setFcmToken] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // 1. Load saved language on component mount
+  useEffect(() => {
+    const loadSavedLanguage = async () => {
+      try {
+        const savedLangCode = await getData(async_keys.language_code);
+        if (savedLangCode) {
+          const displayName = savedLangCode === 'en' ? 'ENGLISH' : 'हिंदी';
+          setLang(displayName);
+          i18n.changeLanguage(savedLangCode);
+        }
+        setIsInitializing(false);
+      } catch (error) {
+        console.error('Error loading language:', error);
+        setIsInitializing(false);
+      }
+    };
+
+    loadSavedLanguage();
+  }, []);
+
+  // 2. Handle language changes
+  useEffect(() => {
+    if (!isInitializing && lang) {
+      const langCode = lang === 'ENGLISH' ? 'en' : 'hi';
+      const saveLanguage = async () => {
+        try {
+          await storeData(async_keys.language_code, langCode);
+          i18n.changeLanguage(langCode);
+        } catch (error) {
+          console.error('Error saving language:', error);
+        }
+      };
+
+      saveLanguage();
+    }
+  }, [lang, isInitializing]);
 
   async function requestUserPermission() {
     const authStatus = await messaging().requestPermission();
@@ -89,8 +128,6 @@ const Onboarding = props => {
     console.log('FCM Token:', FCMtoken);
     storeData(async_keys.fcm_token, FCMtoken);
   };
-
-  // console.log('FCM Tokenmm:', getData(async_keys.fcm_token));
   console.log('FCM Token from state:', fcmToken);
 
   useEffect(() => {
@@ -109,8 +146,7 @@ const Onboarding = props => {
         if (enabled) {
           const token = await messaging().getToken();
           console.log('📌 FCM Token:', token);
-          // setFcmToken(token);
-          await storeData(async_keys.fcm_token, token); // Add await here
+          await storeData(async_keys.fcm_token, token);
           setFcmToken(token);
 
           const storedToken = await getData(async_keys.fcm_token);
@@ -203,23 +239,13 @@ const Onboarding = props => {
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
-      {/* <StatusBar  barStyle={"light-content"} backgroundColor={"#000000"}/> */}
-
-      {/* <StatusBar barStyle="dark-content" translucent={false} backgroundColor={"transparent"} /> */}
-
       <Swiper
         loop
         autoplay
         showsPagination
         paginationStyle={{
-          // position: 'absolute',
-          // left: 0,
           marginLeft: wp(6),
-
-          // alignItems: "flex-start",
-
-          // alignSelf: "flex-start",
-          marginBottom: hp(13),
+          marginBottom: hp(11),
         }}
         dot={
           <View
@@ -240,9 +266,7 @@ const Onboarding = props => {
           <View
             style={{
               zIndex: 100,
-              //  backgroundColor: '#800000',
               backgroundColor: '#FFFFFF',
-
               width: wp(25),
               height: hp(0.3),
               borderRadius: 6,
@@ -318,7 +342,7 @@ const Onboarding = props => {
                     fontFamily: 'Poppins-SemiBold',
                   }}>
                   {/* Empowering the Rangrej Community for a Brighter Tomorrow */}
-                  {t('OnboardinHeader')}
+                  {t('Onboarding.OnboardinHeader')}
                 </Text>
                 <Text
                   style={{
@@ -335,7 +359,7 @@ const Onboarding = props => {
                   {/* The Rangrej Samaj app empowers our community by providing
                   education, healthcare, and welfare support, ensuring a
                   brighter future for all. */}
-                  {t('OnboardinText')}
+                  {t('Onboarding.OnboardinText')}
                 </Text>
               </View>
             </View>
@@ -345,7 +369,7 @@ const Onboarding = props => {
       <View style={{position: 'absolute', bottom: 0, left: 0, right: 0}}>
         <View
           style={{
-            marginBottom: hp(7),
+            marginBottom: hp(5),
             // position: 'absolute',
             // bottom: 0,
             // marginTop: hp(44),
@@ -382,7 +406,7 @@ const Onboarding = props => {
                 color: check === 'signup' ? '#F27F3D' : '#000',
               }}>
               {/* SIGN UP */}
-              {t('SIGN UP')}
+              {t('Onboarding.SIGN UP')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -405,60 +429,19 @@ const Onboarding = props => {
                 color: check === 'signin' ? '#F27F3D' : '#000',
               }}>
               {/* SIGN IN */}
-              {t('SIGN IN')}
+              {t('Onboarding.SIGN IN')}
             </Text>
           </TouchableOpacity>
           {/* <View style={{height: hp(4), aspectRatio: 1/1, backgroundColor: "#F5DEB3"}}></View> */}
         </View>
       </View>
-      <Modal
-        transparent={true}
+
+      <LanguageModal
         visible={modalVisible}
-        animationType="slide"
-        onBackdropPress={() => setModalVisible(false)}
-        onRequestClose={() => setModalVisible(false)}
-        style={{
-          position: 'absolute',
-          top: 40,
-          zIndex: 100,
-          right: 0,
-        }}>
-        <TouchableOpacity
-          style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#D6D9C5',
-            width: wp(30),
-            paddingVertical: hp(1),
-            borderRadius: wp(3),
-          }}
-          onPress={() => setModalVisible(false)}>
-          <View style={{}}>
-            {languages.map(language => (
-              <TouchableOpacity
-                key={language}
-                onPress={() => {
-                  const selectedLang = language === 'ENGLISH' ? 'en' : 'hi';
-                  i18n.changeLanguage(selectedLang);
-                  setLang(language);
-                  setModalVisible(false);
-                }}
-                style={[
-                  styles.option,
-                  lang === language && styles.selectedOption,
-                ]}>
-                <Text
-                  style={[
-                    styles.optionText,
-                    lang === language && styles.selectedText,
-                  ]}>
-                  {language}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </TouchableOpacity>
-      </Modal>
+        setVisible={setModalVisible}
+        lang={lang}
+        setLang={setLang}
+      />
     </SafeAreaView>
   );
 };
@@ -468,31 +451,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'center',
     opacity: 0.9,
-    // backgroundColor: "rgba(52,152,219,0.5)"
-  },
-  option: {
-    width: wp(25),
-    height: hp(3.5),
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderBottomColor: '#ccc',
-  },
-  selectedOption: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: wp(5),
-    textAlign: 'center',
-  },
-  optionText: {
-    fontWeight: '600',
-    fontSize: hp(1.4),
-    fontFamily: 'Poppins-SemiBold',
-    color: '#FFFFFF',
-  },
-  selectedText: {
-    fontWeight: '700',
-    fontSize: hp(1.4),
-    fontFamily: 'Poppins-SemiBold',
-    color: '#000',
   },
 });
 

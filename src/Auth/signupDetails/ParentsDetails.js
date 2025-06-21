@@ -74,44 +74,6 @@ const ParentsDetails = () => {
     }
   }, [isAttempted]);
 
-  // const validateParentId = async (id, type) => {
-  //   if (!id) {
-  //     // Clear error if empty (optional field)
-  //     setErrors(prev => ({...prev, [`${type}Id`]: undefined}));
-  //     setErrorMessageRegister?.(prev => ({...prev, [`${type}Id`]: undefined}));
-  //     return true;
-  //   }
-
-  //   try {
-  //     const response = await fetch(
-  //       `https://node2-plum.vercel.app/api/user/checkPersonById/${id}?type=${type}`,
-  //     );
-  //     const result = await response.json();
-
-  //     if (!result.success) {
-  //       setErrors(prev => ({...prev, [`${type}Id`]: result.message}));
-  //       setErrorMessageRegister?.(prev => ({
-  //         ...prev,
-  //         [`${type}Id`]: result.message,
-  //       }));
-  //       return false;
-  //     } else {
-  //       setErrors(prev => ({...prev, [`${type}Id`]: undefined}));
-  //       setErrorMessageRegister?.(prev => ({
-  //         ...prev,
-  //         [`${type}Id`]: undefined,
-  //       }));
-  //       if (type === 'father') setfatherId?.(id);
-  //       if (type === 'mother') setMotherId?.(id);
-  //       return true;
-  //     }
-  //   } catch (error) {
-  //     console.error(`Error validating ${type} ID:`, error);
-  //     setErrors(prev => ({...prev, [`${type}Id`]: 'Something went wrong'}));
-  //     return false;
-  //   }
-  // };
-
   const validateParentId = async (id, type) => {
     if (!id) {
       setErrors(prev => ({...prev, [`${type}Id`]: undefined}));

@@ -21,6 +21,7 @@ import {SignupDataContext} from '../SignupDataContext';
 import {BASE_URL} from '../../api/ApiInfo';
 import Right from '../../provider/png/markRight.png';
 import Wrong from '../../provider/png/markNo.png';
+import {useTranslation} from 'react-i18next';
 const UserBussiness = ({pageName = 'signup'}) => {
   // const navigate = useNavigation;
   // const [checked, setChecked] = useState(null);
@@ -48,6 +49,8 @@ const UserBussiness = ({pageName = 'signup'}) => {
     }
   };
 
+  const {t} = useTranslation();
+
   return (
     <ScrollView
       horizontal={false}
@@ -71,7 +74,7 @@ const UserBussiness = ({pageName = 'signup'}) => {
             alignSelf: 'center',
             color: '#000000',
           }}>
-          Business
+          {t('UserBussiness.Business')}
         </Text>
 
         <View style={{marginBottom: hp(10)}}>
@@ -81,7 +84,7 @@ const UserBussiness = ({pageName = 'signup'}) => {
               fontFamily: 'Poppins-Medium',
               color: 'Black',
             }}>
-            Are you interested in Business?
+            {t('UserBussiness.Are you interested in Business?')}
           </Text>
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <TouchableOpacity
@@ -114,7 +117,7 @@ const UserBussiness = ({pageName = 'signup'}) => {
                   fontWeight: '700',
                   color: checked === true ? '#FFFFFF' : '#000000',
                 }}>
-                Yes
+                {t('UserBussiness.Yes')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -146,7 +149,7 @@ const UserBussiness = ({pageName = 'signup'}) => {
                   fontWeight: '700',
                   color: checked === false ? '#FFFFFF' : '#000000',
                 }}>
-                No
+                {t('UserBussiness.No')}
               </Text>
             </TouchableOpacity>
           </View>

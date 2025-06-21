@@ -26,12 +26,17 @@ import {BASE_URL} from '../api/ApiInfo';
 import axios from 'axios';
 // import DonationDetail from '../Home/DonationDetail';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
-
+import {useTranslation} from 'react-i18next';
 import BackgroundImage from '../provider/png/BackgroundImage.png';
+import {getData, async_keys} from '../api/UserPreference';
 
 const Donation = props => {
   const [apiLoader, setApiLoader] = useState(true);
   const [events, setEvents] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const [langCode, setLangCode] = useState('en');
+
+  const {t} = useTranslation();
 
   const isEventActive = eventToDate => {
     const today = new Date();
@@ -40,14 +45,46 @@ const Donation = props => {
   };
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const loadLanguagePreference = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/events`);
-        const result = await response.json();
-        console.log('Fetched Events:', result.events);
+        const savedLangCode = await getData(async_keys.language_code);
+        if (savedLangCode) {
+          setLangCode(savedLangCode);
+        }
+      } catch (error) {
+        console.error('Error loading language preference:', error);
+      }
+    };
 
-        if (Array.isArray(result.events) && result.events.length > 0) {
-          const formattedData = result.events.map(item => ({
+    loadLanguagePreference();
+  }, []);
+
+  const handleRefresh = async () => {
+    setRefresh(true);
+    await fetchEvents();
+    setRefresh(false);
+  };
+
+  const fetchEvents = async () => {
+    try {
+      console.log('Fetching events with lang_code:', langCode);
+      const response = await fetch(`${BASE_URL}/events?lang_code=${langCode}`);
+      const result = await response.json();
+      console.log('Fetched Events:', result.events);
+
+      if (Array.isArray(result.events)) {
+        // Filter out events that don't have content in the selected language
+        const formattedData = result.events
+          .filter(item => {
+            // Check if essential fields have content
+            return (
+              item.ENVT_DESC &&
+              item.ENVT_DESC.trim() !== '' &&
+              item.ENVT_EXCERPT &&
+              item.ENVT_EXCERPT.trim() !== ''
+            );
+          })
+          .map(item => ({
             id: item.ENVT_ID,
             eventCategoryID: item.ENVT_CATE_ID,
             name: item.ENVT_DESC,
@@ -63,20 +100,31 @@ const Donation = props => {
             createdEventDate: item.EVET_CREATED_DT,
             cate_desc: item?.SubCategory?.CATE_DESC || '',
           }));
+
+        if (formattedData.length > 0) {
           setEvents(formattedData);
           console.log('Events information', formattedData);
         } else {
-          console.warn('No valid events data found.');
+          console.warn(
+            t('Donation.No events with content in selected language.'),
+          );
+          setEvents([]); // Clear events if none have content
         }
-      } catch (error) {
-        console.error('Error fetching Events:', error);
-      } finally {
-        setApiLoader(false);
+      } else {
+        console.warn(t('Donation.No valid events data found.'));
+        setEvents([]); // Clear events if response is invalid
       }
-    };
+    } catch (error) {
+      console.error(t('Donation.Error fetching Events:'), error);
+      setEvents([]); // Clear events on error
+    } finally {
+      setApiLoader(false);
+    }
+  };
 
+  useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [langCode]);
 
   return (
     <SafeAreaView style={styles.MainContainer}>
@@ -125,7 +173,7 @@ const Donation = props => {
                     fontWeight: '600',
                     fontSize: hp(3),
                   }}>
-                  Donations
+                  {t('Donation.Donations')}
                 </Text>
               </View>
             </View>

@@ -7,6 +7,7 @@ import {
   Image,
   FlatList,
   ImageBackground,
+  RefreshControl,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -44,298 +45,14 @@ import {getData, async_keys, clearData, storeData} from '../api/UserPreference';
 import AppLoader from '../components/AppLoader';
 import {BASE_URL} from '../api/ApiInfo';
 import axios from 'axios';
+import {useTranslation} from 'react-i18next';
 
 const Announcement = props => {
   const [events, setEvents] = useState([]);
   const [apiLoader, setApiLoader] = useState(true);
-  // const data = {
-  //   donations: [
-  //     {
-  //       id: 1,
-  //       name: 'Nikah [Marriage]',
-  //       logo: announcementlogo,
-
-  //       role: 'Samuhik Nikah Sammelan [Kotiya]',
-  //       jobType: '10/02/2025',
-  //       Salary: 'Main Bus Stand',
-  //     },
-  //     {
-  //       id: 2,
-  //       name: 'Nikah [Marriage]',
-  //       logo: announcementlogo,
-
-  //       role: 'Samuhik Nikah Sammelan [Gulab Pura]',
-  //       jobType: '9/02/2025',
-  //       Salary: 'Karsi Mundi 27Mil Road',
-  //     },
-  //     {
-  //       id: 3,
-  //       name: 'Nikah [Marriage]',
-  //       logo: announcementlogo,
-
-  //       role: 'Samuhik Nikah Sammelan [Asind]',
-  //       jobType: '8/02/2025',
-  //       Salary: 'Prem Vatika',
-  //     },
-  //     {
-  //       id: 4,
-  //       name: 'Nikah [Marriage]',
-  //       logo: announcementlogo,
-
-  //       role: 'Samuhik Nikah Sammelan [Phuleya Kalan]',
-  //       jobType: '5/02/2025',
-  //       Salary: 'Majid Rangrez Colony',
-  //     },
-  //   ],
-  //   SchoolHoliday: [
-  //     {
-  //       id: 1,
-  //       name: 'Holidays',
-  //       logo: announcementlogo,
-
-  //       role: 'School Holidays',
-  //       jobType: 'prep - 10th Class',
-  //       Salary: '05/02/2025 - 07/02/2025',
-  //       // Experience: "5:00 PM"
-  //     },
-  //     {
-  //       id: 2,
-  //       name: 'Holidays',
-  //       logo: announcementlogo,
-
-  //       role: 'School Holidays',
-  //       jobType: '1th Class - 10th Class',
-  //       Salary: '03/02/2025 - 07/02/2025',
-  //       // Experience: "5:00 PM"
-  //     },
-  //     {
-  //       id: 3,
-  //       name: 'Holidays',
-  //       logo: announcementlogo,
-  //       role: 'School Holidays',
-  //       jobType: '3th Class - 10th Class',
-  //       Salary: '06/02/2025 - 07/02/2025',
-  //       // Experience: "5:00 PM"
-  //     },
-  //     {
-  //       id: 4,
-  //       name: 'Holidays',
-  //       logo: announcementlogo,
-
-  //       role: 'School Holidays',
-  //       jobType: 'prep - 10th Class',
-  //       Salary: '10/02/2025 - 07/02/2025',
-  //       // Experience: "5:00 PM"
-  //     },
-  //   ],
-  //   SchoolMeeting: [
-  //     {
-  //       id: 1,
-  //       name: 'Meeting',
-  //       logo: announcementlogo,
-
-  //       role: 'Samaj ki Meeting',
-  //       jobType: '3/02/2025',
-  //       Salary: 'Main Bus Stand',
-  //       Experience: '5:00 PM',
-  //     },
-  //     {
-  //       id: 2,
-  //       name: 'Meeting',
-  //       logo: announcementlogo,
-
-  //       role: 'Samaj ki Meeting',
-  //       jobType: '10/02/2025',
-  //       Salary: 'Karsi Mundi 27Mil Road',
-  //       Experience: '2:00 PM',
-  //     },
-  //     {
-  //       id: 3,
-  //       name: 'Meeting',
-  //       logo: announcementlogo,
-
-  //       role: 'Samaj ki Meeting',
-  //       jobType: '13/02/2025',
-  //       Salary: 'Prem Vatika',
-  //       Experience: '1:00 PM',
-  //     },
-  //     {
-  //       id: 4,
-  //       name: 'Meeting',
-  //       logo: announcementlogo,
-
-  //       role: 'Samaj ki Meeting',
-  //       jobType: '9/02/2025',
-  //       Salary: 'Majid Rangrez Colony',
-  //       Experience: '8:00 PM',
-  //     },
-  //   ],
-  //   HajApplication: [
-  //     {
-  //       id: 1,
-  //       name: 'Application Date',
-  //       logo: announcementlogo,
-
-  //       role: 'Haj Application Date',
-  //       jobType: '13/02/2025 - 30/02/2025',
-  //       Salary: 'After the last date we do not accept any applications',
-  //       // Experience: "5:00 PM"
-  //     },
-  //     {
-  //       id: 2,
-  //       name: 'Application Date',
-  //       logo: announcementlogo,
-
-  //       role: 'Haj Application Date',
-  //       jobType: '13/02/2025 - 30/02/2025',
-  //       Salary: 'After the last date we do not accept any applications',
-  //       // Experience: "5:00 PM"
-  //     },
-  //     {
-  //       id: 3,
-  //       name: 'Application Date',
-  //       logo: announcementlogo,
-  //       role: 'Haj Application Date',
-  //       jobType: '13/02/2025 - 30/02/2025',
-  //       Salary: 'After the last date we do not accept any applications',
-  //       // Experience: "5:00 PM"
-  //     },
-  //     {
-  //       id: 4,
-  //       name: 'Application Date',
-  //       logo: announcementlogo,
-
-  //       role: 'Haj Application Date',
-  //       jobType: '13/02/2025 - 30/02/2025',
-  //       Salary: 'After the last date we do not accept any applications',
-  //       // Experience: "5:00 PM"
-  //     },
-  //   ],
-  //   HajDeparture: [
-  //     {
-  //       id: 1,
-  //       name: 'Departure Date',
-  //       logo: announcementlogo,
-
-  //       role: 'Haj Departure Date',
-  //       jobType: '30/02/2025',
-  //       Salary: 'follow all guidelines and be proper on time',
-  //       Experience: '5:00 PM',
-  //     },
-  //     {
-  //       id: 2,
-  //       name: 'Departure Date',
-  //       logo: announcementlogo,
-
-  //       role: 'Haj Departure Date',
-  //       jobType: '30/02/2025',
-  //       Salary: 'follow all guidelines and be proper on time',
-  //       Experience: '5:00 PM',
-  //     },
-  //     {
-  //       id: 3,
-  //       name: 'Departure Date',
-  //       logo: announcementlogo,
-
-  //       role: 'Haj Departure Date',
-  //       jobType: '30/02/2025',
-  //       Salary: 'follow all guidelines and be proper on time',
-  //       Experience: '5:00 PM',
-  //     },
-  //     {
-  //       id: 4,
-  //       name: 'Departure Date',
-  //       logo: announcementlogo,
-
-  //       role: 'Haj Departure Date',
-  //       jobType: '30/02/2025',
-  //       Salary: 'follow all guidelines and be proper on time',
-  //       Experience: '5:00 PM',
-  //     },
-  //   ],
-  //   Vacancy: [
-  //     {
-  //       id: 1,
-  //       name: 'Vacancy',
-  //       logo: announcementlogo,
-
-  //       role: 'Govt Vacancy',
-  //       jobType: '08/02/2025 - 20/02/2025',
-  //       Salary: '500',
-  //       // Experience: "5:00 PM"
-  //     },
-  //     {
-  //       id: 2,
-  //       name: 'Vacancy',
-  //       logo: announcementlogo,
-
-  //       role: 'Govt Vacancy',
-  //       jobType: '08/02/2025 - 20/02/2025',
-  //       Salary: '500',
-  //     },
-  //     {
-  //       id: 3,
-  //       name: 'Vacancy',
-  //       logo: announcementlogo,
-
-  //       role: 'Govt Vacancy',
-  //       jobType: '08/02/2025 - 20/02/2025',
-  //       Salary: '500',
-  //     },
-  //     {
-  //       id: 4,
-  //       name: 'Vacancy',
-  //       logo: announcementlogo,
-
-  //       role: 'Govt Vacancy',
-  //       jobType: '08/02/2025 - 20/02/2025',
-  //       Salary: '500',
-  //     },
-  //   ],
-  //   BllodDonation: [
-  //     {
-  //       id: 1,
-  //       name: 'Donation Camp',
-  //       logo: announcementlogo,
-
-  //       role: 'Blood Donation Camp[Gulab Pura]',
-  //       jobType: '20/02/2025',
-  //       Salary: '8:00AM - 7:00PM',
-  //       // Experience: "5:00 PM"
-  //       Experience: 'Mahatma gandhi Hospital',
-  //     },
-  //     {
-  //       id: 2,
-  //       name: 'Donation Camp',
-  //       logo: announcementlogo,
-
-  //       role: 'Blood Donation Camp[Hurda]',
-  //       jobType: '20/02/2025',
-  //       Salary: '8:00AM - 7:00PM',
-  //       Experience: 'Mahatma gandhi Hospital',
-  //     },
-  //     {
-  //       id: 3,
-  //       name: 'Donation Camp',
-  //       logo: announcementlogo,
-
-  //       role: 'Blood Donation Camp[Kothia]',
-  //       jobType: '20/02/2025',
-  //       Salary: '8:00AM - 7:00PM',
-  //       Experience: 'Mahatma gandhi Hospital',
-  //     },
-  //     {
-  //       id: 4,
-  //       name: 'Donation Camp',
-  //       logo: announcementlogo,
-
-  //       role: 'Blood Donation Camp[Phuliya',
-  //       jobType: '20/02/2025',
-  //       Salary: '8:00AM - 7:00PM',
-  //       Experience: 'Mahatma gandhi Hospital',
-  //     },
-  //   ],
-  // };
+  const [refresh, setRefresh] = useState(false);
+  const [langCode, setLangCode] = useState('en');
+  const {t} = useTranslation();
 
   const isEventActive = eventToDate => {
     const today = new Date();
@@ -343,15 +60,91 @@ const Announcement = props => {
     return eventDate >= today;
   };
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch(`${BASE_URL}/events`);
-        const result = await response.json();
-        console.log('Fetched Events:', result.events);
+  // useEffect(() => {
+  //   const fetchEvents = async () => {
+  //     try {
+  //       const response = await fetch(`${BASE_URL}/events`);
+  //       const result = await response.json();
+  //       console.log('Fetched Events:', result.events);
 
-        if (Array.isArray(result.events) && result.events.length > 0) {
-          const formattedData = result.events.map(item => ({
+  //       if (Array.isArray(result.events) && result.events.length > 0) {
+  //         const formattedData = result.events.map(item => ({
+  //           id: item.ENVT_ID,
+  //           eventCategoryID: item.ENVT_CATE_ID,
+  //           name: item.ENVT_DESC,
+  //           message: item.ENVT_EXCERPT,
+  //           Detail: item.ENVT_DETAIL,
+  //           headerImage: {uri: item.ENVT_BANNER_IMAGE},
+  //           EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
+  //           EventContact: item.ENVT_CONTACT_NO,
+  //           EventFromDate: item.EVNT_FROM_DT,
+  //           EventsToDate: item.EVNT_UPTO_DT,
+  //           address: item.ENVT_ADDRESS,
+  //           city: item.ENVT_CITY,
+  //           createdEventDate: item.EVET_CREATED_DT,
+  //           cate_desc: item?.SubCategory?.CATE_DESC || '',
+  //         }));
+  //         setEvents(formattedData);
+  //         console.log('Events information', formattedData);
+  //       } else {
+  //         console.warn('No valid events data found.');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching Events:', error);
+  //     } finally {
+  //       setApiLoader(false);
+  //     }
+  //   };
+
+  //   fetchEvents();
+  // }, []);
+
+  useEffect(() => {
+    const loadLanguagePreference = async () => {
+      try {
+        const savedLangCode = await getData(async_keys.language_code);
+        if (savedLangCode) {
+          setLangCode(savedLangCode);
+        }
+      } catch (error) {
+        console.error(
+          t('Announcement.Error loading language preference:'),
+          error,
+        );
+      }
+    };
+
+    loadLanguagePreference();
+  }, []);
+
+  const handleRefresh = async () => {
+    setRefresh(true);
+    await fetchEvents();
+    setRefresh(false);
+  };
+
+  const fetchEvents = async () => {
+    try {
+      console.log('Fetching announcements with lang_code:', langCode);
+      const response = await fetch(`${BASE_URL}/events?lang_code=${langCode}`);
+      const result = await response.json();
+      console.log('Fetched Events:', result.events);
+
+      if (Array.isArray(result.events)) {
+        // Filter events that have content in selected language and are announcements
+        const formattedData = result.events
+          .filter(item => {
+            // Check if essential fields have content
+            const hasContent =
+              item.ENVT_DESC &&
+              item.ENVT_DESC.trim() !== '' &&
+              item.ENVT_EXCERPT &&
+              item.ENVT_EXCERPT.trim() !== '';
+
+            // Only include announcement events (category ID 2)
+            return hasContent && item.ENVT_CATE_ID === 2;
+          })
+          .map(item => ({
             id: item.ENVT_ID,
             eventCategoryID: item.ENVT_CATE_ID,
             name: item.ENVT_DESC,
@@ -367,20 +160,33 @@ const Announcement = props => {
             createdEventDate: item.EVET_CREATED_DT,
             cate_desc: item?.SubCategory?.CATE_DESC || '',
           }));
-          setEvents(formattedData);
-          console.log('Events information', formattedData);
-        } else {
-          console.warn('No valid events data found.');
-        }
-      } catch (error) {
-        console.error('Error fetching Events:', error);
-      } finally {
-        setApiLoader(false);
-      }
-    };
 
+        if (formattedData.length > 0) {
+          setEvents(formattedData);
+          console.log('Announcements information', formattedData);
+        } else {
+          console.warn(
+            t(
+              'Announcement.No announcements with content in selected language.',
+            ),
+          );
+          setEvents([]);
+        }
+      } else {
+        console.warn(t('Announcement.No valid events data found.'));
+        setEvents([]);
+      }
+    } catch (error) {
+      console.error(t('Announcement.Error fetching Events:'), error);
+      setEvents([]);
+    } finally {
+      setApiLoader(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [langCode]);
 
   return (
     <SafeAreaView style={styles.MainContainer}>
@@ -392,7 +198,10 @@ const Announcement = props => {
           bounces={false}
           style={{flex: 1}}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{flexGrow: 1}}>
+          contentContainerStyle={{flexGrow: 1}}
+          refreshControl={
+            <RefreshControl refreshing={refresh} onRefresh={handleRefresh} />
+          }>
           <LinearGradient
             start={{x: 1, y: 1.7}}
             end={{x: 0.2, y: 0}}
@@ -428,7 +237,7 @@ const Announcement = props => {
                     fontWeight: '600',
                     fontSize: hp(3),
                   }}>
-                  Announcements
+                  {t('Announcement.Announcements')}
                 </Text>
               </View>
             </View>
@@ -579,30 +388,29 @@ const Announcement = props => {
                             })
                           }
                           style={{
-                            // marginLeft: wp(4),
-                            // marginRight: wp(6.2),
                             marginHorizontal: wp(2),
                             width: wp(90),
-                            // borderWidth: wp(1),
                             paddingVertical: hp(1.5),
                             borderRadius: wp(3),
                             backgroundColor: '#F2DBD5',
                             marginBottom: hp(2),
                           }}>
-                          <View
-                            style={[
-                              styles.categoryContainer,
-                              {
-                                backgroundColor: '#ac2b3b',
-                                marginBottom: hp(0.3),
-                              },
-                            ]}>
-                            <Text
-                              numberOfLines={1}
-                              style={styles.categoryStyle}>
-                              {item.cate_desc}
-                            </Text>
-                          </View>
+                          {item.cate_desc !== '' && (
+                            <View
+                              style={[
+                                styles.categoryContainer,
+                                {
+                                  backgroundColor: '#ac2b3b',
+                                  marginBottom: hp(0.3),
+                                },
+                              ]}>
+                              <Text
+                                numberOfLines={1}
+                                style={styles.categoryStyle}>
+                                {item.cate_desc}
+                              </Text>
+                            </View>
+                          )}
                           <View
                             style={{
                               flexDirection: 'row',
@@ -626,8 +434,7 @@ const Announcement = props => {
                                 color: '#000',
                                 fontSize: hp(2),
                                 width: wp(73),
-
-                                fontWeight: '800',
+                                fontWeight: '500',
                                 marginLeft: wp(3),
                                 fontFamily: 'Poppins-Medium',
                               }}>
@@ -644,7 +451,8 @@ const Announcement = props => {
 
                               marginLeft: wp(3),
                               marginTop: hp(0.2),
-                              fontFamily: 'Poppins-Medium',
+                              fontFamily: 'Poppins-Regular',
+                              fontWeight: '500',
                             }}>
                             {item.message}
                           </Text>
@@ -661,7 +469,14 @@ const Announcement = props => {
                                 marginLeft: wp(3),
                                 fontFamily: 'Poppins-Medium',
                               }}>
-                              <Text style={{fontWeight: '800'}}>DATE : </Text>
+                              <Text
+                                style={{
+                                  fontWeight: '500',
+
+                                  fontFamily: 'Poppins-Medium',
+                                }}>
+                                {t('Announcement.DATE')} :{' '}
+                              </Text>
                               {item.EventFromDate}
                               {item.EventsToDate
                                 ? ` - ${item.EventsToDate}`
@@ -681,8 +496,13 @@ const Announcement = props => {
                                 marginLeft: wp(3),
                                 fontFamily: 'Poppins-Medium',
                               }}>
-                              <Text style={{fontWeight: '800'}}>
-                                LOCATION :
+                              <Text
+                                style={{
+                                  fontWeight: '500',
+
+                                  fontFamily: 'Poppins-Medium',
+                                }}>
+                                {t('Announcement.LOCATION')} :
                               </Text>{' '}
                               {item.address}
                               {item.city ? ` , ${item.city}` : ''}
@@ -701,7 +521,13 @@ const Announcement = props => {
                                 marginLeft: wp(3),
                                 fontFamily: 'Poppins-Medium',
                               }}>
-                              <Text style={{fontWeight: '800'}}>NOTE :</Text>{' '}
+                              <Text
+                                style={{
+                                  fontWeight: '500',
+                                  fontFamily: 'Poppins-Medium',
+                                }}>
+                                {t('Announcement.NOTE')} :
+                              </Text>{' '}
                               {item.Detail}
                             </Text>
                           ) : null}

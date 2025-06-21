@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   ImageBackground,
+  Switch,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Modal from 'react-native-modal';
@@ -51,10 +52,17 @@ import {BASE_URL} from '../api/ApiInfo';
 import useUserProfile from '../components/profileCompleted/useUserProfile';
 import IncompleteProfileModal from '../components/profileCompleted/IncompleteProfileModal';
 import {useFocusEffect} from '@react-navigation/native';
+import Notification2 from '../provider/png/Notification2.png';
+// import Switch from 'react-native-switch-pro';
+
 // import MyProfessionicon from '../provider/png/myprofessionicon.png';
 // import MyProfession from '../Home/MyProfession';
 import DownloadCertificate from '../Home/DownloadCertificate';
 import {clearDeviceAssociation} from '../api/fcm';
+import LanguageModal from '../components/LanguageModal';
+import i18n from '../components/i18n'; // Import your i18n instance
+import {useTranslation} from 'react-i18next';
+// import {getData, storeData, async_keys} from '../api/UserPreference';
 
 const Drawer = props => {
   const [lang, setLang] = useState('ENGLISH');
@@ -64,10 +72,25 @@ const Drawer = props => {
     useState(false);
   const [token, setToken] = useState('');
   const [userData, setUserData] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
   const {userDataa, PRmodalVisible, setPRModalVisible, completionPercentagee} =
     useUserProfile();
+  const [isEnabled, setIsEnabled] = useState(true);
+  const {t} = useTranslation();
+
+  console.log('NOTIFICATION', isEnabled);
+
+  const toggleSwitch = async () => {
+    const newValue = !isEnabled;
+    setIsEnabled(newValue); // Optimistic update
+
+    const success = await updateNotificationPreference(newValue);
+    if (!success) {
+      setIsEnabled(!newValue); // Revert if failed
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -84,7 +107,7 @@ const Drawer = props => {
   useEffect(() => {
     const fetchToken = async () => {
       const storedToken = await getData(async_keys.auth_token);
-      setToken(storedToken || 'No Token Found');
+      setToken(storedToken || t('Drawer.No Token Found'));
     };
 
     fetchToken();
@@ -105,18 +128,95 @@ const Drawer = props => {
 
         if (data.success && data.data) {
           setUserData(data.data);
+          setIsEnabled(data.data.PR_NOTIFICATION === 'Y');
         } else {
           setErrorMessage(data.data.message);
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
-        setErrorMessage('Failed to load user data.');
+        console.error(t('Drawer.Error fetching profile:'), error);
+        setErrorMessage(t('Drawer.Failed to load user data.'));
       }
     };
 
     fetchUserProfile();
   }, [token]);
-  // console.log('DATAA', userData);
+  console.log('DATAA', userData?.PR_NOTIFICATION);
+
+  const updateNotificationPreference = async newValue => {
+    try {
+      // setIsLoading(true);
+      const response = await fetch(`${BASE_URL}update-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          pr_id: userData?.PR_ID.toString(),
+        },
+        body: JSON.stringify({
+          PR_NOTIFICATION: newValue ? 'Y' : 'N',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message || t('Drawer.Failed to update notification'),
+        );
+      }
+      setUserData(prev => ({
+        ...prev,
+        PR_NOTIFICATION: newValue ? 'Y' : 'N',
+      }));
+    } catch (error) {
+      console.error(t('Drawer.Error updating notification:'), error);
+      showMessage({
+        message: error.message || t('Drawer.Failed to update notification'),
+        type: 'danger',
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    // Load saved language on component mount
+    const loadSavedLanguage = async () => {
+      try {
+        const savedLangCode = await getData(async_keys.language_code);
+        if (savedLangCode) {
+          const displayName = savedLangCode === 'en' ? 'ENGLISH' : 'हिंदी';
+          setLang(displayName);
+          i18n.changeLanguage(savedLangCode);
+        }
+        setIsInitializing(false);
+      } catch (error) {
+        console.error(t('Drawer.Error loading language:'), error);
+        setIsInitializing(false);
+      }
+    };
+
+    loadSavedLanguage();
+  }, []);
+
+  useEffect(() => {
+    // Handle language change when lang state updates
+    if (!isInitializing && lang) {
+      const langCode = lang === 'ENGLISH' ? 'en' : 'hi';
+      const saveLanguage = async () => {
+        try {
+          await storeData(async_keys.language_code, langCode);
+          i18n.changeLanguage(langCode);
+        } catch (error) {
+          console.error(t('Drawer.Error saving language:'), error);
+        }
+      };
+
+      saveLanguage();
+    }
+  }, [lang, isInitializing]);
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -159,7 +259,7 @@ const Drawer = props => {
                   fontWeight: '600',
                   fontSize: hp(3),
                 }}>
-                Settings
+                {t('Drawer.Settings')}
               </Text>
             </View>
           </View>
@@ -189,7 +289,9 @@ const Drawer = props => {
                   fontSize: hp(2.2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                {userData?.PR_FULL_NAME ? userData?.PR_FULL_NAME : 'USER NAME'}
+                {userData?.PR_FULL_NAME
+                  ? userData?.PR_FULL_NAME
+                  : t('Drawer.USER NAME')}
               </Text>
               <Text
                 numberOfLines={1}
@@ -198,7 +300,9 @@ const Drawer = props => {
                   fontSize: hp(1.8),
                   fontFamily: 'Poppins-Regular',
                 }}>
-                {userData?.PR_MOBILE_NO ? userData?.PR_MOBILE_NO : '1234567890'}
+                {userData?.PR_MOBILE_NO
+                  ? userData?.PR_MOBILE_NO
+                  : t('Drawer.1234567890')}
               </Text>
             </View>
           </View>
@@ -230,7 +334,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                My Profile
+                {t('Drawer.My Profile')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -253,7 +357,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                My Family
+                {t('Drawer.My Family')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -280,32 +384,9 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                Add New Member
+                {t('Drawer.Add New Member')}
               </Text>
             </TouchableOpacity>
-            {/* <TouchableOpacity
-            onPress={() => props.navigation.navigate('MyProfession')}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginLeft: wp(6),
-              marginTop: hp(3),
-            }}>
-            <Image
-              source={MyProfessionicon}
-              style={{height: hp(3.5), width: wp(7.2)}}
-              tintColor={'#000000'}
-            />
-            <Text
-              style={{
-                marginLeft: wp(2),
-                color: '#000000',
-                fontSize: hp(2),
-                fontFamily: 'Poppins-Medium',
-              }}>
-              My Profession
-            </Text>
-          </TouchableOpacity> */}
 
             <TouchableOpacity
               onPress={() => props.navigation.navigate('MyDonation')}
@@ -327,7 +408,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                My Donations
+                {t('Drawer.My Donations')}
               </Text>
             </TouchableOpacity>
 
@@ -353,7 +434,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                DownLoad Certificate
+                {t('Drawer.DownLoad Certificate')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -376,9 +457,47 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                About Rangrez Samaj
+                {t('Drawer.About Rangrez Samaj')}
               </Text>
             </TouchableOpacity>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginHorizontal: wp(6),
+                marginTop: hp(3),
+              }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
+                <Image
+                  source={Notification2}
+                  style={{height: hp(3.5), width: wp(7.2)}}
+                  tintColor={'#000000'}
+                />
+                <Text
+                  style={{
+                    marginLeft: wp(2),
+                    color: '#000000',
+                    fontSize: hp(2),
+                    fontFamily: 'Poppins-Medium',
+                  }}>
+                  {t('Drawer.Notification')}
+                </Text>
+              </View>
+              <Switch
+                trackColor={{false: '#BC4749', true: '#5bc783'}}
+                thumbColor={isEnabled ? '#04BF45' : '#A61205'}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={toggleSwitch}
+                style={{transform: [{scaleX: 1.5}, {scaleY: 1.5}]}}
+                value={isEnabled}
+              />
+            </View>
 
             <TouchableOpacity
               onPress={() => props.navigation.navigate('Contact')}
@@ -400,7 +519,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                Contact Us
+                {t('Drawer.Contact Us')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -423,7 +542,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                FeedBack
+                {t('Drawer.FeedBack')}
               </Text>
             </TouchableOpacity>
 
@@ -447,7 +566,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                App Insights
+                {t('Drawer.App Insights')}
               </Text>
             </TouchableOpacity>
 
@@ -471,7 +590,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                Change Language
+                {t('Drawer.Change Language')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -494,7 +613,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                Privacy Policy
+                {t('Drawer.Privacy Policy')}
               </Text>
             </TouchableOpacity>
 
@@ -518,7 +637,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                Terms & Conditions
+                {t('Drawer.Terms & Conditions')}
               </Text>
             </TouchableOpacity>
 
@@ -542,7 +661,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                Delete Account
+                {t('Drawer.Delete Account')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -568,7 +687,7 @@ const Drawer = props => {
                   fontSize: hp(2),
                   fontFamily: 'Poppins-Medium',
                 }}>
-                Sign Out
+                {t('Drawer.Sign Out')}
               </Text>
             </TouchableOpacity>
             <IncompleteProfileModal
@@ -593,7 +712,7 @@ const Drawer = props => {
 
       {/* Modal for Language Converter */}
 
-      <Modal
+      {/* <Modal
         transparent={true}
         visible={modalVisible}
         animationType="slide"
@@ -605,18 +724,15 @@ const Drawer = props => {
           alignSelf: 'center',
 
           top: 0,
-          // // left: 0,
-          // // right: 0,
+
           bottom: 0,
-          // zIndex: 100,
-          // right: 0,
         }}>
         <TouchableOpacity
           style={{
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#D6D9C5',
-            width: wp(80),
+            width: wp(90),
             paddingVertical: hp(2),
             borderRadius: wp(3),
           }}
@@ -644,7 +760,13 @@ const Drawer = props => {
             ))}
           </View>
         </TouchableOpacity>
-      </Modal>
+      </Modal> */}
+      <LanguageModal
+        visible={modalVisible}
+        setVisible={setModalVisible}
+        lang={lang}
+        setLang={setLang}
+      />
 
       {/* Modal for Delete Account */}
 
@@ -682,7 +804,7 @@ const Drawer = props => {
               fontFamily: 'Poppins-Medium',
               fontSize: hp(2),
             }}>
-            Are You Sure You Want to Delete Your Account?
+            {t('Drawer.Are You Sure You Want to Delete Your Account?')}
           </Text>
           <View
             style={{
@@ -708,7 +830,7 @@ const Drawer = props => {
                   fontFamily: 'Poppins-Medium',
                   color: '#000000',
                 }}>
-                Yes
+                {t('Drawer.Yes')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -728,7 +850,7 @@ const Drawer = props => {
                   fontFamily: 'Poppins-Medium',
                   color: '#000000',
                 }}>
-                No
+                {t('Drawer.No')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -764,7 +886,7 @@ const Drawer = props => {
               fontFamily: 'Poppins-Medium',
               fontSize: hp(2),
             }}>
-            Are you sure you want to Sign out of your account?
+            {t('Drawer.Are you sure you want to Sign out of your account?')}
           </Text>
           <View
             style={{
@@ -791,7 +913,9 @@ const Drawer = props => {
 
                   if (tokenAfterClear !== null || userDataAfterClear !== null) {
                     console.warn(
-                      'Warning: Data was not fully cleared from AsyncStorage',
+                      t(
+                        'Drawer.Warning: Data was not fully cleared from AsyncStorage',
+                      ),
                     );
                     // You might want to retry clearing or show an error to the user
                   }
@@ -801,7 +925,7 @@ const Drawer = props => {
                   // Close the modal
                   setModalLogoutVisible(false);
                 } catch (error) {
-                  console.error('Error during sign out:', error);
+                  console.error(t('Drawer.Error during sign out:'), error);
                   // Optionally show an error message to the user
                 }
               }}
@@ -820,7 +944,7 @@ const Drawer = props => {
                   fontFamily: 'Poppins-Medium',
                   color: '#000000',
                 }}>
-                Yes
+                {t('Drawer.Yes')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -840,7 +964,7 @@ const Drawer = props => {
                   fontFamily: 'Poppins-Medium',
                   color: '#000000',
                 }}>
-                No
+                {t('Drawer.No')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -852,41 +976,31 @@ const Drawer = props => {
 
 const styles = StyleSheet.create({
   option: {
-    paddingVertical: hp(1),
-
-    width: wp(70),
-
+    width: wp(80),
+    height: hp(8),
+    justifyContent: 'center',
     alignItems: 'center',
-    // borderBottomWidth: 1,
-    // borderWidth: wp(.4),
-
-    // padding: 5,
+    borderBottomColor: '#ccc',
+    borderWidth: wp(0.2),
+    borderColor: '#FFFFFF',
     marginVertical: hp(1),
-    // borderBottomColor: '#ccc',
+    borderRadius: wp(5),
   },
   selectedOption: {
     backgroundColor: '#f0f0f0',
-    borderRadius: wp(10),
+    borderRadius: wp(5),
     textAlign: 'center',
-    // marginVertical: hp(2),
-    height: hp(5.5),
-    justifyContent: 'center',
-    padding: wp(2),
+    marginVertical: hp(1),
   },
   optionText: {
-    // fontSize: hp(1.4),
-    // borderWidth: wp(.1),
-    // fontFamily: "Poppins-Medium"
-    // fontWeight: '600',
-    fontSize: hp(1.6),
-    fontFamily: 'Poppins-Medium',
+    fontWeight: '600',
+    fontSize: hp(1.8),
+    fontFamily: 'Poppins-SemiBold',
     color: '#FFFFFF',
-    // marginTop: hp(1)
   },
   selectedText: {
-    // fontWeight: '700',
-
-    fontSize: hp(1.9),
+    fontWeight: '700',
+    fontSize: hp(1.8),
     fontFamily: 'Poppins-SemiBold',
     color: '#000',
   },

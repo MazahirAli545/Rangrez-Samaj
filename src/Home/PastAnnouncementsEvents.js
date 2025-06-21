@@ -1,4 +1,4 @@
-import {React, useEffect, useState} from 'react';
+import {React, useEffect, useState, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -7,7 +7,6 @@ import {
   Image,
   FlatList,
   ImageBackground,
-  RefreshControl,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -30,149 +29,89 @@ import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import PastEventsDetails from '../Home/PastEventsDetails';
 
 import BackgroundImage from '../provider/png/BackgroundImage.png';
-import {getData, async_keys} from '../api/UserPreference';
 import {useTranslation} from 'react-i18next';
-const PastEvent = props => {
+import {useFocusEffect} from '@react-navigation/native';
+import {getData, async_keys} from '../api/UserPreference';
+
+const PastAnnouncementsEvents = props => {
   const [apiLoader, setApiLoader] = useState(true);
   const [pastEvents, setPastEvents] = useState([]);
-  const [refresh, setRefresh] = useState(false);
-  const [langCode, setLangCode] = useState('en');
   const {t} = useTranslation();
+  const [langCode, setLangCode] = useState('en');
 
   console.log('PastEvents', pastEvents);
 
-  // useEffect(() => {
-  //   const fetchEvents = async () => {
-  //     try {
-  //       const response = await fetch(`${BASE_URL}/events`);
-  //       const result = await response.json();
-  //       console.log('Fetched Past Events:', result.events);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchLanguageAndEvents = async () => {
+        try {
+          // Get saved language preference
+          const savedLangCode =
+            (await getData(async_keys.language_code)) || 'en';
+          setLangCode(savedLangCode);
 
-  //       if (Array.isArray(result.events) && result.events.length > 0) {
-  //         const currentDate = new Date();
+          await fetchEvents(savedLangCode);
+        } catch (error) {
+          console.error(
+            t('PastAnnounceEvents.Error loading language or events:'),
+            error,
+          );
+        }
+      };
 
-  //         const formattedData = result.events
-  //           .filter(item => {
-  //             // Only include events where EventsToDate is in the past
-  //             const eventEndDate = new Date(item.EVNT_UPTO_DT);
-  //             return eventEndDate < currentDate;
-  //           })
-  //           .map(item => ({
-  //             id: item.ENVT_ID,
-  //             eventCategoryID: item.ENVT_CATE_ID,
-  //             name: item.ENVT_DESC,
-  //             message: item.ENVT_EXCERPT,
-  //             Detail: item.ENVT_DETAIL,
-  //             headerImage: {uri: item.ENVT_BANNER_IMAGE},
-  //             EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
-  //             EventContact: item.ENVT_CONTACT_NO,
-  //             EventFromDate: item.EVNT_FROM_DT,
-  //             EventsToDate: item.EVNT_UPTO_DT,
-  //             address: item.ENVT_ADDRESS,
-  //             city: item.ENVT_CITY,
-  //             createdEventDate: item.EVET_CREATED_DT,
-  //             cate_desc: item?.SubCategory?.CATE_DESC || '',
-  //           }));
-  //         setPastEvents(formattedData);
-  //         console.log('Events information', formattedData);
-  //       } else {
-  //         console.warn('No valid events data found.');
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching Events:', error);
-  //     } finally {
-  //       setApiLoader(false);
-  //     }
-  //   };
-
-  //   fetchEvents();
-  // }, []);
+      fetchLanguageAndEvents();
+    }, []),
+  );
 
   useEffect(() => {
-    const loadLanguagePreference = async () => {
+    const fetchEvents = async (languageCode = 'en') => {
       try {
-        const savedLangCode = await getData(async_keys.language_code);
-        if (savedLangCode) {
-          setLangCode(savedLangCode);
+        setApiLoader(true);
+        const response = await fetch(
+          `${BASE_URL}/events?lang_code=${languageCode}`,
+        );
+        const result = await response.json();
+
+        if (Array.isArray(result.events)) {
+          const currentDate = new Date();
+
+          const formattedData = result.events
+            .filter(item => {
+              if (!item.EVNT_UPTO_DT) return false;
+              const eventEndDate = new Date(item.EVNT_UPTO_DT);
+              return eventEndDate < currentDate;
+            })
+            .filter(item => item.ENVT_DESC && item.ENVT_DESC.trim() !== '') // Filter empty content
+            .map(item => ({
+              id: item.ENVT_ID,
+              eventCategoryID: item.ENVT_CATE_ID,
+              name: item.ENVT_DESC,
+              message: item.ENVT_EXCERPT,
+              Detail: item.ENVT_DETAIL,
+              headerImage: {uri: item.ENVT_BANNER_IMAGE},
+              EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
+              EventContact: item.ENVT_CONTACT_NO,
+              EventFromDate: item.EVNT_FROM_DT,
+              EventsToDate: item.EVNT_UPTO_DT,
+              address: item.ENVT_ADDRESS,
+              city: item.ENVT_CITY,
+              createdEventDate: item.EVET_CREATED_DT,
+              cate_desc: item?.SubCategory?.CATE_DESC || '',
+            }));
+
+          setPastEvents(formattedData);
+        } else {
+          console.warn(t('PastAnnounceEvents.No valid events data found.'));
         }
       } catch (error) {
-        console.error(t('PastEvent.Error loading language preference:'), error);
+        console.error(t('PastAnnounceEvents.Error fetching Events:'), error);
+      } finally {
+        setApiLoader(false);
       }
     };
 
-    loadLanguagePreference();
-  }, []);
-
-  const handleRefresh = async () => {
-    setRefresh(true);
-    await fetchEvents();
-    setRefresh(false);
-  };
-
-  const fetchEvents = async () => {
-    try {
-      console.log('Fetching past events with lang_code:', langCode);
-      const response = await fetch(`${BASE_URL}/events?lang_code=${langCode}`);
-      const result = await response.json();
-      console.log('Fetched Past Events:', result.events);
-
-      if (Array.isArray(result.events)) {
-        const currentDate = new Date();
-
-        const formattedData = result.events
-          .filter(item => {
-            // Check if event has content in selected language
-            const hasContent =
-              item.ENVT_DESC &&
-              item.ENVT_DESC.trim() !== '' &&
-              item.ENVT_EXCERPT &&
-              item.ENVT_EXCERPT.trim() !== '';
-
-            // Only include events where EventsToDate is in the past
-            const eventEndDate = new Date(item.EVNT_UPTO_DT);
-            return hasContent && eventEndDate < currentDate;
-          })
-          .map(item => ({
-            id: item.ENVT_ID,
-            eventCategoryID: item.ENVT_CATE_ID,
-            name: item.ENVT_DESC,
-            message: item.ENVT_EXCERPT,
-            Detail: item.ENVT_DETAIL,
-            headerImage: {uri: item.ENVT_BANNER_IMAGE},
-            EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
-            EventContact: item.ENVT_CONTACT_NO,
-            EventFromDate: item.EVNT_FROM_DT,
-            EventsToDate: item.EVNT_UPTO_DT,
-            address: item.ENVT_ADDRESS,
-            city: item.ENVT_CITY,
-            createdEventDate: item.EVET_CREATED_DT,
-            cate_desc: item?.SubCategory?.CATE_DESC || '',
-          }));
-
-        if (formattedData.length > 0) {
-          setPastEvents(formattedData);
-          console.log('Past events information', formattedData);
-        } else {
-          console.warn(
-            t('PastEvent.No past events with content in selected language.'),
-          );
-          setPastEvents([]);
-        }
-      } else {
-        console.warn(t('PastEvent.No valid events data found.'));
-        setPastEvents([]);
-      }
-    } catch (error) {
-      console.error(t('PastEvent.Error fetching Events:'), error);
-      setPastEvents([]);
-    } finally {
-      setApiLoader(false);
-    }
-  };
-
-  useEffect(() => {
     fetchEvents();
-  }, [langCode]);
+  }, []);
 
   return (
     <SafeAreaView style={styles.MainContainer}>
@@ -221,7 +160,7 @@ const PastEvent = props => {
                     fontWeight: '600',
                     fontSize: hp(3),
                   }}>
-                  {t('PastEvent.Past Events')}
+                  {t('PastAnnounceEvents.Past Events')}
                 </Text>
               </View>
             </View>
@@ -240,7 +179,7 @@ const PastEvent = props => {
                       (a, b) =>
                         new Date(b.EventsToDate) - new Date(a.EventsToDate),
                     )
-                    .filter(event => event.eventCategoryID === 1)
+                    .filter(event => event.eventCategoryID === 2)
                     .reverse()
                     .slice(0, 5)}
                   horizontal={false}
@@ -316,7 +255,7 @@ const PastEvent = props => {
                     fontFamily: 'Poppins-Medium',
                     alignSelf: 'center',
                   }}>
-                  {t('PastEvent.No past events available.')}
+                  {t('PastAnnounceEvents.No past events available.')}
                 </Text>
               )}
             </View>
@@ -442,4 +381,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PastEvent;
+export default PastAnnouncementsEvents;

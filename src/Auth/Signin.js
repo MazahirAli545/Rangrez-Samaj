@@ -92,7 +92,7 @@ const Signin = props => {
     // sendTestNotification(templateParams);
 
     if (mobile.length !== 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number');
+      setErrorMessage(t('Sign In.Please enter a valid 10-digit mobile number'));
       return;
     }
 
@@ -106,7 +106,7 @@ const Signin = props => {
 
       if (response.data.success) {
         ToastAndroid.showWithGravity(
-          'OTP sent to your mobile',
+          t('Sign In.OTP sent to your mobile'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -114,7 +114,7 @@ const Signin = props => {
         startCountdown();
       } else {
         ToastAndroid.showWithGravity(
-          response.data.message || 'Login failed',
+          response.data.message || t('Sign In.Login failed'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -122,7 +122,8 @@ const Signin = props => {
     } catch (error) {
       console.error('Login error:', error);
       ToastAndroid.showWithGravity(
-        error.response?.data?.message || 'Network error. Please try again.',
+        error.response?.data?.message ||
+          t('Sign In.Network error. Please try again.'),
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -133,7 +134,7 @@ const Signin = props => {
 
   const verifyOtp = async () => {
     if (!otp || otp.length !== 4) {
-      setOtpError('Please enter a valid 4-digit OTP');
+      setOtpError(t('Sign In.Please enter a valid 4-digit OTP'));
       return;
     }
 
@@ -171,16 +172,16 @@ const Signin = props => {
         }
       } else {
         ToastAndroid.showWithGravity(
-          response.data.message || 'OTP verification failed',
+          response.data.message || t('Sign In.OTP verification failed'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
       }
     } catch (error) {
       console.error('OTP verification error:', error);
-      let errorMessage = 'Something went wrong. Please try again.';
+      let errorMessage = t('Sign In.Something went wrong. Please try again.');
       if (error.response?.status === 400) {
-        errorMessage = error.response.data.message || 'Invalid OTP';
+        errorMessage = error.response.data.message || t('Sign In.Invalid OTP');
       }
       ToastAndroid.showWithGravity(
         errorMessage,
@@ -227,7 +228,7 @@ const Signin = props => {
 
     // 5. Complete login
     ToastAndroid.showWithGravity(
-      'Login successful!',
+      t('Sign In.Login successful!'),
       ToastAndroid.LONG,
       ToastAndroid.TOP,
     );
@@ -258,7 +259,7 @@ const Signin = props => {
         await handleSuccessfulLogin(response.data);
 
         ToastAndroid.showWithGravity(
-          'Login successful!',
+          t('Sign In.Login successful!'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -269,7 +270,7 @@ const Signin = props => {
         props.navigation.navigate('HomeScreen');
       } else {
         ToastAndroid.showWithGravity(
-          response.data.message || 'Login failed',
+          response.data.message || t('Login failed'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -277,7 +278,7 @@ const Signin = props => {
     } catch (error) {
       console.error('User selection error:', error);
       ToastAndroid.showWithGravity(
-        'Something went wrong. Please try again.',
+        t('Sign In.Something went wrong. Please try again.'),
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -297,14 +298,14 @@ const Signin = props => {
 
       if (response.data.success) {
         ToastAndroid.showWithGravity(
-          'OTP resent successfully',
+          t('Sign In.OTP resent successfully'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
         startCountdown();
       } else {
         ToastAndroid.showWithGravity(
-          response.data.message || 'Failed to resend OTP',
+          response.data.message || t('Sign In.Failed to resend OTP'),
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
@@ -312,7 +313,7 @@ const Signin = props => {
     } catch (error) {
       console.error('Resend OTP error:', error);
       ToastAndroid.showWithGravity(
-        'Failed to resend OTP. Please try again.',
+        t('Failed to resend OTP. Please try again.'),
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -353,7 +354,7 @@ const Signin = props => {
                 fontFamily: 'Poppins-Medium',
               }}>
               {/* Login Here */}
-              {t('LOGIN')}
+              {t('Sign In.LOGIN')}
             </Text>
 
             <Text
@@ -365,7 +366,7 @@ const Signin = props => {
                 marginTop: hp(2),
               }}>
               {/* Empowering the Rangrej Community{'\n'} with Unity and Purpose */}
-              {t('LoginHeader')}
+              {t('Sign In.LoginHeader')}
             </Text>
 
             <View
@@ -405,7 +406,7 @@ const Signin = props => {
                     fontSize: hp(2),
                     fontFamily: 'Poppins-Medium',
                   }}
-                  placeholder={t('Mobile')}
+                  placeholder={t('Sign In.Mobile')}
                   placeholderTextColor={'#BFBDBE'}
                   keyboardType="phone-pad"
                   maxLength={10}
@@ -443,7 +444,7 @@ const Signin = props => {
                       fontFamily: 'Poppins-Medium',
                       color: '#FFF',
                     }}>
-                    {apiLoader ? t('Processing') : t('Sign In')}
+                    {apiLoader ? t('Sign In.Processing') : t('Sign In.Sign In')}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -462,7 +463,7 @@ const Signin = props => {
                     color: '#000000',
                   }}>
                   {/* Don't have an Account ? */}
-                  {t('Account')}
+                  {t('Sign In.Account')}
                 </Text>
                 <Text
                   onPress={() => props.navigation.navigate('Signup')}
@@ -473,7 +474,7 @@ const Signin = props => {
                     color: '#0468BF',
                   }}>
                   {/* Sign up */}
-                  {t('Sign up')}
+                  {t('Sign In.Sign up')}
                 </Text>
               </View>
             </View>
@@ -505,7 +506,7 @@ const Signin = props => {
                     colors={['#697368', '#2F4032']}
                     style={styles.otpModal}>
                     <Text style={styles.otpTitle}>
-                      Enter OTP sent to your mobile number
+                      {t('Sign In.Enter OTP sent to your mobile number')}
                     </Text>
 
                     <View
@@ -576,7 +577,7 @@ const Signin = props => {
 
                     <View style={styles.otpResendContainer}>
                       <Text style={styles.otpResendText}>
-                        didn't receive the code?
+                        {t("Sign In.didn't receive the code?")}
                       </Text>
                       <TouchableOpacity
                         onPress={resendOtp}
@@ -586,7 +587,7 @@ const Signin = props => {
                             styles.otpResendLink,
                             isCounting && styles.disabledResend,
                           ]}>
-                          Resend OTP
+                          {t('Sign In.Resend OTP')}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -622,7 +623,9 @@ const Signin = props => {
                             color: '#000000',
                             fontSize: hp(2.4),
                           }}>
-                          {apiLoader ? 'Verifying...' : 'Verify'}
+                          {apiLoader
+                            ? t('Sign In.Verifying...')
+                            : t('Sign In.Verify')}
                         </Text>
                       </LinearGradient>
                     </TouchableOpacity>
@@ -639,10 +642,10 @@ const Signin = props => {
                 start={{x: 1, y: 1.7}}
                 end={{x: 0.2, y: 0}}>
                 <Text style={styles.userModalTitle}>
-                  Multiple accounts found
+                  {t('Sign In.Multiple accounts found')}
                 </Text>
                 <Text style={styles.userModalSubtitle}>
-                  Please select your account
+                  {t('Sign In.Please select your account')}
                 </Text>
 
                 <FlatList
@@ -666,7 +669,9 @@ const Signin = props => {
                 <TouchableOpacity
                   onPress={() => setUserModalVisible(false)}
                   style={styles.cancelButton}>
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                  <Text style={styles.cancelButtonText}>
+                    {t('Sign In.Cancel')}
+                  </Text>
                 </TouchableOpacity>
               </LinearGradient>
             </Modal>

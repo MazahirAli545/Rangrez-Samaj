@@ -31,28 +31,29 @@ import {
 import {Dimensions} from 'react-native';
 import {color} from 'react-native-elements/dist/helpers';
 import BackgroundImage from '../provider/png/BackgroundImage.png';
-
+import {useTranslation} from 'react-i18next';
 const Fundinsights = props => {
   const [stats, setStats] = useState('');
   const [apiLoader, setApiLoader] = useState(true);
   // const routeStats = props.route.params;
   const widthAndHeight = 250;
+  const {t} = useTranslation();
 
   const sexRatio = [
     {
       value: parseInt(stats?.percentageDistribution?.male),
       color: '#fbd203',
-      text: 'Male',
+      text: t('Insights.Male'),
     },
     {
       value: parseInt(stats?.percentageDistribution?.female),
       color: '#ffb300',
-      text: 'Female',
+      text: t('Insights.Female'),
     },
     {
       value: parseInt(stats?.percentageDistribution?.child),
       color: '#ff9100',
-      text: 'Childrens',
+      text: t('Insights.Childrens'),
     },
   ];
   const totalRatio = sexRatio.reduce((total, item) => total + item.value, 0);
@@ -61,12 +62,12 @@ const Fundinsights = props => {
     {
       value: parseInt(stats.businessInterestStats?.percentageOfPopulation),
       color: '#fbd203',
-      text: 'Business',
+      text: t('Insights.Business'),
     },
     {
       value: parseInt(stats.donationStats?.donationPercentageOfPopulation),
       color: '#ffb300',
-      text: 'Donations',
+      text: t('Insights.Donations'),
     },
   ];
 
@@ -149,7 +150,7 @@ const Fundinsights = props => {
 
       setStats(result);
     } catch (error) {
-      console.error('Error fetching Stats:', error);
+      console.error(t('Insights.Error fetching Stats:'), error);
     } finally {
       setApiLoader(false);
     }
@@ -202,7 +203,7 @@ const Fundinsights = props => {
                   fontWeight: '600',
                   fontSize: hp(3),
                 }}>
-                App Insights
+                {t('Insights.App Insights')}
               </Text>
             </View>
           </View>
@@ -237,7 +238,7 @@ const Fundinsights = props => {
                       fontFamily: 'Poppins-Medium',
                       marginTop: hp(2),
                     }}>
-                    Gender Ratio
+                    {t('Insights.Gender Ratio')}
                   </Text>
                 </View>
 
@@ -310,7 +311,7 @@ const Fundinsights = props => {
                       fontFamily: 'Poppins-Medium',
                       marginTop: hp(2),
                     }}>
-                    Fund Investment
+                    {t('Insights.Fund Investment')}
                   </Text>
                 </View>
 
@@ -321,10 +322,10 @@ const Fundinsights = props => {
                     marginTop: hp(1),
                   }}>
                   {donations.map((item, index) => {
-                    const percentage = (
-                      (item.value / totaldonation) *
-                      100
-                    ).toFixed(1);
+                    const label =
+                      item.text === 'Business'
+                        ? stats.businessInterestStats?.percentageOfPopulation
+                        : stats.donationStats?.donationPercentageOfPopulation;
 
                     return (
                       <View
@@ -347,7 +348,7 @@ const Fundinsights = props => {
                             fontFamily: 'Poppins-Regular',
                             width: wp(72),
                           }}>
-                          {item.text} - {percentage}%
+                          {item.text} - {label}
                         </Text>
                       </View>
                     );
@@ -428,7 +429,7 @@ const Fundinsights = props => {
                 </View>
               </LinearGradient> */}
 
-              <View
+              {/* <View
                 style={{
                   marginHorizontal: wp(10),
                   alignSelf: 'center',
@@ -486,7 +487,7 @@ const Fundinsights = props => {
                     }}
                   />
                 </View>
-              </View>
+              </View> */}
             </View>
           </KeyboardAwareScrollView>
         </LinearGradient>
