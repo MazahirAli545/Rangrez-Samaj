@@ -33,7 +33,18 @@
     "Verify": "Verify",
     "Multiple accounts found": "Multiple accounts found",
     "Please select your account": "Please select your account",
-    "Cancel": "Cancel"
+    "Cancel": "Cancel",
+    "Mobile Number is required": "Mobile Number is required",
+    "Invalid Mobile Number": "Invalid Mobile Number",
+    "Login failed. Please try again.": "Login failed. Please try again.",
+    "Login error:": "Login error:",
+    "Network Error": "Network Error",
+    "Mobile Number is Not Registered": "Mobile Number is Not Registered",
+    "Invalid Request": "Invalid Request",
+    "Something Went Wrong": "Something Went Wrong",
+    "OTP is Expired": "OTP is Expired",
+    "FCM registration error:": "FCM registration error:",
+    "User selection error:": "User selection error:"
   },
 
   "Sign up": {
@@ -125,7 +136,12 @@
     "Profile update failed": "Profile update failed",
     "OTP verification failed": "OTP verification failed",
     "Full Name is required": "Full Name is required",
-    "Please enter 10 digits mobile number": "Please enter 10 digits mobile number"
+    "Please enter 10 digits mobile number": "Please enter 10 digits mobile number",
+    "OTP Verified Successfully!": "OTP Verified Successfully!",
+    "Error fetching user data:": "Error fetching user data:",
+    "Invalid mobile number. Must start with 6-9 and be 10 digits": "Invalid mobile number. Must start with 6-9 and be 10 digits",
+    "OTP is expired or invalid": "OTP is expired or invalid",
+    "Sign In": "Sign In"
   },
 
   "GenderDetails": {
@@ -173,6 +189,64 @@
     "Are you Married?": "Are you Married?",
     "Yes": "Yes",
     "No": "No"
+  },
+
+  "ParentDetail": {
+    "Father Name is required": "Father Name is required",
+    "Mother Name is required": "Mother Name is required",
+    "Id": "Id",
+    "father": "father",
+    "Father": "Father",
+    "Mother": "Mother",
+    "ID cannot be same as Spouse ID": "ID cannot be same as Spouse ID",
+    "ID not found or invalid.": "ID not found or invalid.",
+    "Invalid gender for father. Required: M": "Invalid gender for father. Required: M",
+    "Invalid gender for father. Required Male.": "Invalid gender for father. Required Male.",
+    "Invalid gender for mother. Required: F": "Invalid gender for mother. Required: F",
+    "Invalid gender for mother. Required Female.": "Invalid gender for mother. Required Female.",
+    "PR_UNIQUE_ID not found": "PR_UNIQUE_ID not found",
+    "ID not found in registry.": "ID not found in registry.",
+    "Error validating": "Error validating",
+    "ID": "ID",
+    "ID. Please check your connection or the ID.": "ID. Please check your connection or the ID.",
+    "Father ID cannot be same as Mother ID": "Father ID cannot be same as Mother ID",
+    "Father ID cannot be same as Spouse ID": "Father ID cannot be same as Spouse ID",
+    "Mother ID cannot be same as Father ID": "Mother ID cannot be same as Father ID",
+    "Mother ID cannot be same as Spouse ID": "Mother ID cannot be same as Spouse ID",
+    "Parents Details": "Parents Details",
+    "Father Name": "Father Name",
+    "Father ID [Optional]": "Father ID [Optional]",
+    "Mother Name": "Mother Name",
+    "Mother ID [Optional]": "Mother ID [Optional]"
+  },
+
+  "SpouseDetail": {
+    "dob_": "dob_",
+    "name_": "name_",
+    "Child Name is required": "Child Name is required",
+    "Child DOB is required": "Child DOB is required",
+    "Spouse ID cannot be same as Father ID": "Spouse ID cannot be same as Father ID",
+    "Spouse ID cannot be same as Mother ID": "Spouse ID cannot be same as Mother ID",
+    "PR_UNIQUE_ID not present": "PR_UNIQUE_ID not present",
+    "Spouse ID not found in registry": "Spouse ID not found in registry",
+    "Error validating spouse ID:": "Error validating spouse ID:",
+    "Unable to validate Spouse ID. Please check your connection.": "Unable to validate Spouse ID. Please check your connection.",
+    "First": "First",
+    "Second": "Second",
+    "Third": "Third",
+    "Fourth": "Fourth",
+    "Fifth": "Fifth",
+    "Sixth": "Sixth",
+    "Seventh": "Seventh",
+    "Eighth": "Eighth",
+    "Ninth": "Ninth",
+    "Tenth": "Tenth",
+    "th": "th",
+    "Spouse Name": "Spouse Name",
+    "Spouse ID [Optional]": "Spouse ID [Optional]",
+    "Child Name": "Child Name",
+    "Child DOB": "Child DOB",
+    "Add Child": "Add Child"
   },
 
   "UserBussiness": {
@@ -298,7 +372,9 @@
     "Announcements": "Announcements",
     "DATE": "DATE",
     "LOCATION": "LOCATION",
-    "NOTE": "NOTE"
+    "NOTE": "NOTE",
+    "Error saving language preference:": "Error saving language preference:",
+    "Error loading language preference:": "Error loading language preference:"
   },
 
   "Directory": {
@@ -376,7 +452,7 @@
   "AnnouncementDetail": {
     "No valid events data found.": "No valid events data found.",
     "Error fetching Events:": "Error fetching Events:",
-    "Event Date:": "Event Date",
+    "Event Date": "Event Date",
     "Further Contact": "Further Contact",
     "Location": "Location",
     "City": "City",
@@ -505,5 +581,18 @@
     "Are you sure you want to Sign out of your account?": "Are you sure you want to Sign out of your account?",
     "Warning: Data was not fully cleared from AsyncStorage": "Warning: Data was not fully cleared from AsyncStorage",
     "Error during sign out:": "Error during sign out:"
+  },
+  "PastEvnDetail": {
+    "An error occurred": "An error occurred",
+    "Location:": "Location:",
+    "City:": "City:",
+    "Chat": "Chat"
+  },
+  "App": {
+    "Connection Lost": "Connection Lost",
+    "Oops! It seems you're offline. Please check your internet connection and try again.": "Oops! It seems you're offline. Please check your internet connection and try again.",
+    "Go to Settings": "Go to Settings",
+    "OK": "OK",
+    "cancel": "cancel"
   }
 }

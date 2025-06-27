@@ -148,8 +148,14 @@ const UserDetails = ({pageName = 'signup'}) => {
 
     if (!fullname) errors.fullname = t('UserDetails.Full name is required');
     if (!date) errors.date = t('UserDetails.Date of birth is required');
-    if (!mobile) errors.mobile = t('UserDetails.Mobile number is required');
-
+    // if (!mobile) errors.mobile = t('UserDetails.Mobile number is required');
+    if (!mobile) {
+      errors.mobile = t('UserDetails.Mobile number is required');
+    } else if (!/^[6-9]\d{9}$/.test(mobile)) {
+      errors.mobile = t(
+        'UserDetails.Invalid mobile number. Must start with 6-9 and be 10 digits',
+      );
+    }
     setErrorMessageRegister(errors);
 
     return Object.keys(errors).length === 0; // Return true if no errors
@@ -257,6 +263,11 @@ const UserDetails = ({pageName = 'signup'}) => {
     //   return;
     // }
 
+    const isValid = validateFields(); // Validate fields before proceeding
+    if (!isValid) {
+      return; // Stop if validation fails
+    }
+
     if (pageName !== 'profile') {
       const isValid = validateOtpFields();
       if (!isValid) {
@@ -355,7 +366,7 @@ const UserDetails = ({pageName = 'signup'}) => {
       isValid = false;
     } else if (mobile.length !== 10) {
       errors.mobile = t(
-        'UserDetails.Please enter a valid 10-digit mobile number',
+        'UserDetails.Invalid mobile number. Must start with 6-9 and be 10 digits',
       );
       isValid = false;
     }
@@ -499,19 +510,48 @@ const UserDetails = ({pageName = 'signup'}) => {
           setIsCounting(false);
           setIsMobileVerified(true);
           setSuccessModalVisible(true);
-        } else {
+        }
+        //   else {
+        //     ToastAndroid.showWithGravity(
+        //       response.data.message || t('UserDetails.OTP verification failed'),
+        //       ToastAndroid.LONG,
+        //       ToastAndroid.TOP,
+        //     );
+        //   }
+        // }
+        else {
+          // Show error message in Toast
+          const errorMessage =
+            response.data.message === 'OTP is expired or invalid'
+              ? t('UserDetails.OTP is expired or invalid')
+              : t('UserDetails.OTP verification failed');
+
           ToastAndroid.showWithGravity(
-            response.data.message || t('UserDetails.OTP verification failed'),
+            errorMessage,
             ToastAndroid.LONG,
             ToastAndroid.TOP,
           );
         }
       }
     } catch (error) {
-      console.error('Verification Error:', error);
+      //     console.error('Verification Error:', error);
+      //     ToastAndroid.showWithGravity(
+      //       error.response?.data?.message ||
+      //         t('UserDetails.Something went wrong. Please try again.'),
+      //       ToastAndroid.LONG,
+      //       ToastAndroid.TOP,
+      //     );
+      //   } finally {
+      //     setApiLoader(false);
+      //   }
+      // };
+      const errorMessage =
+        error.response?.data?.message === 'OTP is expired or invalid'
+          ? t('UserDetails.OTP is expired or invalid')
+          : t('UserDetails.Something went wrong. Please try again.');
+
       ToastAndroid.showWithGravity(
-        error.response?.data?.message ||
-          t('UserDetails.Something went wrong. Please try again.'),
+        errorMessage,
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -569,23 +609,48 @@ const UserDetails = ({pageName = 'signup'}) => {
       setIsChanged(!isSameAsOriginal);
     }
 
-    // if (isAttempted) {
+    // setErrorMessageRegister?.(prevErrors => ({
+    //   ...prevErrors,
+    //   mobile:
+    //     text.trim().length === 10
+    //       ? ''
+    //       : isAttempted
+    //       ? text.trim().length > 0
+    //         ? t('UserDetails.Please enter 10 digits mobile number')
+    //         : t('UserDetails.Mobile number is required')
+    //       : prevErrors.mobile,
+    //   mobileVerification:
+    //     pageName === 'profile' && !isSameAsOriginal && !isMobileVerified
+    //       ? t('UserDetails.Please verify your details')
+    //       : '',
+    // }));
+    ////////////////////////////////////////////////////////////////////
+    //   setErrorMessageRegister?.(prevErrors => ({
+    //     ...prevErrors,
+    //     mobile: !text.trim()
+    //       ? isAttempted
+    //         ? t('UserDetails.Mobile number is required')
+    //         : prevErrors.mobile
+    //       : !/^[6-9]\d{9}$/.test(text)
+    //       ? t(
+    //           'UserDetails.Invalid mobile number. Must start with 6-9 and be 10 digits',
+    //         )
+    //       : '',
+    //     mobileVerification:
+    //       pageName === 'profile' && !isSameAsOriginal && !isMobileVerified
+    //         ? t('UserDetails.Please verify your details')
+    //         : '',
+    //   }));
+    // };
+
     setErrorMessageRegister?.(prevErrors => ({
       ...prevErrors,
-      mobile:
-        text.trim().length === 10
-          ? ''
-          : isAttempted
-          ? text.trim().length > 0
-            ? t('UserDetails.Please enter 10 digits mobile number')
-            : t('UserDetails.Mobile number is required')
-          : prevErrors.mobile,
+      mobile: '', // Clear the error as the user types
       mobileVerification:
         pageName === 'profile' && !isSameAsOriginal && !isMobileVerified
           ? t('UserDetails.Please verify your details')
           : '',
     }));
-    // }
   };
 
   return (
@@ -643,19 +708,6 @@ const UserDetails = ({pageName = 'signup'}) => {
           />
           <TextInput
             value={fullname || FULLNAME}
-            // onChangeText={text => handleTextChange(text, 'fullname')}
-            // onChangeText={text => {
-            //   if (setFullName) setFullName(text); // If in signup, update signup state
-            //   if (setFULLNAME) setFULLNAME(text);
-
-            //   if (pageName === 'profile') setIsChanged(true);
-
-            //   // ✅ Clear error message when user starts typing
-            //   setErrorMessageRegister?.(prevErrors => ({
-            //     ...prevErrors,
-            //     fullname: text.trim() ? '' : 'Full Name is required',
-            //   }));
-            // }}
             onChangeText={handleNameChange}
             // editable={isEditable}
             numberOfLines={1}
@@ -671,6 +723,7 @@ const UserDetails = ({pageName = 'signup'}) => {
             }}
             placeholder={t('UserDetails.Full Name')}
             placeholderTextColor={'#BFBDBE'}
+            keyboardType="web-search"
           />
         </View>
         {errorMessageRegister?.fullname && (

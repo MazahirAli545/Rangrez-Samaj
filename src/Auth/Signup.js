@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect, useMemo, Children} from 'react';
+import React, {useState, useRef, useEffect, useMemo, useCallback} from 'react';
 import {
   View,
   Text,
@@ -130,7 +130,9 @@ const Signup = props => {
     useState(false);
   const [userNotificationData, setUserNotificationData] = useState('');
   const [adminFcmToken, setAdminFcmToken] = useState([]);
-  const {t} = useTranslation();
+  const [storedLanguage, setStoredLanguage] = useState('en');
+  // const {t} = useTranslation();
+  const {t, i18n} = useTranslation();
 
   console.log('idd', uniqueId);
 
@@ -290,9 +292,99 @@ const Signup = props => {
     }
   }, [props.pageName]);
 
+  // useEffect(() => {
+  //   if (props.pageName === 'profile') {
+  //     const fetchTokenAndProfile = async () => {
+  //       try {
+  //         const storedToken = await getData(async_keys.auth_token);
+  //         setToken(storedToken);
+
+  //         if (!storedToken) {
+  //           throw new Error(t('Sign up.No authentication token found'));
+  //         }
+
+  //         setErrorMessage('');
+  //         const response = await fetch(`${BASE_URL}profile`, {
+  //           headers: {
+  //             Authorization: `Bearer ${storedToken}`,
+  //             'Content-Type': 'application/json',
+  //           },
+  //         });
+
+  //         const data = await response.json();
+
+  //         if (!response.ok) {
+  //           throw new Error(
+  //             data.message || t('Sign up.Failed to fetch profile data'),
+  //           );
+  //         }
+
+  //         if (data.success && data.data) {
+  //           // First set all the data
+  //           setUserData(data.data);
+  //           setPrId(data.data.PR_ID);
+  //           SETPROFILE(data.data.PR_PHOTO_URL);
+  //           setFullName(data.data.PR_FULL_NAME);
+  //           setDate(data.data.PR_DOB);
+  //           setMobile(data.data.PR_MOBILE_NO);
+  //           setGender(data.data.PR_GENDER);
+  //           setPincode(data.data.PR_PIN_CODE);
+  //           setCity(data.data.PR_AREA_NAME);
+  //           setAddress(data.data.PR_ADDRESS);
+  //           setStateCode(data.data.PR_STATE_CODE);
+  //           setStateName(data.data.City?.CITY_ST_NAME || '');
+  //           setEducation(data.data.PR_EDUCATION);
+  //           setInstitution(data.data.PR_EDUCATION_DESC);
+  //           setDistrictCode(data.data.PR_DISTRICT_CODE);
+  //           setDistrictName(data.data.City?.CITY_DS_NAME || '');
+  //           setProfessionId(data.data.Profession?.PROF_ID);
+  //           setProfessionDesc(data.data.PR_PROFESSION_DETA);
+  //           setProfession(data.data.Profession?.PROF_NAME);
+  //           setFatherName(data.data.PR_FATHER_NAME);
+  //           setMotherName(data.data.PR_MOTHER_NAME);
+  //           setSpouseName(data.data.PR_SPOUSE_NAME);
+  //           setChildren(data.data.Children || []);
+  //           setBUSSINTRST(data.data.PR_BUSS_INTER || 'N');
+  //           setBUSSSTREAM(data.data.PR_BUSS_STREAM || '');
+  //           setBUSSTYPE(data.data.PR_BUSS_TYPE || '');
+  //           setPrCompleted(data.data.PR_IS_COMPLETED || 'N');
+  //           setHOBBIES(data.data.PR_HOBBY?.split(',') || []);
+  //           setfatherId(data.data.PR_FATHER_ID || '');
+  //           setMotherId(data.data.PR_MOTHER_ID || '');
+  //           setSpouseId(data.data.PR_SPOUSE_ID || '');
+
+  //           // IMPORTANT: Set marital status LAST and after all other data is set
+  //           setUserMarried(data.data.PR_MARRIED_YN);
+
+  //           // Then reset to first page
+  //           setIsInitialLoad(false);
+  //           setCurrentPage(0);
+  //           scrollViewRef?.current?.scrollTo({
+  //             x: 0,
+  //             animated: false,
+  //           });
+  //         } else {
+  //           setErrorMessage(
+  //             data.message || t('Sign up.Failed to load user data'),
+  //           );
+  //         }
+  //       } catch (error) {
+  //         console.error('Error fetching profile:', error);
+  //         setErrorMessage(t('Sign up.Failed to load user data'));
+  //       }
+  //     };
+
+  //     fetchTokenAndProfile();
+  //   }
+  // }, [props.pageName, token]);
+
+  // console.log('Information', userData);
+
   useEffect(() => {
-    if (props.pageName === 'profile') {
+    if (props.pageName === 'profile' && !userData) {
       const fetchTokenAndProfile = async () => {
+        setApiLoader(true); // ✅ Start loader
+
         try {
           const storedToken = await getData(async_keys.auth_token);
           setToken(storedToken);
@@ -311,72 +403,63 @@ const Signup = props => {
 
           const data = await response.json();
 
-          if (!response.ok) {
+          if (!response.ok || !data.success || !data.data) {
             throw new Error(
               data.message || t('Sign up.Failed to fetch profile data'),
             );
           }
 
-          if (data.success && data.data) {
-            // First set all the data
-            setUserData(data.data);
-            setPrId(data.data.PR_ID);
-            SETPROFILE(data.data.PR_PHOTO_URL);
-            setFullName(data.data.PR_FULL_NAME);
-            setDate(data.data.PR_DOB);
-            setMobile(data.data.PR_MOBILE_NO);
-            setGender(data.data.PR_GENDER);
-            setPincode(data.data.PR_PIN_CODE);
-            setCity(data.data.PR_AREA_NAME);
-            setAddress(data.data.PR_ADDRESS);
-            setStateCode(data.data.PR_STATE_CODE);
-            setStateName(data.data.City?.CITY_ST_NAME || '');
-            setEducation(data.data.PR_EDUCATION);
-            setInstitution(data.data.PR_EDUCATION_DESC);
-            setDistrictCode(data.data.PR_DISTRICT_CODE);
-            setDistrictName(data.data.City?.CITY_DS_NAME || '');
-            setProfessionId(data.data.Profession?.PROF_ID);
-            setProfessionDesc(data.data.PR_PROFESSION_DETA);
-            setProfession(data.data.Profession?.PROF_NAME);
-            setFatherName(data.data.PR_FATHER_NAME);
-            setMotherName(data.data.PR_MOTHER_NAME);
-            setSpouseName(data.data.PR_SPOUSE_NAME);
-            setChildren(data.data.Children || []);
-            setBUSSINTRST(data.data.PR_BUSS_INTER || 'N');
-            setBUSSSTREAM(data.data.PR_BUSS_STREAM || '');
-            setBUSSTYPE(data.data.PR_BUSS_TYPE || '');
-            setPrCompleted(data.data.PR_IS_COMPLETED || 'N');
-            setHOBBIES(data.data.PR_HOBBY?.split(',') || []);
-            setfatherId(data.data.PR_FATHER_ID || '');
-            setMotherId(data.data.PR_MOTHER_ID || '');
-            setSpouseId(data.data.PR_SPOUSE_ID || '');
+          // ✅ Only update if no profile yet
+          setUserData(data.data);
+          setPrId(data.data.PR_ID);
+          SETPROFILE(data.data.PR_PHOTO_URL);
+          setFullName(data.data.PR_FULL_NAME);
+          setDate(data.data.PR_DOB);
+          setMobile(data.data.PR_MOBILE_NO);
+          setGender(data.data.PR_GENDER);
+          setPincode(data.data.PR_PIN_CODE);
+          setCity(data.data.PR_AREA_NAME);
+          setAddress(data.data.PR_ADDRESS);
+          setStateCode(data.data.PR_STATE_CODE);
+          setStateName(data.data.City?.CITY_ST_NAME || '');
+          setEducation(data.data.PR_EDUCATION);
+          setInstitution(data.data.PR_EDUCATION_DESC);
+          setDistrictCode(data.data.PR_DISTRICT_CODE);
+          setDistrictName(data.data.City?.CITY_DS_NAME || '');
+          setProfessionId(data.data.Profession?.PROF_ID);
+          setProfessionDesc(data.data.PR_PROFESSION_DETA);
+          setProfession(data.data.Profession?.PROF_NAME);
+          setFatherName(data.data.PR_FATHER_NAME);
+          setMotherName(data.data.PR_MOTHER_NAME);
+          setSpouseName(data.data.PR_SPOUSE_NAME);
+          setChildren(data.data.Children || []);
+          setBUSSINTRST(data.data.PR_BUSS_INTER || 'N');
+          setBUSSSTREAM(data.data.PR_BUSS_STREAM || '');
+          setBUSSTYPE(data.data.PR_BUSS_TYPE || '');
+          setPrCompleted(data.data.PR_IS_COMPLETED || 'N');
+          setHOBBIES(data.data.PR_HOBBY?.split(',') || []);
+          setfatherId(data.data.PR_FATHER_ID || '');
+          setMotherId(data.data.PR_MOTHER_ID || '');
+          setSpouseId(data.data.PR_SPOUSE_ID || '');
+          setUserMarried(data.data.PR_MARRIED_YN);
 
-            // IMPORTANT: Set marital status LAST and after all other data is set
-            setUserMarried(data.data.PR_MARRIED_YN);
-
-            // Then reset to first page
-            setIsInitialLoad(false);
-            setCurrentPage(0);
-            scrollViewRef?.current?.scrollTo({
-              x: 0,
-              animated: false,
-            });
-          } else {
-            setErrorMessage(
-              data.message || t('Sign up.Failed to load user data'),
-            );
-          }
+          setIsInitialLoad(false);
+          setCurrentPage(0);
+          scrollViewRef?.current?.scrollTo({
+            x: 0,
+            animated: false,
+          });
         } catch (error) {
           console.error('Error fetching profile:', error);
           setErrorMessage(t('Sign up.Failed to load user data'));
+        } finally {
+          setApiLoader(false); // ✅ End loader
         }
       };
 
       fetchTokenAndProfile();
     }
-  }, [props.pageName, token]);
-
-  // console.log('Information', userData);
+  }, [props.pageName]);
 
   useEffect(() => {
     if (userData?.Children && Array.isArray(userData.Children)) {
@@ -457,7 +540,68 @@ const Signup = props => {
     }
   };
 
+  useEffect(() => {
+    const initializeLanguage = async () => {
+      try {
+        // First check if we have a language preference in AsyncStorage
+        const langCode = await getData(async_keys.language_code);
+
+        // If we have a stored language, use it
+        if (langCode) {
+          setStoredLanguage(langCode);
+          i18n.changeLanguage(langCode);
+        }
+        // If no stored language, check if we have user data with language preference
+        else if (userData?.PR_LANG) {
+          setStoredLanguage(userData.PR_LANG);
+          await storeData(async_keys.language_code, userData.PR_LANG);
+          i18n.changeLanguage(userData.PR_LANG);
+        }
+        // Default to English if nothing else is available
+        else {
+          setStoredLanguage('en');
+          await storeData(async_keys.language_code, 'en');
+          i18n.changeLanguage('en');
+        }
+      } catch (error) {
+        console.error('Error initializing language:', error);
+        // Fallback to English if there's an error
+        setStoredLanguage('en');
+        i18n.changeLanguage('en');
+      }
+    };
+
+    initializeLanguage();
+  }, [userData]); // Run when userData changes
+
   const UpdateUser = async () => {
+    if (errorMessageRegister?.spouseId) {
+      ToastAndroid.showWithGravity(
+        errorMessageRegister.spouseId,
+        ToastAndroid.LONG,
+        ToastAndroid.TOP,
+      );
+      return; // Stop execution if spouse ID is invalid
+    }
+
+    if (errorMessageRegister?.fatherId) {
+      ToastAndroid.showWithGravity(
+        errorMessageRegister.fatherId,
+        ToastAndroid.LONG,
+        ToastAndroid.TOP,
+      );
+      return; // Stop execution if father ID is invalid
+    }
+
+    if (errorMessageRegister?.motherId) {
+      ToastAndroid.showWithGravity(
+        errorMessageRegister.motherId,
+        ToastAndroid.LONG,
+        ToastAndroid.TOP,
+      );
+      return; // Stop execution if mother ID is invalid
+    }
+
     setErrorMessageRegister('');
 
     let errors = {};
@@ -568,6 +712,11 @@ const Signup = props => {
         'PR_HOBBY',
         hobbiesChanged ? HOBBIES.join(',') : userData?.PR_HOBBY || '',
       );
+
+      const currentLang =
+        storedLanguage || (await getData(async_keys.language_code)) || 'en';
+
+      formData.append('PR_LANG', currentLang);
       console.log('PROFILE PICTURE', profilePicture);
 
       // Handle Image Upload
@@ -692,9 +841,9 @@ const Signup = props => {
       }
 
       if (
-        props.pageName === 'profile' &&
-        // response.data.updatedProfile?.PR_UNIQUE_ID &&
-        userNotificationData?.PR_NOTIFICATION === 'Y'
+        (props.pageName === 'profile' &&
+          userNotificationData?.PR_NOTIFICATION === 'Y') ||
+        userData?.PR_NOTIFICATION === 'Y'
       ) {
         const templateParams = {
           title: t('Sign up.Your Profile Updated Successfully.'),
@@ -708,7 +857,7 @@ const Signup = props => {
 
       if (response.data?.success) {
         let successMessage = t('Sign up.Profile created successfully');
-        let navigationTarget = t('Sign up.Signin');
+        let navigationTarget = t('Signin');
 
         if (props.pageName === 'profile') {
           successMessage = t('Sign up.Profile updated successfully');
@@ -1361,7 +1510,7 @@ const Signup = props => {
     getAllAdminFcmTokens();
   }, []);
 
-  console.log('GATATAT', adminFcmToken);
+  // console.log('GATATAT', adminFcmToken);
 
   // const registerUser = async () => {
   //   setErrorMessageRegister('');
@@ -1759,7 +1908,8 @@ const Signup = props => {
                               backgroundColor: isNavigating
                                 ? '#A5D6A7'
                                 : '#6A994E',
-                              width: wp(75),
+                              // width: wp(75),
+                              width: wp(90),
                               height: hp(5),
                               borderRadius: wp(2),
                               // marginTop: hp(3),
@@ -1779,7 +1929,8 @@ const Signup = props => {
                         onPress={UpdateUser}
                         style={{
                           backgroundColor: '#6A994E',
-                          width: wp(78),
+                          // width: wp(78),
+                          width: wp(90),
                           height: hp(5),
                           borderRadius: wp(2),
                           // marginTop: hp(1),
@@ -1820,7 +1971,8 @@ const Signup = props => {
                             onPress={UpdateUser}
                             style={{
                               backgroundColor: '#6A994E',
-                              width: wp(78),
+                              // width: wp(78),
+                              width: wp(90),
                               height: hp(5),
                               borderRadius: wp(2),
                               // marginTop: hp(1),
@@ -1898,7 +2050,7 @@ const styles = StyleSheet.create({
   continueText: {color: '#FFF', fontSize: hp(1.8)},
   signUpButton: {
     backgroundColor: '#6A994E',
-    width: wp(78),
+    width: wp(90),
     height: hp(5),
     borderRadius: wp(2),
     marginTop: hp(3),

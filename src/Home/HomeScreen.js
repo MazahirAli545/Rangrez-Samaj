@@ -8,6 +8,7 @@ import {
   FlatList,
   ImageBackground,
   RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import {SafeAreaView} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -59,6 +60,7 @@ import AnnouncementDetail from '../Home/AnnouncementDetail';
 import Alert from '../provider/png/Alert.png';
 
 import BackgroundImage from '../provider/png/BackgroundImage.png';
+import RenderHtml from 'react-native-render-html'; // Import RenderHtml
 
 import exam1 from '../provider/png/exm1.png';
 import exam2 from '../provider/png/exam2.png';
@@ -97,6 +99,7 @@ import {useTranslation} from 'react-i18next';
 // import { getData } from '../api/UserPreference';
 
 const HomeScren = props => {
+  const {width} = useWindowDimensions();
   const [lang, setLang] = useState('ENGLISH');
   const [langCode, setLangCode] = useState('en');
   const [modalVisible, setModalVisible] = useState(false);
@@ -148,11 +151,12 @@ const HomeScren = props => {
       await storeData(async_keys.language_code, newLangCode);
 
       // If you're using i18n for translations, update it here
-      if (i18n && i18n.changeLanguage) {
-        i18n.changeLanguage(newLangCode);
-      }
+      // if (i18n && i18n.changeLanguage) {
+      //   i18n.changeLanguage(newLangCode);
+      // }
+      i18n.changeLanguage(newLangCode);
     } catch (error) {
-      console.error('Error saving language preference:', error);
+      console.error(t('HomeScreen.Error saving language preference:'), error);
     } finally {
       setModalVisible(false);
     }
@@ -200,7 +204,10 @@ const HomeScren = props => {
           console.log('Loaded language preference:', savedLang, savedLangCode);
         }
       } catch (error) {
-        console.error('Error loading language preference:', error);
+        console.error(
+          t('HomeScreen.Error loading language preference:'),
+          error,
+        );
       }
     };
 
@@ -473,6 +480,8 @@ const HomeScren = props => {
     }
   };
 
+  console.log('userData', userData);
+
   const calculateCompletionPercentage = data => {
     const requiredFields = [
       'PR_PHOTO_URL',
@@ -637,7 +646,7 @@ const HomeScren = props => {
             fontFamily: 'Poppins-Medium',
             color: '#000000',
           }}>
-          {t('Donation')}
+          {t('HomeScreen.Donation')}
         </Text>
         {/* {totaldonation > 0 ? ( */}
         <PieChart
@@ -785,6 +794,39 @@ const HomeScren = props => {
       ''
     ),
   ];
+
+  const tagsStyles = {
+    p: {
+      color: '#000',
+      fontSize: hp(1.8),
+      letterSpacing: hp(0.1),
+      marginTop: hp(0.1),
+      width: wp(71),
+      marginLeft: wp(2),
+      fontFamily: 'Poppins-Medium',
+      maxHeight: hp(5), // Adjust this value based on your font size and line height
+      overflow: 'hidden',
+    },
+    strong: {
+      fontWeight: '500',
+      fontFamily: 'Poppins-Medium',
+    },
+    // Add other HTML tag styles as needed for your content
+    h1: {
+      fontSize: hp(2),
+      fontWeight: 'bold',
+      color: '#000',
+      fontFamily: 'Poppins-SemiBold',
+    },
+    ul: {
+      marginLeft: wp(5),
+    },
+    li: {
+      color: '#000',
+      fontSize: hp(1.7),
+      fontFamily: 'Poppins-Regular',
+    },
+  };
 
   return (
     <SafeAreaView style={styles.MainContainer}>
@@ -1336,7 +1378,8 @@ const HomeScren = props => {
               </View>
             )}
 
-            <View
+            <TouchableOpacity
+              onPress={() => props.navigation.navigate('Fundinsights')}
               style={{
                 marginTop: hp(1),
                 // width: wp(100),
@@ -1352,165 +1395,7 @@ const HomeScren = props => {
                 showPagination={false}
                 style={{height: hp(26)}}
               />
-
-              {/* <Swiper
-                style={{height: hp(26)}}
-                showsButtons={false}
-                horizontal={true}
-                autoplay={true}
-                showsPagination={false}>
-                <LinearGradient
-                  start={{x: 1, y: 1.7}}
-                  end={{x: 0.2, y: 0}}
-                  colors={['#658DA6', '#FFFFFF']}
-                  style={{
-                    alignItems: 'center',
-                    alignSelf: 'center',
-                    width: wp(90),
-                    backgroundColor: '#F2F0CE',
-                    borderRadius: wp(3),
-                    paddingVertical: hp(1),
-                  }}>
-                  <PieChart widthAndHeight={widthAndHeight} series={genderRatio} />
-
-                  <View style={{alignSelf: 'flex-start', marginLeft: wp(2)}}>
-                    {genderRatio.map((item, index) => {
-                      const percentage = (
-                        (item.value / totalRatio) *
-                        100
-                      ).toFixed(1);
-                      return (
-                        <View
-                          style={{flexDirection: 'row', alignItems: 'center'}}>
-                          <View
-                            style={{
-                              height: hp(1.5),
-                              width: wp(3),
-                              backgroundColor: item.color,
-                            }}></View>
-
-                          <Text
-                            style={{
-                              marginLeft: wp(2.2),
-                              fontSize: hp(1.2),
-                              fontFamily: 'Poppins-Regular',
-                              width: wp(72),
-                            }}>
-                            {item.text} - {percentage}%
-                          </Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                </LinearGradient>
-
-                <LinearGradient
-                  start={{x: 1, y: 1.7}}
-                  end={{x: 0.2, y: 0}}
-                  colors={['#6F618C', '#FFFFFF']}
-                  style={{
-                    alignItems: 'center',
-                    alignSelf: 'center',
-                    width: wp(90),
-                    // elevation: 5,
-                    backgroundColor: '#F2F0CE',
-                    borderRadius: wp(3),
-                    paddingVertical: hp(1),
-                  }}>
-                  <PieChart
-                    widthAndHeight={widthAndHeight}
-                    series={donations}
-                    cover={{radius: 0.6}}
-                    padAngle={0.01}
-                    style={{backgroundColor: '#FFFFFF', borderRadius: wp(30)}}
-                  />
-
-                  <View style={{alignSelf: 'flex-start', marginLeft: wp(2)}}>
-                    {donations.map((item, index) => {
-                      const percentage = (
-                        (item.value / totaldonation) *
-                        100
-                      ).toFixed(1);
-
-                      return (
-                        <View
-                          style={{flexDirection: 'row', alignItems: 'center'}}>
-                          <View
-                            style={{
-                              height: hp(1.5),
-                              width: wp(3),
-                              backgroundColor: item.color,
-                            }}></View>
-
-                          <Text
-                            style={{
-                              marginLeft: wp(2.2),
-                              fontSize: hp(1.2),
-                              fontFamily: 'Poppins-Regular',
-                              width: wp(72),
-                            }}>
-                            {item.text} - {percentage}%
-                          </Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                </LinearGradient> */}
-
-              {/* <LinearGradient
-                  start={{x: 1, y: 1.7}}
-                  end={{x: 0.2, y: 0}}
-                  colors={['#7C8C42', '#FFFFFF']}
-                  style={{
-                    alignItems: 'center',
-                    alignSelf: 'center',
-                    width: wp(90),
-                    elevation: 5,
-                    backgroundColor: '#F2F0CE',
-                    borderRadius: wp(3),
-                    paddingTop: hp(1),
-                    paddingBottom: hp(1),
-                  }}>
-                  <PieChart
-                    widthAndHeight={widthAndHeight}
-                    series={Population}
-                    cover={{radius: 0.6, color: '#F2F0CE'}}
-                    style={{backgroundColor: '#FFFFFF', borderRadius: wp(30)}}
-                  />
-
-                  <View style={{alignSelf: 'flex-start', marginLeft: wp(2)}}>
-                    {Population.map((item, index) => {
-                      const percentage = (
-                        (item.value / totalPopulation) *
-                        100
-                      ).toFixed(1);
-
-                      return (
-                        <View
-                          style={{flexDirection: 'row', alignItems: 'center'}}>
-                          <View
-                            style={{
-                              height: hp(1.5),
-                              width: wp(3),
-                              backgroundColor: item.color,
-                            }}></View>
-
-                          <Text
-                            style={{
-                              marginLeft: wp(2.2),
-                              fontSize: hp(1.2),
-                              fontFamily: 'Poppins-Regular',
-                              width: wp(72),
-                            }}>
-                            {item.text} - {percentage}%
-                          </Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                </LinearGradient> */}
-              {/* </Swiper> */}
-            </View>
+            </TouchableOpacity>
 
             {/* Announcement*/}
 
@@ -1807,26 +1692,50 @@ const HomeScren = props => {
                             </Text>
                           ) : null}
                           {item.Detail ? (
-                            <Text
-                              numberOfLines={2}
-                              style={{
-                                color: '#000',
-                                fontSize: hp(1.7),
-                                marginTop: hp(0.2),
+                            // <Text
+                            //   numberOfLines={2}
+                            //   style={{
+                            //     color: '#000',
+                            //     fontSize: hp(1.7),
+                            //     marginTop: hp(0.2),
 
-                                width: wp(82),
+                            //     width: wp(82),
+                            //     marginLeft: wp(3),
+                            //     fontFamily: 'Poppins-Medium',
+                            //   }}>
+                            //   <Text
+                            //     style={{
+                            //       fontWeight: '500',
+                            //       fontFamily: 'Poppins-Medium',
+                            //     }}>
+                            //     {t('HomeScreen.NOTE')} :
+                            //   </Text>{' '}
+                            //   {/* {item.Detail} */}
+                            // </Text>
+                            <View
+                              style={{
+                                width: wp(82), // Set width to restrict rendering area
                                 marginLeft: wp(3),
-                                fontFamily: 'Poppins-Medium',
+                                marginTop: hp(0.2),
+                                flexDirection: 'row',
+                                // alignItems: 'center',
                               }}>
                               <Text
                                 style={{
-                                  fontWeight: '500',
+                                  color: '#000',
+                                  fontSize: hp(1.7),
                                   fontFamily: 'Poppins-Medium',
+                                  fontWeight: '500',
+                                  marginTop: hp(1),
                                 }}>
                                 {t('HomeScreen.NOTE')} :
-                              </Text>{' '}
-                              {item.Detail}
-                            </Text>
+                              </Text>
+                              <RenderHtml
+                                contentWidth={width}
+                                source={{html: item.Detail}}
+                                tagsStyles={tagsStyles}
+                              />
+                            </View>
                           ) : null}
                         </TouchableOpacity>
                       )}

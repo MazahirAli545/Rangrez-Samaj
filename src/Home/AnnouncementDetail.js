@@ -10,6 +10,7 @@ import {
   Animated,
   RefreshControl,
   ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
@@ -29,8 +30,10 @@ import {BASE_URL} from '../api/ApiInfo';
 import moment from 'moment';
 import PastAnnouncementsEvents from '../Home/PastAnnouncementsEvents';
 import {useTranslation} from 'react-i18next';
+import RenderHtml from 'react-native-render-html'; // Import RenderHtml
 
 const AnnouncementDetail = ({route, props, navigation}) => {
+  const {width} = useWindowDimensions();
   const {event} = route.params || {};
   const [pastEvents, setPastEvents] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -191,6 +194,43 @@ const AnnouncementDetail = ({route, props, navigation}) => {
     fetchPastEvents();
   };
 
+  const tagsStyles = {
+    p: {
+      color: '#000',
+      fontSize: hp(1.7),
+      marginTop: hp(1.2), // Top spacing
+      marginBottom: hp(1.2),
+      fontWeight: '500',
+      letterSpacing: hp(0.1),
+
+      // marginTop: hp(0.1),
+      width: wp(86),
+      marginLeft: wp(2),
+      fontFamily: 'Poppins-Medium',
+      // maxHeight: hp(5), // Adjust this value based on your font size and line height
+      // overflow: 'hidden',
+    },
+    strong: {
+      fontWeight: '500',
+      fontFamily: 'Poppins-Medium',
+    },
+    // Add other HTML tag styles as needed for your content
+    h1: {
+      fontSize: hp(2),
+      fontWeight: 'bold',
+      color: '#000',
+      fontFamily: 'Poppins-SemiBold',
+    },
+    ul: {
+      marginLeft: wp(5),
+    },
+    li: {
+      color: '#000',
+      fontSize: hp(1.7),
+      fontFamily: 'Poppins-Regular',
+    },
+  };
+
   return (
     <SafeAreaView style={styles.MainContainer}>
       <Animated.View
@@ -290,7 +330,7 @@ const AnnouncementDetail = ({route, props, navigation}) => {
                       marginTop: hp(1.2),
                       width: wp(90),
                     }}>
-                    <Text
+                    {/* <Text
                       style={{
                         paddingHorizontal: wp(3),
                         paddingVertical: wp(2),
@@ -304,7 +344,12 @@ const AnnouncementDetail = ({route, props, navigation}) => {
                         fontFamily: 'Poppins-Medium',
                       }}>
                       {event.Detail}
-                    </Text>
+                    </Text> */}
+                    <RenderHtml
+                      contentWidth={width}
+                      source={{html: event.Detail}}
+                      tagsStyles={tagsStyles}
+                    />
                   </View>
                   <View
                     style={{
@@ -433,129 +478,137 @@ const AnnouncementDetail = ({route, props, navigation}) => {
             </View>
 
             {/* PastEvents */}
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginHorizontal: wp(6),
-              }}>
-              <Text
-                style={{
-                  fontSize: hp(2.2),
-                  fontFamily: 'Poppins-Medium',
-                  color: '#1F260F',
-                }}>
-                {t('AnnouncementDetail.Past Events')}
-              </Text>
 
-              <Text
-                onPress={() => navigation.navigate('PastAnnouncementsEvents')}
-                style={{
-                  fontSize: hp(2.2),
-                  fontFamily: 'Poppins-Medium',
-                  color: '#1F260F',
-                }}>
-                {t('AnnouncementDetail.more')}
-              </Text>
-            </View>
-
-            <View
-              style={{
-                marginTop: hp(1.5),
-                alignItems: 'center',
-                marginHorizontal: wp(4),
-              }}>
-              {pastEvents.length > 0 ? (
-                <FlatList
-                  removeClippedSubviews={false}
-                  data={[...pastEvents]
-                    .sort(
-                      (a, b) =>
-                        new Date(b.EventsToDate) - new Date(a.EventsToDate),
-                    )
-                    .filter(event => event.eventCategoryID === 2)
-                    .reverse()
-                    .slice(0, 5)}
-                  horizontal={true}
-                  showsHorizontalScrollIndicator={false}
-                  showsVerticalScrollIndicator={false}
-                  pagingEnabled={true}
-                  keyExtractor={item => item.id.toString()}
-                  renderItem={({item}) => (
-                    <TouchableOpacity
-                      onPress={() =>
-                        navigation.navigate('PastEventsDetails', {
-                          pastEvent: item,
-                        })
-                      }
-                      style={{
-                        marginHorizontal: wp(1.5),
-                        // marginLeft: wp(1),
-                        // marginRight: wp(1),
-                        width: wp(89),
-                        paddingBottom: hp(1),
-                        borderRadius: wp(3),
-                        backgroundColor: '#D9CAAD',
-                        elevation: 5,
-                        marginBottom: hp(2),
-                      }}>
-                      <Text
-                        style={{
-                          color: '#000',
-                          fontWeight: '500',
-                          fontSize: hp(1.8),
-                          width: wp(78),
-                          // borderWidth: wp(.1),
-                          marginLeft: wp(3),
-                          marginTop: hp(0.6),
-                          fontFamily: 'Poppins-Medium',
-                        }}>
-                        {moment(item.EventsToDate).format('DD MMM YYYY')}
-                      </Text>
-                      <Text
-                        numberOfLines={2}
-                        style={{
-                          // borderWidth: wp(.1),
-                          color: '#73524e',
-                          fontWeight: '500',
-                          fontSize: hp(2.2),
-                          width: wp(78),
-                          marginLeft: wp(3),
-                          marginTop: hp(1),
-                          fontFamily: 'Poppins-Medium',
-                        }}>
-                        {item.name}
-                      </Text>
-
-                      <Text
-                        style={{
-                          color: '#040c1b',
-                          fontWeight: '500',
-                          fontSize: hp(1.6),
-                          width: wp(78),
-
-                          marginLeft: wp(3),
-
-                          marginTop: hp(1.6),
-                          fontFamily: 'Poppins-Regular',
-                        }}>
-                        {item.message}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              ) : (
-                <Text
+            {pastEvents.filter(event => event.eventCategoryID === 2).length >
+            0 ? (
+              <>
+                <View
                   style={{
-                    color: '#73524e',
-                    fontSize: hp(2),
-                    fontFamily: 'Poppins-Medium',
-                    alignSelf: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    marginHorizontal: wp(6),
                   }}>
-                  {t('AnnouncementDetail.No past events available.')}
-                </Text>
-              )}
-            </View>
+                  <Text
+                    style={{
+                      fontSize: hp(2.2),
+                      fontFamily: 'Poppins-Medium',
+                      color: '#1F260F',
+                    }}>
+                    {t('AnnouncementDetail.Past Events')}
+                  </Text>
+
+                  <Text
+                    onPress={() =>
+                      navigation.navigate('PastAnnouncementsEvents')
+                    }
+                    style={{
+                      fontSize: hp(2.2),
+                      fontFamily: 'Poppins-Medium',
+                      color: '#1F260F',
+                    }}>
+                    {t('AnnouncementDetail.more')}
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    marginTop: hp(1.5),
+                    alignItems: 'center',
+                    marginHorizontal: wp(4),
+                  }}>
+                  {pastEvents.length > 0 ? (
+                    <FlatList
+                      removeClippedSubviews={false}
+                      data={[...pastEvents]
+                        .sort(
+                          (a, b) =>
+                            new Date(b.EventsToDate) - new Date(a.EventsToDate),
+                        )
+                        .filter(event => event.eventCategoryID === 2)
+                        .reverse()
+                        .slice(0, 5)}
+                      horizontal={true}
+                      showsHorizontalScrollIndicator={false}
+                      showsVerticalScrollIndicator={false}
+                      pagingEnabled={true}
+                      keyExtractor={item => item.id.toString()}
+                      renderItem={({item}) => (
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate('PastEventsDetails', {
+                              pastEvent: item,
+                            })
+                          }
+                          style={{
+                            marginHorizontal: wp(1.5),
+                            // marginLeft: wp(1),
+                            // marginRight: wp(1),
+                            width: wp(89),
+                            paddingBottom: hp(1),
+                            borderRadius: wp(3),
+                            backgroundColor: '#D9CAAD',
+                            elevation: 5,
+                            marginBottom: hp(2),
+                          }}>
+                          <Text
+                            style={{
+                              color: '#000',
+                              fontWeight: '500',
+                              fontSize: hp(1.8),
+                              width: wp(78),
+                              // borderWidth: wp(.1),
+                              marginLeft: wp(3),
+                              marginTop: hp(0.6),
+                              fontFamily: 'Poppins-Medium',
+                            }}>
+                            {moment(item.EventsToDate).format('DD MMM YYYY')}
+                          </Text>
+                          <Text
+                            numberOfLines={2}
+                            style={{
+                              // borderWidth: wp(.1),
+                              color: '#73524e',
+                              fontWeight: '500',
+                              fontSize: hp(2.2),
+                              width: wp(78),
+                              marginLeft: wp(3),
+                              marginTop: hp(1),
+                              fontFamily: 'Poppins-Medium',
+                            }}>
+                            {item.name}
+                          </Text>
+
+                          <Text
+                            style={{
+                              color: '#040c1b',
+                              fontWeight: '500',
+                              fontSize: hp(1.6),
+                              width: wp(78),
+
+                              marginLeft: wp(3),
+
+                              marginTop: hp(1.6),
+                              fontFamily: 'Poppins-Regular',
+                            }}>
+                            {item.message}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    />
+                  ) : (
+                    <Text
+                      style={{
+                        color: '#73524e',
+                        fontSize: hp(2),
+                        fontFamily: 'Poppins-Medium',
+                        alignSelf: 'center',
+                      }}>
+                      {t('AnnouncementDetail.No past events available.')}
+                    </Text>
+                  )}
+                </View>
+              </>
+            ) : null}
           </LinearGradient>
         </KeyboardAwareScrollView>
       </Animated.ScrollView>

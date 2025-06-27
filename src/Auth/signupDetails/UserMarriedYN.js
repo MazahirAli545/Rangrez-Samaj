@@ -96,32 +96,37 @@ const UserMarriedYN = props => {
             }}>
             {t('UserMarriedYN.Are you Married?')}
           </Text>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginTop: hp(1.5),
+            }}>
             <TouchableOpacity
               style={{
                 borderColor: '#000000',
-                height: hp(7),
+                height: hp(25),
                 width: wp(38),
                 alignSelf: 'center',
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderRadius: wp(2),
                 marginTop: hp(2),
-                flexDirection: 'row',
+                // flexDirection: 'row',
                 alignContent: 'center',
                 backgroundColor: checked === true ? '#0468BF' : '#697368',
               }}
               onPress={() => handleSelection(true)}>
               <Image
                 source={Right}
-                style={{height: hp(6), width: wp(7), marginRight: wp(1)}}
+                style={{height: hp(8), aspectRatio: 1 / 1}}
                 resizeMode="contain"
                 tintColor={checked === true ? '#FFFFFF' : 'green'}
               />
               <Text
                 style={{
                   // marginLeft: wp(0.8),
-                  fontSize: hp(2.4),
+                  fontSize: hp(3.4),
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '700',
                   color: checked === true ? '#FFFFFF' : '#000000',
@@ -132,11 +137,13 @@ const UserMarriedYN = props => {
             <TouchableOpacity
               style={{
                 borderColor: '#000000',
-                height: hp(7),
+                // height: hp(7),
+                // width: wp(38),
+                height: hp(25),
                 width: wp(38),
                 alignSelf: 'center',
                 justifyContent: 'center',
-                flexDirection: 'row',
+                // flexDirection: 'row',
                 alignItems: 'center',
                 borderRadius: wp(2),
                 marginTop: hp(2.5),
@@ -147,13 +154,13 @@ const UserMarriedYN = props => {
               }}>
               <Image
                 source={Wrong}
-                style={{height: hp(2.2), width: wp(7), marginRight: wp(1)}}
+                style={{height: hp(8), width: wp(8)}}
                 resizeMode="contain"
                 tintColor={checked === false ? '#FFFFFF' : 'red'}
               />
               <Text
                 style={{
-                  fontSize: hp(2.4),
+                  fontSize: hp(3.4),
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '700',
                   color: checked === false ? '#FFFFFF' : '#000000',

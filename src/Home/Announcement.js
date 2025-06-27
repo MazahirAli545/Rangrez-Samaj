@@ -8,6 +8,7 @@ import {
   FlatList,
   ImageBackground,
   RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -46,8 +47,11 @@ import AppLoader from '../components/AppLoader';
 import {BASE_URL} from '../api/ApiInfo';
 import axios from 'axios';
 import {useTranslation} from 'react-i18next';
+import RenderHtml from 'react-native-render-html'; // Import RenderHtml
 
 const Announcement = props => {
+  const {width} = useWindowDimensions();
+
   const [events, setEvents] = useState([]);
   const [apiLoader, setApiLoader] = useState(true);
   const [refresh, setRefresh] = useState(false);
@@ -187,6 +191,39 @@ const Announcement = props => {
   useEffect(() => {
     fetchEvents();
   }, [langCode]);
+
+  const tagsStyles = {
+    p: {
+      color: '#000',
+      letterSpacing: hp(0.1),
+      fontSize: hp(1.8),
+      marginTop: hp(0.1),
+      width: wp(71),
+      marginLeft: wp(2),
+      fontFamily: 'Poppins-Medium',
+      maxHeight: hp(5), // Adjust this value based on your font size and line height
+      overflow: 'hidden',
+    },
+    strong: {
+      fontWeight: '500',
+      fontFamily: 'Poppins-Medium',
+    },
+    // Add other HTML tag styles as needed for your content
+    h1: {
+      fontSize: hp(2),
+      fontWeight: 'bold',
+      color: '#000',
+      fontFamily: 'Poppins-SemiBold',
+    },
+    ul: {
+      marginLeft: wp(5),
+    },
+    li: {
+      color: '#000',
+      fontSize: hp(1.7),
+      fontFamily: 'Poppins-Regular',
+    },
+  };
 
   return (
     <SafeAreaView style={styles.MainContainer}>
@@ -510,26 +547,30 @@ const Announcement = props => {
                           ) : null}
 
                           {item.Detail ? (
-                            <Text
-                              numberOfLines={2}
+                            <View
                               style={{
-                                color: '#000',
-                                fontSize: hp(1.7),
-                                marginTop: hp(0.2),
-
-                                width: wp(82),
+                                width: wp(82), // Set width to restrict rendering area
                                 marginLeft: wp(3),
-                                fontFamily: 'Poppins-Medium',
+                                marginTop: hp(0.2),
+                                flexDirection: 'row',
+                                // alignItems: 'center',
                               }}>
                               <Text
                                 style={{
-                                  fontWeight: '500',
+                                  color: '#000',
+                                  fontSize: hp(1.7),
                                   fontFamily: 'Poppins-Medium',
+                                  fontWeight: '500',
+                                  marginTop: hp(1),
                                 }}>
-                                {t('Announcement.NOTE')} :
-                              </Text>{' '}
-                              {item.Detail}
-                            </Text>
+                                {t('HomeScreen.NOTE')} :
+                              </Text>
+                              <RenderHtml
+                                contentWidth={width}
+                                source={{html: item.Detail}}
+                                tagsStyles={tagsStyles}
+                              />
+                            </View>
                           ) : null}
                         </TouchableOpacity>
                       )}

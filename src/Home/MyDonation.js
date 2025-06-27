@@ -266,9 +266,9 @@ const MyDonation = props => {
         if (userData?.PR_FULL_NAME) {
           sendTestNotification({
             title: t('MyDonation.Payment Done Successfully'),
-            body: `${'MyDonation.Dear'} ${userData.PR_FULL_NAME}, ${t(
+            body: `${t('MyDonation.Dear')} ${userData.PR_FULL_NAME}, ${t(
               'MyDonation.your payment of',
-            )} ₹${amount} ${'MyDonation.is completed'}.`,
+            )} ₹${amount} ${t('MyDonation.is completed')}.`,
           });
         }
       } else {

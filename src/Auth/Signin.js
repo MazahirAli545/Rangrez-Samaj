@@ -90,9 +90,19 @@ const Signin = props => {
     // };
 
     // sendTestNotification(templateParams);
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    // if (mobile.length !== 10) {
+    //   setErrorMessage(t('Sign In.Please enter a valid 10-digit mobile number'));
+    //   return;
+    // }
 
-    if (mobile.length !== 10) {
-      setErrorMessage(t('Sign In.Please enter a valid 10-digit mobile number'));
+    if (!mobile) {
+      setErrorMessage(t('Sign In.Mobile Number is required'));
+      return;
+    }
+
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+      setErrorMessage(t('Sign In.Invalid Mobile Number'));
       return;
     }
 
@@ -113,17 +123,38 @@ const Signin = props => {
         setOtpModalVisible(true);
         startCountdown();
       } else {
+        // ToastAndroid.showWithGravity(
+        //   response.data.message || t('Sign In.Login failed'),
+        //   ToastAndroid.LONG,
+        //   ToastAndroid.TOP,
+        /////////////////////////////////////////////////////////////////////////
+        const errorMsg =
+          response.data.message || t('Sign In.Login failed. Please try again.');
+        setErrorMessage(errorMsg);
         ToastAndroid.showWithGravity(
-          response.data.message || t('Sign In.Login failed'),
+          errorMsg,
           ToastAndroid.LONG,
           ToastAndroid.TOP,
         );
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error(t('Sign In.Login error:'), error);
+      let errorMsg = t('Sign In.Network Error');
+
+      if (error.response) {
+        // Handle specific backend error messages
+        if (error.response.status === 404) {
+          errorMsg = t('Sign In.Mobile Number is Not Registered');
+        } else if (error.response.data && error.response.data.message) {
+          errorMsg = error.response.data.message;
+        } else if (error.response.status === 400) {
+          errorMsg = t('Sign In.Invalid Request');
+        }
+      }
+
+      setErrorMessage(errorMsg);
       ToastAndroid.showWithGravity(
-        error.response?.data?.message ||
-          t('Sign In.Network error. Please try again.'),
+        errorMsg,
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -161,7 +192,7 @@ const Signin = props => {
           await handleSuccessfulLogin(response.data);
 
           ToastAndroid.showWithGravity(
-            'Login successful!',
+            t('Sign In.Login successful!'),
             ToastAndroid.LONG,
             ToastAndroid.TOP,
           );
@@ -178,13 +209,36 @@ const Signin = props => {
         );
       }
     } catch (error) {
+      //   catch (error) {
+      //     console.error('OTP verification error:', error);
+      //     let errorMessage = t('Sign In.Something went wrong. Please try again.');
+      //     if (error.response?.status === 400) {
+      //       errorMessage = error.response.data.message || t('Sign In.Invalid OTP');
+      //     }
+      //     ToastAndroid.showWithGravity(
+      //       errorMessage,
+      //       ToastAndroid.LONG,
+      //       ToastAndroid.TOP,
+      //     );
+      //   } finally {
+      //     setApiLoader(false);
+      //   }
+      // };
       console.error('OTP verification error:', error);
-      let errorMessage = t('Sign In.Something went wrong. Please try again.');
-      if (error.response?.status === 400) {
-        errorMessage = error.response.data.message || t('Sign In.Invalid OTP');
+      let errorMsg = t('Sign In.Something Went Wrong');
+
+      if (error.response) {
+        // Handle specific backend error messages
+        if (error.response.status === 400) {
+          errorMsg = error.response.data.message || t('Sign In.Invalid OTP');
+        } else if (error.response.status === 401) {
+          errorMsg = t('Sign In.OTP is Expired');
+        }
       }
+
+      setOtpError(errorMsg);
       ToastAndroid.showWithGravity(
-        errorMessage,
+        errorMsg,
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -277,8 +331,17 @@ const Signin = props => {
       }
     } catch (error) {
       console.error('User selection error:', error);
+      let errorMsg = t('SignIn.Something Went Wrong');
+
+      if (error.response) {
+        // Handle specific backend error messages
+        if (error.response.data && error.response.data.message) {
+          errorMsg = error.response.data.message;
+        }
+      }
       ToastAndroid.showWithGravity(
-        t('Sign In.Something went wrong. Please try again.'),
+        // t('Sign In.Something went wrong. Please try again.'),
+        errorMsg,
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );

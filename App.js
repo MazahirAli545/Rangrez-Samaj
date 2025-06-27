@@ -48,13 +48,68 @@ import i18n from './src/components/i18n';
 import {I18nextProvider} from 'react-i18next';
 import {setupForegroundNotificationHandler} from './src/Notification/Foreground';
 import PastAnnouncementsEvents from './src/Home/PastAnnouncementsEvents';
-
+import NetInfo from '@react-native-community/netinfo';
+import {useTranslation} from 'react-i18next';
+import AllNotification from './src/Home/AllNotification';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+  const {t} = useTranslation();
+  const [isConnected, setIsConnected] = useState(true);
   useEffect(() => {
     setupForegroundNotificationHandler();
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected);
+      if (!state.isConnected) {
+        showOfflineAlert();
+      }
+    });
+
+    // Check initial network state
+    checkNetworkStatus();
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
+
+  let isAlertVisible = false;
+
+  const checkNetworkStatus = async () => {
+    const state = await NetInfo.fetch();
+    setIsConnected(state.isConnected);
+    if (!state.isConnected) {
+      showOfflineAlert();
+    }
+  };
+
+  const showOfflineAlert = () => {
+    if (isAlertVisible) return;
+    isAlertVisible = true;
+    Alert.alert(
+      t('App.Connection Lost'),
+      t(
+        "App.Oops! It seems you're offline. Please check your internet connection and try again.",
+      ),
+      [
+        {
+          text: t('App.Go to Settings'),
+          onPress: () => {
+            isAlertVisible = false;
+            Linking.openSettings();
+          },
+        },
+        {
+          text: t('App.OK'),
+          onPress: () => {
+            isAlertVisible = false;
+          },
+          style: t('App.cancel'),
+        },
+      ],
+      {cancelable: false},
+    );
+  };
 
   return (
     <I18nextProvider i18n={i18n}>
@@ -114,12 +169,29 @@ const App = () => {
             name="PastAnnouncementsEvents"
             component={PastAnnouncementsEvents}
           />
+          <Stack.Screen name="AllNotification" component={AllNotification} />
         </Stack.Navigator>
       </NavigationContainer>
     </I18nextProvider>
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  offlineContainer: {
+    backgroundColor: '#b52424',
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
+  offlineText: {
+    color: 'white',
+    textAlign: 'center',
+  },
+});
 
 export default App;

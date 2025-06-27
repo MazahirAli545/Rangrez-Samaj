@@ -271,7 +271,8 @@ const FeedBack = props => {
                   label={t('FeedBack.Full Name')}
                   mode="outlined"
                   value={name}
-                  outlineColor="#F27141"
+                  outlineColor="#7C8C42"
+                  outlineStyle={{borderWidth: wp(0.4)}}
                   onChangeText={name => {
                     setName(name),
                       setErrorMessage(prev => ({...prev, name: ''}));
@@ -308,7 +309,8 @@ const FeedBack = props => {
                   label={t('FeedBack.Enter Mobile No.')}
                   mode="outlined"
                   value={mobile}
-                  outlineColor="#F27141"
+                  outlineColor="#7C8C42"
+                  outlineStyle={{borderWidth: wp(0.4)}}
                   onChangeText={mobile => {
                     setMobileNo(mobile),
                       setErrorMessage(prev => ({...prev, mobile: ''}));
@@ -346,7 +348,8 @@ const FeedBack = props => {
                   value={message}
                   numberOfLines={8} // Adjust based on how many lines you want to show
                   multiline={true}
-                  outlineColor="#F27141"
+                  outlineColor="#7C8C42"
+                  outlineStyle={{borderWidth: wp(0.4)}}
                   onChangeText={message => {
                     setMessage(message),
                       setErrorMessage(prev => ({...prev, message: ''}));
@@ -378,8 +381,8 @@ const FeedBack = props => {
                     width: wp(80),
                     borderRadius: wp(5),
                     marginTop: hp(4),
-                    borderColor: '#F27141',
-                    borderWidth: wp(0.3),
+                    outlineColor: '#7C8C42',
+                    borderWidth: wp(0.4),
                   }}>
                   <Text
                     style={{
@@ -431,13 +434,13 @@ const FeedBack = props => {
                     justifyContent: 'center',
                     // height: hp(6),
                     marginTop: hp(4),
-                    marginBottom: hp(5),
+                    // marginBottom: hp(5),
                     alignItems: 'center',
                     paddingVertical: hp(1),
                     borderRadius: wp(20),
                     width: wp(78),
-                    borderColor: '#F27141',
-                    borderWidth: wp(0.3),
+                    outlineColor: '#7C8C42',
+                    borderWidth: wp(0.4),
                     backgroundColor: '#FFFFFF',
                   }}>
                   <Text

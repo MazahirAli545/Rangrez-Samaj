@@ -86,17 +86,24 @@ const UserBussiness = ({pageName = 'signup'}) => {
             }}>
             {t('UserBussiness.Are you interested in Business?')}
           </Text>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginTop: hp(1.5),
+            }}>
             <TouchableOpacity
               style={{
                 borderColor: '#000000',
-                height: hp(7),
+                // height: hp(7),
+                // width: wp(38),
+                height: hp(25),
                 width: wp(38),
                 alignSelf: 'center',
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderRadius: wp(2),
-                flexDirection: 'row',
+                // flexDirection: 'row',
                 alignContent: 'center',
                 marginTop: hp(2),
                 backgroundColor: checked === true ? '#0468BF' : '#697368',
@@ -106,13 +113,15 @@ const UserBussiness = ({pageName = 'signup'}) => {
               }}>
               <Image
                 source={Right}
-                style={{height: hp(6), width: wp(7), marginRight: wp(1)}}
+                // style={{height: hp(7), aspectRatio: 1 / 1}}
+                style={{height: hp(8), aspectRatio: 1 / 1}}
                 resizeMode="contain"
                 tintColor={checked === true ? '#FFFFFF' : 'green'}
               />
               <Text
                 style={{
-                  fontSize: hp(2.4),
+                  // fontSize: hp(2.4),
+                  fontSize: hp(3.4),
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '700',
                   color: checked === true ? '#FFFFFF' : '#000000',
@@ -123,12 +132,14 @@ const UserBussiness = ({pageName = 'signup'}) => {
             <TouchableOpacity
               style={{
                 borderColor: '#000000',
-                height: hp(7),
+                // height: hp(7),
+                // width: wp(38),
+                height: hp(25),
                 width: wp(38),
                 alignSelf: 'center',
                 justifyContent: 'center',
                 alignItems: 'center',
-                flexDirection: 'row',
+                // flexDirection: 'row',
                 borderRadius: wp(2),
                 marginTop: hp(2.5),
                 backgroundColor: checked === false ? '#0468BF' : '#697368',
@@ -138,13 +149,14 @@ const UserBussiness = ({pageName = 'signup'}) => {
               }}>
               <Image
                 source={Wrong}
-                style={{height: hp(2.2), width: wp(7), marginRight: wp(1)}}
+                // style={{height: hp(2.2), width: wp(7), marginRight: wp(1)}}
+                style={{height: hp(8), width: wp(8)}}
                 resizeMode="contain"
                 tintColor={checked === false ? '#FFFFFF' : 'red'}
               />
               <Text
                 style={{
-                  fontSize: hp(2.4),
+                  fontSize: hp(3.4),
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '700',
                   color: checked === false ? '#FFFFFF' : '#000000',

@@ -305,7 +305,8 @@ const Contact = props => {
                   label={t('Contact.Full Name')}
                   mode="outlined"
                   value={name}
-                  outlineColor="#F27141"
+                  outlineColor="#594534"
+                  outlineStyle={{borderWidth: wp(0.4)}}
                   onChangeText={name => {
                     setName(name),
                       setErrorMessage(prev => ({...prev, name: ''}));
@@ -342,7 +343,8 @@ const Contact = props => {
                   label={t('Contact.Enter Mobile No.')}
                   mode="outlined"
                   value={mobile}
-                  outlineColor="#F27141"
+                  outlineColor="#594534"
+                  outlineStyle={{borderWidth: wp(0.4)}}
                   onChangeText={mobile => {
                     setMobileNo(mobile),
                       setErrorMessage(prev => ({...prev, mobile: ''}));
@@ -380,7 +382,8 @@ const Contact = props => {
                   value={message}
                   numberOfLines={8} // Adjust based on how many lines you want to show
                   multiline={true}
-                  outlineColor="#F27141"
+                  outlineColor="#594534"
+                  outlineStyle={{borderWidth: wp(0.4)}}
                   onChangeText={message => {
                     setMessage(message),
                       setErrorMessage(prev => ({...prev, message: ''}));
@@ -428,8 +431,10 @@ const Contact = props => {
                           height: hp(8),
                           width: wp(30),
                           borderRadius: wp(3),
-                          borderWidth: wp(0.2),
-                          borderColor: '#F27141',
+                          borderWidth: wp(0.4),
+                          borderColor: '#594534',
+                          //         outlineColor="#594534"
+                          // outlineStyle={{borderWidth: wp(0.4)}}
                         }}></View>
                     ) : (
                       <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -482,14 +487,14 @@ const Contact = props => {
                     alignSelf: 'center',
                     justifyContent: 'center',
                     // height: hp(6),
-                    marginBottom: hp(5),
+                    // marginBottom: hp(5),
                     marginTop: hp(4),
                     alignItems: 'center',
                     paddingVertical: hp(1),
                     borderRadius: wp(20),
                     width: wp(78),
-                    borderColor: '#F27141',
-                    borderWidth: wp(0.3),
+                    borderColor: '#594534',
+                    borderWidth: wp(0.4),
                     backgroundColor: '#FFFFFF',
                   }}>
                   <Text
@@ -516,6 +521,8 @@ const styles = StyleSheet.create({
     height: hp(8),
     width: wp(30),
     borderRadius: wp(3),
+    borderColor: '#594534',
+    borderWidth: wp(0.4),
   },
 });
 

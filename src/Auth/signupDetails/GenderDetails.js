@@ -137,6 +137,7 @@ const GenderDetails = ({pageName = 'signup'}) => {
               flexDirection: 'row',
               // flexWrap: 'wrap',
               justifyContent: 'center',
+              marginTop: hp(2),
             }}>
             {data.Gender.map(item => {
               const isSelected = localGender === item.id;
@@ -146,25 +147,27 @@ const GenderDetails = ({pageName = 'signup'}) => {
                   onPress={() => handleGenderChange(item.id)}
                   style={{
                     backgroundColor: isSelected ? '#0468BF' : '#697368',
-                    height: hp(8),
+                    height: hp(25),
                     width: wp(38),
                     margin: wp(2),
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: wp(2),
-                    flexDirection: 'row',
+                    // flexDirection: 'row',
                   }}>
                   <Image
                     source={item.icon}
                     style={{
-                      height: hp(3.2),
-                      width: wp(6.4),
-                      marginRight: wp(2),
+                      height: hp(6),
+                      // width: wp(6.4),
+                      aspectRatio: 1 / 1,
+                      // marginRight: wp(2),
                     }}
                   />
                   <Text
                     style={{
-                      fontSize: hp(2),
+                      marginTop: hp(1),
+                      fontSize: hp(2.4),
                       fontFamily: 'Poppins-Medium',
                       color: '#FFFFFF',
                     }}>

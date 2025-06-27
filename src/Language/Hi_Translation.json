@@ -32,7 +32,18 @@
     "Verify": "सत्यापित करें",
     "Multiple accounts found": "एक से अधिक खाते पाए गए",
     "Please select your account": "कृपया अपना खाता चुनें",
-    "Cancel": "रद्द करें"
+    "Cancel": "रद्द करें",
+    "Mobile Number is required": "मोबाइल नंबर आवश्यक है",
+    "Invalid Mobile Number": "अमान्य मोबाइल नंबर",
+    "Login failed. Please try again.": "लॉगिन विफल रहा। कृपया पुनः प्रयास करें।",
+    "Login error:": "लॉगिन त्रुटि:",
+    "Network Error": "नेटवर्क त्रुटि",
+    "Mobile Number is Not Registered": "मोबाइल नंबर पंजीकृत नहीं है",
+    "Invalid Request": "अमान्य अनुरोध",
+    "Something Went Wrong": "कुछ गलत हो गया",
+    "OTP is Expired": "ओटीपी की समयसीमा समाप्त हो गई है",
+    "FCM registration error:": "एफसीएम पंजीकरण त्रुटि:",
+    "User selection error:": "उपयोगकर्ता चयन त्रुटि:"
   },
   "Sign up": {
     "Sign up": "साइन अप",
@@ -121,7 +132,12 @@
     "Profile update failed": "प्रोफ़ाइल अपडेट विफल रहा",
     "OTP verification failed": "ओटीपी सत्यापन विफल रहा",
     "Full Name is required": "पूरा नाम आवश्यक है",
-    "Please enter 10 digits mobile number": "कृपया 10 अंकों का मोबाइल नंबर दर्ज करें"
+    "Please enter 10 digits mobile number": "कृपया 10 अंकों का मोबाइल नंबर दर्ज करें",
+    "OTP Verified Successfully!": "ओटीपी सफलतापूर्वक सत्यापित हो गया!",
+    "Error fetching user data:": "उपयोगकर्ता डेटा लाने में त्रुटि:",
+    "Invalid mobile number. Must start with 6-9 and be 10 digits": "अमान्य मोबाइल नंबर। 6 से 9 के अंक से शुरू होना चाहिए और 10 अंकों का होना चाहिए",
+    "OTP is expired or invalid": "ओटीपी समाप्त हो गया है या अमान्य है",
+    "Sign In": "साइन इन करें"
   },
 
   "GenderDetails": {
@@ -169,6 +185,64 @@
     "Are you Married?": "क्या आप विवाहित हैं?",
     "Yes": "हाँ",
     "No": "नहीं"
+  },
+
+  "ParentDetail": {
+    "Father Name is required": "पिता का नाम आवश्यक है",
+    "Mother Name is required": "माता का नाम आवश्यक है",
+    "Id": "पहचान संख्या",
+    "father": "पिता",
+    "Father": "पिता",
+    "Mother": "माता",
+    "ID cannot be same as Spouse ID": "पहचान संख्या जीवनसाथी की पहचान संख्या के समान नहीं हो सकती",
+    "ID not found or invalid.": "पहचान संख्या नहीं मिली या अमान्य है।",
+    "Invalid gender for father. Required: M": "पिता के लिए अमान्य लिंग। अपेक्षित: M",
+    "Invalid gender for father. Required Male.": "पिता के लिए अमान्य लिंग। अपेक्षित पुरुष।",
+    "Invalid gender for mother. Required: F": "माता के लिए अमान्य लिंग। अपेक्षित: F",
+    "Invalid gender for mother. Required Female.": "माता के लिए अमान्य लिंग। अपेक्षित महिला।",
+    "PR_UNIQUE_ID not found": "PR_UNIQUE_ID नहीं मिला",
+    "ID not found in registry.": "रजिस्ट्री में पहचान संख्या नहीं मिली।",
+    "Error validating": "सत्यापन में त्रुटि",
+    "ID": "पहचान संख्या",
+    "ID. Please check your connection or the ID.": "पहचान संख्या। कृपया अपना कनेक्शन या पहचान संख्या जांचें।",
+    "Father ID cannot be same as Mother ID": "पिता की पहचान संख्या माता की पहचान संख्या के समान नहीं हो सकती",
+    "Father ID cannot be same as Spouse ID": "पिता की पहचान संख्या जीवनसाथी की पहचान संख्या के समान नहीं हो सकती",
+    "Mother ID cannot be same as Father ID": "माता की पहचान संख्या पिता की पहचान संख्या के समान नहीं हो सकती",
+    "Mother ID cannot be same as Spouse ID": "माता की पहचान संख्या जीवनसाथी की पहचान संख्या के समान नहीं हो सकती",
+    "Parents Details": "माता-पिता का विवरण",
+    "Father Name": "पिता का नाम",
+    "Father ID [Optional]": "पिता की पहचान संख्या [वैकल्पिक]",
+    "Mother Name": "माता का नाम",
+    "Mother ID [Optional]": "माता की पहचान संख्या [वैकल्पिक]"
+  },
+
+  "SpouseDetail": {
+    "dob_": "dob_",
+    "name_": "name_",
+    "Child Name is required": "बच्चे का नाम आवश्यक है",
+    "Child DOB is required": "बच्चे की जन्म तिथि आवश्यक है",
+    "Spouse ID cannot be same as Father ID": "जीवनसाथी की पहचान संख्या पिता की पहचान संख्या के समान नहीं हो सकती",
+    "Spouse ID cannot be same as Mother ID": "जीवनसाथी की पहचान संख्या माता की पहचान संख्या के समान नहीं हो सकती",
+    "PR_UNIQUE_ID not present": "PR_UNIQUE_ID मौजूद नहीं है",
+    "Spouse ID not found in registry": "रजिस्ट्री में जीवनसाथी की पहचान संख्या नहीं मिली",
+    "Error validating spouse ID:": "जीवनसाथी की पहचान संख्या का सत्यापन करते समय त्रुटि:",
+    "Unable to validate Spouse ID. Please check your connection.": "जीवनसाथी की पहचान संख्या का सत्यापन नहीं हो सका। कृपया अपना कनेक्शन जांचें।",
+    "First": "प्रथम",
+    "Second": "द्वितीय",
+    "Third": "तृतीय",
+    "Fourth": "चतुर्थ",
+    "Fifth": "पंचम",
+    "Sixth": "षष्ठ",
+    "Seventh": "सप्तम",
+    "Eighth": "अष्टम",
+    "Ninth": "नवम",
+    "Tenth": "दशम",
+    "th": "वां",
+    "Spouse Name": "जीवनसाथी का नाम",
+    "Spouse ID [Optional]": "जीवनसाथी की पहचान संख्या [वैकल्पिक]",
+    "Child Name": "बच्चे का नाम",
+    "Child DOB": "बच्चे की जन्म तिथि",
+    "Add Child": "बच्चा जोड़ें"
   },
   "UserBussiness": {
     "Business": "व्यवसाय",
@@ -290,7 +364,9 @@
     "Announcements": "घोषणाएँ",
     "DATE": "तारीख",
     "LOCATION": "स्थान",
-    "NOTE": "नोट"
+    "NOTE": "नोट",
+    "Error saving language preference:": "भाषा वरीयता सहेजने में त्रुटि:",
+    "Error loading language preference:": "भाषा वरीयता लोड करने में त्रुटि:"
   },
   "Directory": {
     "Invalid response format": "अमान्य प्रतिक्रिया स्वरूप",
@@ -365,7 +441,7 @@
   "AnnouncementDetail": {
     "No valid events data found.": "कोई मान्य इवेंट डेटा नहीं मिला।",
     "Error fetching Events:": "इवेंट प्राप्त करने में त्रुटि:",
-    "Event Date:": "कार्यक्रम की तारीख:",
+    "Event Date": "कार्यक्रम की तारीख",
     "Further Contact": "अधिक जानकारी के लिए संपर्क करें",
     "Location": "स्थान",
     "City": "शहर",
@@ -495,5 +571,18 @@
     "Are you sure you want to Sign out of your account?": "क्या आप वाकई अपने खाते से साइन आउट करना चाहते हैं?",
     "Warning: Data was not fully cleared from AsyncStorage": "चेतावनी: AsyncStorage से डेटा पूरी तरह से साफ़ नहीं किया गया",
     "Error during sign out:": "साइन आउट के दौरान त्रुटि:"
+  },
+  "PastEvnDetail": {
+    "An error occurred": "एक त्रुटि हुई",
+    "Location:": "स्थान:",
+    "City:": "शहर:",
+    "Chat": "चैट"
+  },
+  "App": {
+    "Connection Lost": "कनेक्शन टूट गया",
+    "Oops! It seems you're offline. Please check your internet connection and try again.": "उफ़! ऐसा लगता है कि आप ऑफ़लाइन हैं। कृपया अपना इंटरनेट कनेक्शन जांचें और पुनः प्रयास करें।",
+    "Go to Settings": "सेटिंग्स पर जाएं",
+    "OK": "ठीक है",
+    "cancel": "रद्द करें"
   }
 }

@@ -58,7 +58,7 @@ import Notification2 from '../provider/png/Notification2.png';
 // import MyProfessionicon from '../provider/png/myprofessionicon.png';
 // import MyProfession from '../Home/MyProfession';
 import DownloadCertificate from '../Home/DownloadCertificate';
-import {clearDeviceAssociation} from '../api/fcm';
+// import {clearDeviceAssociation} from '../api/fcm';
 import LanguageModal from '../components/LanguageModal';
 import i18n from '../components/i18n'; // Import your i18n instance
 import {useTranslation} from 'react-i18next';
@@ -218,6 +218,44 @@ const Drawer = props => {
     }
   }, [lang, isInitializing]);
 
+  const handleLogout = async () => {
+    try {
+      const authToken = await getData(async_keys.auth_token);
+      const userInfo = await getData(async_keys.user_data);
+
+      const response = await fetch(`${BASE_URL}logout`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          PR_ID: userInfo?.PR_ID,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        await clearData();
+        // await clearDeviceAssociation();
+
+        // props.navigation.reset({
+        //   index: 0,
+        //   routes: [{name: 'Signin'}],
+        // });
+
+        props.navigation.navigate('Signin');
+
+        setModalLogoutVisible(false);
+      } else {
+        console.warn(data.message || 'Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <ImageBackground
@@ -300,9 +338,7 @@ const Drawer = props => {
                   fontSize: hp(1.8),
                   fontFamily: 'Poppins-Regular',
                 }}>
-                {userData?.PR_MOBILE_NO
-                  ? userData?.PR_MOBILE_NO
-                  : t('Drawer.1234567890')}
+                {userData?.PR_MOBILE_NO ? userData?.PR_MOBILE_NO : '1234567890'}
               </Text>
             </View>
           </View>
@@ -325,6 +361,7 @@ const Drawer = props => {
               <Image
                 source={profile}
                 style={{height: hp(3.5), width: wp(7.2)}}
+                resizeMode="contain"
                 tintColor={'#000000'}
               />
               <Text
@@ -349,6 +386,7 @@ const Drawer = props => {
                 source={familydetails}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -376,6 +414,7 @@ const Drawer = props => {
                 source={familymembers}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -400,6 +439,7 @@ const Drawer = props => {
                 source={donationsss}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -426,6 +466,7 @@ const Drawer = props => {
                 source={certificate}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -449,6 +490,7 @@ const Drawer = props => {
                 source={aboutus}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -478,6 +520,7 @@ const Drawer = props => {
                   source={Notification2}
                   style={{height: hp(3.5), width: wp(7.2)}}
                   tintColor={'#000000'}
+                  resizeMode="contain"
                 />
                 <Text
                   style={{
@@ -511,6 +554,7 @@ const Drawer = props => {
                 source={contactus}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -534,6 +578,7 @@ const Drawer = props => {
                 source={feedback}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -558,6 +603,7 @@ const Drawer = props => {
                 source={fundinsights}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -582,6 +628,7 @@ const Drawer = props => {
                 source={LanguageConverterSetting}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -605,6 +652,7 @@ const Drawer = props => {
                 source={privacypolicy}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -629,6 +677,7 @@ const Drawer = props => {
                 source={termsandconditions}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -653,6 +702,7 @@ const Drawer = props => {
                 source={deleteaccount}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -679,6 +729,7 @@ const Drawer = props => {
                 source={logout}
                 style={{height: hp(3.5), width: wp(7.2)}}
                 tintColor={'#000000'}
+                resizeMode="contain"
               />
               <Text
                 style={{
@@ -896,39 +947,7 @@ const Drawer = props => {
               marginTop: hp(2),
             }}>
             <TouchableOpacity
-              onPress={async () => {
-                try {
-                  // Clear all AsyncStorage data first
-                  await clearData();
-                  await clearDeviceAssociation();
-
-                  // Verify data is cleared by checking a specific key (e.g., auth_token)
-                  const tokenAfterClear = await getData(async_keys.auth_token);
-                  const userDataAfterClear = await getData(
-                    async_keys.user_data,
-                  );
-
-                  console.log('Token after clear:', tokenAfterClear); // Should be null
-                  console.log('User data after clear:', userDataAfterClear); // Should be null
-
-                  if (tokenAfterClear !== null || userDataAfterClear !== null) {
-                    console.warn(
-                      t(
-                        'Drawer.Warning: Data was not fully cleared from AsyncStorage',
-                      ),
-                    );
-                    // You might want to retry clearing or show an error to the user
-                  }
-
-                  // Then navigate to Signin screen
-                  props.navigation.navigate('Signin');
-                  // Close the modal
-                  setModalLogoutVisible(false);
-                } catch (error) {
-                  console.error(t('Drawer.Error during sign out:'), error);
-                  // Optionally show an error message to the user
-                }
-              }}
+              onPress={handleLogout}
               style={{
                 backgroundColor: '#FFFFFF',
                 alignSelf: 'center',

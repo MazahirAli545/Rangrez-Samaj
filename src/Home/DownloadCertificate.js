@@ -226,7 +226,7 @@ const CertificateScreen = ({route, navigation}) => {
                     fontFamily: ' Poppins-SemiBold',
                     fontWeight: '600',
                     fontSize: hp(3),
-                    marginTop: hp(9),
+                    // marginTop: hp(9),
                   }}>
                   {t('DownLoadCertificate.DownLoad Certificate')}
                 </Text>
@@ -288,6 +288,7 @@ const CertificateScreen = ({route, navigation}) => {
                     fontSize: hp(2.2),
                     marginLeft: wp(2),
                     color: '#FFFFFF',
+                    fontFamily: 'Poppins-Medium',
                   }}>
                   {t('DownLoadCertificate.Share Certificate')}
                 </Text>

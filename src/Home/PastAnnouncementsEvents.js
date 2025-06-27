@@ -1,4 +1,4 @@
-import {React, useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -41,30 +41,80 @@ const PastAnnouncementsEvents = props => {
 
   console.log('PastEvents', pastEvents);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const fetchLanguageAndEvents = async () => {
-        try {
-          // Get saved language preference
-          const savedLangCode =
-            (await getData(async_keys.language_code)) || 'en';
-          setLangCode(savedLangCode);
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     const fetchLanguageAndEvents = async () => {
+  //       try {
+  //         // Get saved language preference
+  //         const savedLangCode =
+  //           (await getData(async_keys.language_code)) || 'en';
+  //         setLangCode(savedLangCode);
 
-          await fetchEvents(savedLangCode);
-        } catch (error) {
-          console.error(
-            t('PastAnnounceEvents.Error loading language or events:'),
-            error,
-          );
-        }
-      };
+  //         await fetchEvents(savedLangCode);
+  //       } catch (error) {
+  //         console.error(
+  //           t('PastAnnounceEvents.Error loading language or events:'),
+  //           error,
+  //         );
+  //       }
+  //     };
 
-      fetchLanguageAndEvents();
-    }, []),
-  );
+  //     fetchLanguageAndEvents();
+  //   }, []),
+  // );
 
-  useEffect(() => {
-    const fetchEvents = async (languageCode = 'en') => {
+  // useEffect(() => {
+  //   const fetchEvents = async (languageCode = 'en') => {
+  //     try {
+  //       setApiLoader(true);
+  //       const response = await fetch(
+  //         `${BASE_URL}/events?lang_code=${languageCode}`,
+  //       );
+  //       const result = await response.json();
+
+  //       if (Array.isArray(result.events)) {
+  //         const currentDate = new Date();
+
+  //         const formattedData = result.events
+  //           .filter(item => {
+  //             if (!item.EVNT_UPTO_DT) return false;
+  //             const eventEndDate = new Date(item.EVNT_UPTO_DT);
+  //             return eventEndDate < currentDate;
+  //           })
+  //           .filter(item => item.ENVT_DESC && item.ENVT_DESC.trim() !== '') // Filter empty content
+  //           .map(item => ({
+  //             id: item.ENVT_ID,
+  //             eventCategoryID: item.ENVT_CATE_ID,
+  //             name: item.ENVT_DESC,
+  //             message: item.ENVT_EXCERPT,
+  //             Detail: item.ENVT_DETAIL,
+  //             headerImage: {uri: item.ENVT_BANNER_IMAGE},
+  //             EventsImage: {uri: item.ENVT_GALLERY_IMAGES},
+  //             EventContact: item.ENVT_CONTACT_NO,
+  //             EventFromDate: item.EVNT_FROM_DT,
+  //             EventsToDate: item.EVNT_UPTO_DT,
+  //             address: item.ENVT_ADDRESS,
+  //             city: item.ENVT_CITY,
+  //             createdEventDate: item.EVET_CREATED_DT,
+  //             cate_desc: item?.SubCategory?.CATE_DESC || '',
+  //           }));
+
+  //         setPastEvents(formattedData);
+  //       } else {
+  //         console.warn(t('PastAnnounceEvents.No valid events data found.'));
+  //       }
+  //     } catch (error) {
+  //       console.error(t('PastAnnounceEvents.Error fetching Events:'), error);
+  //     } finally {
+  //       setApiLoader(false);
+  //     }
+  //   };
+
+  //   fetchEvents();
+  // }, []);
+
+  const fetchEvents = useCallback(
+    async (languageCode = 'en') => {
       try {
         setApiLoader(true);
         const response = await fetch(
@@ -108,10 +158,33 @@ const PastAnnouncementsEvents = props => {
       } finally {
         setApiLoader(false);
       }
-    };
+    },
+    [t],
+  );
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchLanguageAndEvents = async () => {
+        try {
+          const savedLangCode =
+            (await getData(async_keys.language_code)) || 'en';
+          setLangCode(savedLangCode);
+          await fetchEvents(savedLangCode);
+        } catch (error) {
+          console.error(
+            t('PastAnnounceEvents.Error loading language or events:'),
+            error,
+          );
+        }
+      };
+
+      fetchLanguageAndEvents();
+    }, [fetchEvents, t]),
+  );
+
+  useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
 
   return (
     <SafeAreaView style={styles.MainContainer}>
